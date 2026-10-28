@@ -1,0 +1,438 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "solid-dotnet-app-tpl",
+  "classifications": [
+    "Web",
+    "API",
+    "PostgreSQL",
+    "React"
+  ],
+  "identity": "Solid.DotnetApp.Template",
+  "name": "Solid .NET app: ASP.NET Core, PostgreSQL, React, with its quality gate",
+  "description": "An agent-friendly .NET 10 application: strict analyzers, architecture tests, the whole gate, Claude Code hooks, Docker and compose.",
+  "shortName": "solid-dotnet",
+  "sourceName": "Myapp",
+  "preferNameDirectory": true,
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "forms": {
+    "lowerCase": {
+      "identifier": "lowerCase"
+    }
+  },
+  "symbols": {
+    "portOffset": {
+      "type": "parameter",
+      "datatype": "choice",
+      "defaultValue": "0",
+      "description": "Shifts every port of the template (server 6300, web 3300, PostgreSQL 5533, compose web 8190, e2e 6301/3301) by 10 times this number, so several projects run side by side.",
+      "choices": [
+        {
+          "choice": "0",
+          "description": "ports +0"
+        },
+        {
+          "choice": "1",
+          "description": "ports +10"
+        },
+        {
+          "choice": "2",
+          "description": "ports +20"
+        },
+        {
+          "choice": "3",
+          "description": "ports +30"
+        },
+        {
+          "choice": "4",
+          "description": "ports +40"
+        },
+        {
+          "choice": "5",
+          "description": "ports +50"
+        },
+        {
+          "choice": "6",
+          "description": "ports +60"
+        },
+        {
+          "choice": "7",
+          "description": "ports +70"
+        },
+        {
+          "choice": "8",
+          "description": "ports +80"
+        },
+        {
+          "choice": "9",
+          "description": "ports +90"
+        }
+      ]
+    },
+    "lowerName": {
+      "type": "derived",
+      "valueSource": "name",
+      "valueTransform": "lowerCase",
+      "replaces": "myapp",
+      "fileRename": "myapp"
+    },
+    "serverPort": {
+      "type": "generated",
+      "generator": "switch",
+      "parameters": {
+        "evaluator": "C++",
+        "datatype": "string",
+        "cases": [
+          {
+            "condition": "(portOffset == \"1\")",
+            "value": "6310"
+          },
+          {
+            "condition": "(portOffset == \"2\")",
+            "value": "6320"
+          },
+          {
+            "condition": "(portOffset == \"3\")",
+            "value": "6330"
+          },
+          {
+            "condition": "(portOffset == \"4\")",
+            "value": "6340"
+          },
+          {
+            "condition": "(portOffset == \"5\")",
+            "value": "6350"
+          },
+          {
+            "condition": "(portOffset == \"6\")",
+            "value": "6360"
+          },
+          {
+            "condition": "(portOffset == \"7\")",
+            "value": "6370"
+          },
+          {
+            "condition": "(portOffset == \"8\")",
+            "value": "6380"
+          },
+          {
+            "condition": "(portOffset == \"9\")",
+            "value": "6390"
+          },
+          {
+            "condition": "true",
+            "value": "6300"
+          }
+        ]
+      },
+      "replaces": "6300"
+    },
+    "webPort": {
+      "type": "generated",
+      "generator": "switch",
+      "parameters": {
+        "evaluator": "C++",
+        "datatype": "string",
+        "cases": [
+          {
+            "condition": "(portOffset == \"1\")",
+            "value": "3310"
+          },
+          {
+            "condition": "(portOffset == \"2\")",
+            "value": "3320"
+          },
+          {
+            "condition": "(portOffset == \"3\")",
+            "value": "3330"
+          },
+          {
+            "condition": "(portOffset == \"4\")",
+            "value": "3340"
+          },
+          {
+            "condition": "(portOffset == \"5\")",
+            "value": "3350"
+          },
+          {
+            "condition": "(portOffset == \"6\")",
+            "value": "3360"
+          },
+          {
+            "condition": "(portOffset == \"7\")",
+            "value": "3370"
+          },
+          {
+            "condition": "(portOffset == \"8\")",
+            "value": "3380"
+          },
+          {
+            "condition": "(portOffset == \"9\")",
+            "value": "3390"
+          },
+          {
+            "condition": "true",
+            "value": "3300"
+          }
+        ]
+      },
+      "replaces": "3300"
+    },
+    "databasePort": {
+      "type": "generated",
+      "generator": "switch",
+      "parameters": {
+        "evaluator": "C++",
+        "datatype": "string",
+        "cases": [
+          {
+            "condition": "(portOffset == \"1\")",
+            "value": "5543"
+          },
+          {
+            "condition": "(portOffset == \"2\")",
+            "value": "5553"
+          },
+          {
+            "condition": "(portOffset == \"3\")",
+            "value": "5563"
+          },
+          {
+            "condition": "(portOffset == \"4\")",
+            "value": "5573"
+          },
+          {
+            "condition": "(portOffset == \"5\")",
+            "value": "5583"
+          },
+          {
+            "condition": "(portOffset == \"6\")",
+            "value": "5593"
+          },
+          {
+            "condition": "(portOffset == \"7\")",
+            "value": "5603"
+          },
+          {
+            "condition": "(portOffset == \"8\")",
+            "value": "5613"
+          },
+          {
+            "condition": "(portOffset == \"9\")",
+            "value": "5623"
+          },
+          {
+            "condition": "true",
+            "value": "5533"
+          }
+        ]
+      },
+      "replaces": "5533"
+    },
+    "composeWebPort": {
+      "type": "generated",
+      "generator": "switch",
+      "parameters": {
+        "evaluator": "C++",
+        "datatype": "string",
+        "cases": [
+          {
+            "condition": "(portOffset == \"1\")",
+            "value": "8200"
+          },
+          {
+            "condition": "(portOffset == \"2\")",
+            "value": "8210"
+          },
+          {
+            "condition": "(portOffset == \"3\")",
+            "value": "8220"
+          },
+          {
+            "condition": "(portOffset == \"4\")",
+            "value": "8230"
+          },
+          {
+            "condition": "(portOffset == \"5\")",
+            "value": "8240"
+          },
+          {
+            "condition": "(portOffset == \"6\")",
+            "value": "8250"
+          },
+          {
+            "condition": "(portOffset == \"7\")",
+            "value": "8260"
+          },
+          {
+            "condition": "(portOffset == \"8\")",
+            "value": "8270"
+          },
+          {
+            "condition": "(portOffset == \"9\")",
+            "value": "8280"
+          },
+          {
+            "condition": "true",
+            "value": "8190"
+          }
+        ]
+      },
+      "replaces": "8190"
+    },
+    "e2eServerPort": {
+      "type": "generated",
+      "generator": "switch",
+      "parameters": {
+        "evaluator": "C++",
+        "datatype": "string",
+        "cases": [
+          {
+            "condition": "(portOffset == \"1\")",
+            "value": "6311"
+          },
+          {
+            "condition": "(portOffset == \"2\")",
+            "value": "6321"
+          },
+          {
+            "condition": "(portOffset == \"3\")",
+            "value": "6331"
+          },
+          {
+            "condition": "(portOffset == \"4\")",
+            "value": "6341"
+          },
+          {
+            "condition": "(portOffset == \"5\")",
+            "value": "6351"
+          },
+          {
+            "condition": "(portOffset == \"6\")",
+            "value": "6361"
+          },
+          {
+            "condition": "(portOffset == \"7\")",
+            "value": "6371"
+          },
+          {
+            "condition": "(portOffset == \"8\")",
+            "value": "6381"
+          },
+          {
+            "condition": "(portOffset == \"9\")",
+            "value": "6391"
+          },
+          {
+            "condition": "true",
+            "value": "6301"
+          }
+        ]
+      },
+      "replaces": "6301"
+    },
+    "e2eWebPort": {
+      "type": "generated",
+      "generator": "switch",
+      "parameters": {
+        "evaluator": "C++",
+        "datatype": "string",
+        "cases": [
+          {
+            "condition": "(portOffset == \"1\")",
+            "value": "3311"
+          },
+          {
+            "condition": "(portOffset == \"2\")",
+            "value": "3321"
+          },
+          {
+            "condition": "(portOffset == \"3\")",
+            "value": "3331"
+          },
+          {
+            "condition": "(portOffset == \"4\")",
+            "value": "3341"
+          },
+          {
+            "condition": "(portOffset == \"5\")",
+            "value": "3351"
+          },
+          {
+            "condition": "(portOffset == \"6\")",
+            "value": "3361"
+          },
+          {
+            "condition": "(portOffset == \"7\")",
+            "value": "3371"
+          },
+          {
+            "condition": "(portOffset == \"8\")",
+            "value": "3381"
+          },
+          {
+            "condition": "(portOffset == \"9\")",
+            "value": "3391"
+          },
+          {
+            "condition": "true",
+            "value": "3301"
+          }
+        ]
+      },
+      "replaces": "3301"
+    }
+  },
+  "sources": [
+    {
+      "source": "./",
+      "target": "./",
+      "modifiers": [
+        {
+          "exclude": [
+            "**/.git/**",
+            "**/bin/**",
+            "**/obj/**",
+            "**/node_modules/**",
+            "**/dist/**",
+            "**/TestResults/**",
+            "**/StrykerOutput/**",
+            ".artifacts/**",
+            ".vs/**",
+            "**/.env",
+            "**/.env.local",
+            "CLAUDE.local.md",
+            ".claude/settings.local.json",
+            ".claude/worktrees/**",
+            "**/packages.lock.json",
+            "**/pnpm-lock.yaml",
+            "**/*.tsbuildinfo",
+            "pack/**",
+            "docs/visual/**",
+            "Myapp.Server.Tests/TemplateTests.cs"
+          ]
+        }
+      ]
+    }
+  ],
+  "postActions": [
+    {
+      "description": "Regenerates the lockfiles, creates the git repository (master) and enables the hooks, removes the template notes",
+      "actionId": "3A7C4B45-1F5D-4A30-959A-51B88E82B5D2",
+      "args": {
+        "executable": "dotnet",
+        "args": "msbuild scripts/.internal/init-project.proj -nologo -v:minimal",
+        "redirectStandardOutput": false,
+        "redirectStandardError": false
+      },
+      "manualInstructions": [
+        {
+          "text": "Run: dotnet msbuild scripts/.internal/init-project.proj"
+        }
+      ],
+      "continueOnError": false
+    }
+  ]
+}

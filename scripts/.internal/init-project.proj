@@ -1,0 +1,7 @@
+<Project DefaultTargets="Init">
+  <!-- Why this file: `dotnet new` starts a post action's executable the Windows way, so `bash` would be WSL's.
+       MSBuild's Exec runs the command through the shell, which finds Git's bash on PATH. -->
+  <Target Name="Init">
+    <Exec Command="bash init-project.sh" />
+  </Target>
+</Project>

@@ -1,5 +1,7 @@
 using System.Net;
+using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Myapp.Server.Database;
 using Npgsql;
 
@@ -23,19 +25,23 @@ public sealed class HealthEndpointsTests(TestDatabase database) : IDisposable
     }
 
     [Fact]
-    public async Task Health_says_what_to_do_when_the_database_does_not_answer()
+    public async Task Health_says_what_to_do_when_the_database_does_not_answer_and_names_the_trace_in_the_log()
     {
         _ = database.Pool;
+        using var logs = new CapturedLogs();
         var unreachable = new NpgsqlConnectionStringBuilder(TestDatabase.ConnectionString) { Port = 1 }.ConnectionString;
         using var broken = app.WithWebHostBuilder(builder =>
-            builder.ConfigureServices(services => services.AddSingleton(Pool.Create(unreachable)))
+            builder.ConfigureServices(services => services.AddSingleton(Pool.Create(unreachable)).AddSingleton<ILoggerProvider>(logs))
         );
         using var client = broken.CreateClient();
 
         var response = await client.GetAsync("/api/health", TestContext.Current.CancellationToken);
         var body = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        var traceId = JsonDocument.Parse(body).RootElement.GetProperty("traceId").GetString();
 
         Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
         Assert.Contains("just db up", body, StringComparison.Ordinal);
+        Assert.Matches("^[0-9a-f]{32}$", traceId);
+        Assert.Contains(logs.Entries, entry => entry.Level == LogLevel.Warning && entry.TraceId == traceId);
     }
 }

@@ -29,7 +29,7 @@ export default defineConfig({
     projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 } } }],
     webServer: [
         {
-            command: "dotnet run --project Myapp.Server --no-build --no-launch-profile",
+            command: "dotnet run --project Myapp.Server --no-build --no-launch-profile > .artifacts/logs/e2e-server.jsonl 2>&1",
             cwd: "../..",
             url: `http://127.0.0.1:${SERVER_PORT}/api/health`,
             env: {

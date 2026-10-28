@@ -1,5 +1,9 @@
-import { Alert, Button, Group, List, Stack, Text, TextInput, Title } from "@mantine/core";
 import { useEffect, useState } from "react";
+
+import { Alert } from "@/design/alert";
+import { Button } from "@/design/button";
+import { Input } from "@/design/input";
+import { Label } from "@/design/label";
 
 import { createNote, fetchNotes, type Note } from "./api";
 import { problemWith } from "./notes";
@@ -45,33 +49,31 @@ export function NotesScreen() {
     }
 
     return (
-        <Stack maw={560} mx="auto" p="md">
-            <Title order={2}>Notes</Title>
-            <Group align="flex-end">
-                <TextInput
-                    label="New note"
-                    value={text}
-                    onChange={(event) => {
-                        setText(event.currentTarget.value);
-                    }}
-                    style={{ flex: 1 }}
-                />
+        <main className="mx-auto flex max-w-xl flex-col gap-4 p-4">
+            <h1 className="text-2xl font-semibold">Notes</h1>
+            <div className="flex items-end gap-2">
+                <div className="flex flex-1 flex-col gap-2">
+                    <Label htmlFor="new-note">New note</Label>
+                    <Input
+                        id="new-note"
+                        value={text}
+                        onChange={(event) => {
+                            setText(event.currentTarget.value);
+                        }}
+                    />
+                </div>
                 <Button onClick={add}>Add note</Button>
-            </Group>
-            {error !== null && (
-                <Alert color="red" role="alert">
-                    {error}
-                </Alert>
-            )}
+            </div>
+            {error !== null && <Alert variant="destructive">{error}</Alert>}
             {notes.length === 0 ? (
-                <Text c="dimmed">No notes yet.</Text>
+                <p className="text-muted-foreground">No notes yet.</p>
             ) : (
-                <List>
+                <ul className="list-disc pl-6">
                     {notes.map((note) => (
-                        <List.Item key={note.id}>{note.text}</List.Item>
+                        <li key={note.id}>{note.text}</li>
                     ))}
-                </List>
+                </ul>
             )}
-        </Stack>
+        </main>
     );
 }

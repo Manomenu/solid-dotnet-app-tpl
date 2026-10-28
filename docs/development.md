@@ -17,6 +17,7 @@ just db up                # PostgreSQL on localhost:5533 (container myapp-postgr
 just server               # the API on http://127.0.0.1:6300 (dotnet watch)
 just web                  # the web app on http://localhost:3300, proxies /api to the server
 just e2e                  # browser tests (own server, own database, own ports; not part of the gate)
+just logs                 # why did it fail? last warnings/errors of the newest server log (see below)
 just api-types            # regenerate Myapp.Web/src/api/openapi.d.ts after changing a record the API exposes
 just mutate               # Stryker.NET (MTP runner, preview) on the server code changed since master; needs a master with commits
 just pack-template        # the dotnet new template as a NuGet package in .artifacts/nupkg
@@ -58,3 +59,17 @@ then runs `scripts/.internal/smoke.sh` against it. Settings come from `.env` (co
 has a default. With an external PostgreSQL, set `ConnectionStrings__Default` in `.env` and run
 `docker compose up -d --build --wait` (no `db` profile). Use `127.0.0.1`, not `localhost`, in connection strings:
 on Windows `localhost` tries IPv6 first and every new connection waits seconds.
+
+## Logs
+
+The server writes JSON log lines (the built-in console JSON formatter, `Logging:Console` in `appsettings.json`).
+`just server` also writes them to `.artifacts/logs/server.jsonl`, `e2e.sh` to `.artifacts/logs/e2e-server.jsonl`;
+the container stack is read with `--compose`. `just logs` prints the last warnings and errors of the newest log, one
+line each; `just logs --trace <traceId>` shows every line of one request, with the `traceId` any error response
+carries. `--all` shows every level, `-n N` the last N lines.
+
+## Editors
+
+VS Code: accept the recommended extensions (`.vscode/extensions.json`); formatting, tasks and debug launch are set up.
+Rider: install the CSharpier plugin; everything else comes from `.editorconfig` and the repo's configs.
+Personal files (`.idea/`, `*.DotSettings.user`) are ignored.

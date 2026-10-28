@@ -1,7 +1,7 @@
 <!-- template:start -->
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/visual/board/img/readme/hero-dark.png">
-  <img alt="solid-dotnet-app-tpl: a dotnet new template. A .NET 10 app where the wrong change fails the build, with a message that says the fix: made for coding agents and the people reviewing them. ASP.NET Core and PostgreSQL, React and Mantine, one gate in about 20 seconds, Claude Code hooks. One command decides done; 18 kinds of guard, each with its fix; a quick gate of about 15 seconds after every agent turn." src="docs/visual/board/img/readme/hero-light.png" width="100%">
+  <img alt="solid-dotnet-app-tpl: a dotnet new template. A .NET 10 app where the wrong change fails the build, with a message that says the fix: made for coding agents and the people reviewing them. ASP.NET Core and PostgreSQL, React and shadcn/ui · Tailwind, one gate in about 20 seconds, Claude Code hooks. One command decides done; 18 kinds of guard, each with its fix; a quick gate of about 15 seconds after every agent turn." src="docs/visual/board/img/readme/hero-light.png" width="100%">
 </picture>
 
 <picture>
@@ -43,12 +43,12 @@ The full list, each guard with its fix: [docs/architecture.md, "What the gate fo
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/visual/board/img/readme/choose-dark.png">
-  <img alt="Which command when. While working: check.sh --quick, which the Stop hook runs for you. Before calling a change done: check.sh, the one definition of done. You changed something a user clicks: e2e.sh, Playwright with its own database. You added logic with rules: just mutate, where surviving mutants mean weak tests. Prove the containers work: just up and smoke.sh, the stack as it ships." src="docs/visual/board/img/readme/choose-light.png" width="100%">
+  <img alt="Which command when. While working: check.sh --quick, which the Stop hook runs for you. Before calling a change done: check.sh, the one definition of done. You changed something a user clicks: e2e.sh, Playwright with its own database. Something failed and you need to know why: just logs, the last errors one line each, or --trace with a request id. You added logic with rules: just mutate, where surviving mutants mean weak tests. Prove the containers work: just up and smoke.sh, the stack as it ships." src="docs/visual/board/img/readme/choose-light.png" width="100%">
 </picture>
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/visual/board/img/readme/architecture-dark.png">
-  <img alt="How it is built. Web: React 19, Mantine, Vite; one folder per feature, types generated from the server's OpenAPI (src/notes/). Server: ASP.NET Core minimal APIs; route, then a store with hand-written SQL (Dapper), then records, with explicit Map calls (Notes/). PostgreSQL: grate migrations, numbered scripts never edited once applied, a database per git worktree (Database/). It runs on the host while developing, in compose with all settings from .env and only web exposed, and from the same images anywhere." src="docs/visual/board/img/readme/architecture-light.png" width="100%">
+  <img alt="How it is built. Web: React 19, shadcn/ui, Tailwind, Vite; one folder per feature, types generated from the server's OpenAPI (src/notes/). Server: ASP.NET Core minimal APIs; route, then a store with hand-written SQL (Dapper), then records, with explicit Map calls (Notes/). PostgreSQL: grate migrations, numbered scripts never edited once applied, a database per git worktree (Database/). It runs on the host while developing, in compose with all settings from .env and only web exposed, and from the same images anywhere." src="docs/visual/board/img/readme/architecture-light.png" width="100%">
 </picture>
 
 The pictures are drawn on `docs/visual/board/readme.html` and rendered with the suwagent plugin's
@@ -58,7 +58,7 @@ They are not copied into generated projects. Everything below this block is the 
 
 # Myapp
 
-An ASP.NET Core minimal-API server (Npgsql, Dapper, hand-written SQL, grate migrations), a React 19 + Mantine
+An ASP.NET Core minimal-API server (Npgsql, Dapper, hand-written SQL, grate migrations), a React 19 + shadcn/ui + Tailwind
 web app with types generated from the server's OpenAPI document, and a Notes feature as the pattern end to end.
 
 ## What the gate guarantees

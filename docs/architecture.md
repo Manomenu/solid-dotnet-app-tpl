@@ -9,11 +9,12 @@ lines: a new top-level folder needs its line here, a deleted one loses it.
 - `Myapp.Server/` — the HTTP API (ASP.NET Core minimal APIs, Npgsql, Dapper with hand-written SQL). One folder and namespace per feature: `Api/` wires the routes, `Notes/` is the example feature, `Health/` checks the database, `Database/` is the pool and the grate migrations.
 - `Myapp.Server/Database/Migrations/up/` — numbered SQL migrations `NNNN_what_it_does.sql`, applied at start-up by grate and never edited afterwards.
 - `Myapp.Server.Tests/` — xUnit v3 tests against a real PostgreSQL. Mirrors the server's folders; the root holds the repository guards (layers, project graph, naming, comments, pragmas, AGENTS.md size, unused types).
-- `Myapp.Web/` — the web app (React 19, Mantine, Vite, TypeScript strict, pnpm). One folder per feature under `src/` (`notes/` is the example: `api.ts`, `notes.ts` with its test, the screen, its e2e test); `src/api/` holds the HTTP client and the generated `openapi.d.ts`.
+- `Myapp.Web/` — the web app (React 19, shadcn/ui, Tailwind 4, Vite, TypeScript strict, pnpm). A folder per feature under `src/` (`notes/` is the example); `src/design/` is the shared design system (shadcn components, `cn`); `src/api/` the HTTP client and the generated `openapi.d.ts`.
 - `compose.yaml` — the whole stack on a laptop from the same Dockerfiles: db (profile `db`), server, web; everything configured from `.env` (`.env.example`) with ASP.NET names (`Section__Key`); only web publishes a port (8190).
 - `Myapp.Server/Dockerfile`, `Myapp.Web/Dockerfile` — the two images (pinned bases, locked restore, build context is the repo root); the web image is nginx serving the build and proxying `/api` to the server.
 - `.dockerignore` — keeps `node_modules`, `bin`, `obj` and `.env` out of the build context.
 - `.github/` — `workflows/ci.yml`: the gate (`test`), the browser tests (`e2e`), and the images built and smoke-tested (`build`); nothing is published, the registry is project-specific.
+- `.vscode/` — the editor's glue, shared: recommended extensions, formatter per language, file nesting, debug launch, tasks that call `scripts/.internal`. No style rules (they live in `.editorconfig` and the formatters' configs, so Rider agrees).
 - `.githooks/` — `pre-commit` runs gitleaks on what is being committed; `just sync` enables it.
 <!-- template:start -->
 - `.template.config/` — the `dotnet new` template definition (see the README); not copied into generated projects.
@@ -21,7 +22,7 @@ lines: a new top-level folder needs its line here, a deleted one loses it.
 - `scripts/.internal/init-project.proj` and `init-project.sh` — the template's post action; they run once in a new project and delete themselves.
 <!-- template:end -->
 - `docs/` — documentation for people working on the repo: this map, `development.md`.
-- `scripts/` — `scripts/.internal/` holds what the gate, the hooks and `just` run: `check.sh`, `db.sh`, `checkout-env.sh`, `api-types.sh`, `e2e.sh`, `smoke.sh`, the Claude Code hook scripts.
+- `scripts/` — `scripts/.internal/` holds what the gate, the hooks and `just` run: `check.sh`, `db.sh`, `checkout-env.sh`, `api-types.sh`, `e2e.sh`, `smoke.sh`, `logs.sh`, the Claude Code hook scripts.
 - `.claude/` — the committed Claude Code settings: a Stop hook that runs the quick gate, a PreToolUse hook that protects migrations and generated files.
 - `.config/` — `dotnet-tools.json`: the pinned CSharpier.
 - `.just/` — modules of the `justfile` (`just db`).
@@ -35,8 +36,10 @@ Files at the root: `Directory.Build.props` (strict compiler and analyzers), `Dir
 
 Each line is a build rule or a test; its message says the fix. Rules live as low as they can: types and analyzers first.
 
-- Web (`check.sh`): tsc strict, eslint (typescript-eslint strict + import boundaries between feature folders), vitest, prettier, knip (dead code), `openapi.d.ts` equal to the server's OpenAPI document.
+- Web (`check.sh`): tsc strict, eslint (typescript-eslint strict + import boundaries: a feature uses `api` and `design`, `design` uses no feature), vitest, prettier (with Tailwind class order), knip (dead code), `openapi.d.ts` equal to the server's OpenAPI document.
 - Template (`TemplateTests`, template repo only): the placeholder is spelled `Myapp` or `myapp` only, base ports are whole numbers, port symbols are consistent, nothing that must not be copied is missing from the exclusions.
+- Logs (`HealthEndpointsTests`, `LogsScriptTests`): an error response carries the `traceId` that its log lines carry; `logs.sh` reads them back.
+- Editor (`VsCodeSettingsTests`): `.vscode/settings.json` has no style keys; recommended extension ids are well formed.
 - Images (`ImagePinsTests`): every `FROM` and `image:` carries a version, never `latest`.
 - Containers (`check.sh`): `docker compose config` resolves with and without the `db` profile; `smoke.sh` (run by `just up`) checks `/healthz` and `/api/health` of the running stack.
 - Build: analyzers `latest-all`, warnings are errors, unused private members (IDE0051, IDE0052, CA1823), no `#pragma warning disable` (`NoPragmaTests`).

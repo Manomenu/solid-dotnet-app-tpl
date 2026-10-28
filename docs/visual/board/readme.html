@@ -364,7 +364,7 @@ pre.out { font: 12px/1.5 var(--mono); background: var(--code-bg); border: 1px so
       <span class="doc-kind">dotnet new template</span>
       <h1>solid-dotnet-app-tpl</h1>
       <p class="lead">A .NET 10 app where <b>the wrong change fails the build</b>, with a message that says the fix: made for coding agents and the people reviewing them.</p>
-      <span class="tag accent">ASP.NET Core · PostgreSQL</span> <span class="tag accent">React · Mantine</span> <span class="tag ok">one gate, ~20 s</span> <span class="tag note">Claude Code hooks</span>
+      <span class="tag accent">ASP.NET Core · PostgreSQL</span> <span class="tag accent">React · shadcn/ui · Tailwind</span> <span class="tag ok">one gate, ~20 s</span> <span class="tag note">Claude Code hooks</span>
     </div>
     <div class="side"><div class="term"><span class="dim">$</span> dotnet new solid-dotnet -n Invoices
 <span class="dim">$</span> bash scripts/.internal/check.sh
@@ -431,6 +431,7 @@ pre.out { font: 12px/1.5 var(--mono); background: var(--code-bg); border: 1px so
     <div class="if">While working</div><div class="then ok">check.sh --quick <small>the Stop hook runs it for you</small></div>
     <div class="if">Before calling a change done</div><div class="then">check.sh <small>the one definition of "done"</small></div>
     <div class="if">You changed something a user clicks</div><div class="then">e2e.sh <small>Playwright, own database</small></div>
+    <div class="if">Something failed and you need to know why</div><div class="then">just logs <small>last errors, one line each; --trace &lt;id&gt;</small></div>
     <div class="if">You added logic with rules</div><div class="then note">just mutate <small>surviving mutants = weak tests</small></div>
     <div class="if">Prove the containers work</div><div class="then">just up + smoke.sh <small>the stack as it ships</small></div>
   </div>
@@ -438,7 +439,7 @@ pre.out { font: 12px/1.5 var(--mono); background: var(--code-bg); border: 1px so
 
 <section id="architecture">
   <div class="cards" style="--cols:3">
-    <div><span class="ico">🌐</span><h4>Web</h4><p class="when">React 19 · Mantine · Vite</p><p>one folder per feature; types generated from the server's OpenAPI</p><div class="foot"><span class="tag accent">src/notes/</span></div></div>
+    <div><span class="ico">🌐</span><h4>Web</h4><p class="when">React 19 · shadcn/ui · Tailwind · Vite</p><p>one folder per feature; types generated from the server's OpenAPI</p><div class="foot"><span class="tag accent">src/notes/</span></div></div>
     <div><span class="ico">⚙️</span><h4>Server</h4><p class="when">ASP.NET Core minimal APIs</p><p>route → store with hand-written SQL (Dapper) → records; explicit <code>Map…</code> calls</p><div class="foot"><span class="tag accent">Notes/</span></div></div>
     <div><span class="ico">🗄️</span><h4>PostgreSQL</h4><p class="when">grate migrations</p><p>numbered scripts, never edited once applied; a database per git worktree</p><div class="foot"><span class="tag accent">Database/</span></div></div>
   </div>

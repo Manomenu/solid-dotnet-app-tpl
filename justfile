@@ -10,10 +10,17 @@ mod db '.just/db.just'
 default:
     @just --list --unsorted
 
-# HTTP API on :6300, rebuilt on every change — needs `just db up`
+# HTTP API on :6300, rebuilt on every change — needs `just db up`; its JSON log is also written to .artifacts/logs/server.jsonl
 [group('run')]
 server *args:
-    dotnet watch --project Myapp.Server run {{ args }}
+    mkdir -p .artifacts/logs
+    dotnet watch --quiet --project Myapp.Server run {{ args }} 2>&1 | tee .artifacts/logs/server.jsonl
+
+# Why did it fail? The last warnings and errors of the newest server log, one line each (--all, --trace <id>, --compose, -n N)
+[group('run')]
+[positional-arguments]
+logs *args:
+    @./scripts/.internal/logs.sh "$@"
 
 # Web UI on :3300, proxies /api to the server — run `just server` alongside
 [group('run')]

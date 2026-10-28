@@ -24,6 +24,7 @@ else
     "$ROOT/scripts/.internal/db.sh" psql -q -d postgres "${recreate[@]}"
 fi
 
+mkdir -p "$ROOT/.artifacts/logs"
 dotnet build "$ROOT/Myapp.Server" --nologo -v q
 
 cd "$ROOT/Myapp.Web"

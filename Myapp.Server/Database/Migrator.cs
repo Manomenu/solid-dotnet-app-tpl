@@ -16,7 +16,7 @@ internal static class Migrator
         try
         {
             var services = new ServiceCollection();
-            services.AddLogging(logging => logging.AddSimpleConsole().AddProvider(temporaryFolders));
+            services.AddLogging(logging => logging.AddJsonConsole().AddProvider(temporaryFolders));
             services
                 .AddGrate(grate =>
                     grate

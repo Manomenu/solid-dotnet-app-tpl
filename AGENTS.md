@@ -13,6 +13,7 @@ Areas: not used until a second product area appears — how to add them:
 | `scripts/.internal/check.sh --quick` | during work: build with analyzers, csharpier, server tests against the real database, tsc, eslint, vitest (about 20 seconds) |
 | `scripts/.internal/check.sh` | before calling a change done: quick, plus prettier, knip, API types, compose config, shellcheck, gitleaks |
 | `scripts/.internal/e2e.sh` | after changing anything a user clicks: Playwright against a real server and its own database (not in the gate) |
+| `scripts/.internal/logs.sh` (`just logs`) | why did it fail? the last warnings and errors of the newest server log, one line each; `--trace <id>` takes the `traceId` of an error response, `--all`, `--compose`, `-n N` |
 | `scripts/.internal/api-types.sh` | after changing a record the API exposes: regenerates `openapi.d.ts` (never edit it) |
 | `scripts/.internal/db.sh up\|down\|status\|psql` | the local PostgreSQL on `localhost:5533` (container `myapp-postgres`) |
 | `just fmt` | fix formatting: CSharpier and Prettier |
@@ -71,7 +72,7 @@ is the pattern end to end: route (`NoteEndpoints`) → store with hand-written S
   after what it is (`Database`), not after who uses it.
 - A new feature gets its layer in `ContractsTests.cs`, a new project its row in
   `ProjectReferencesTests.cs`, a new top-level folder its line in `docs/architecture.md`.
-- Web: one folder per feature under `src/` (screen, logic with its test, `api.ts`), types from the generated `openapi.d.ts`; rules live in plain `.ts` modules, components only wire them.
+- Web: one folder per feature under `src/` (screen, logic with its test, `api.ts`), shared look in `src/design/` (shadcn, Tailwind), types from the generated `openapi.d.ts`; rules live in plain `.ts` modules, components only wire them.
 - Schema changes go into a new numbered script in `Database/Migrations/up/`, never an edited one.
 - Records an endpoint sends or receives are a contract with the outside; a row from our own SQL
   is not. Keep them apart once they differ.

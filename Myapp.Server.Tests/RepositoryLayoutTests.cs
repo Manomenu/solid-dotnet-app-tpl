@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 
 namespace Myapp.Server.Tests;
@@ -53,6 +54,27 @@ public sealed partial class RepositoryLayoutTests
             .ToList();
 
         Assert.True(clashes.Count == 0, $"rename one of each pair (Windows and macOS ignore case): {string.Join("; ", clashes)}");
+    }
+
+    [Fact]
+    public void Every_shell_script_is_executable_in_git()
+    {
+        // Why: the index, not the file system — a checkout on Windows or with core.fileMode=false has no exec bit to read.
+        var git = new ProcessStartInfo("git", "ls-files --stage -- *.sh")
+        {
+            WorkingDirectory = RepositoryFiles.Root,
+            RedirectStandardOutput = true,
+        };
+        using var process = Process.Start(git) ?? throw new InvalidOperationException("git did not start");
+        var notExecutable = process
+            .StandardOutput.ReadToEnd()
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries)
+            .Where(line => !line.StartsWith("100755", StringComparison.Ordinal))
+            .Select(line => line.Split('\t')[1].TrimEnd('\r'))
+            .ToList();
+        process.WaitForExit();
+
+        Assert.True(notExecutable.Count == 0, $"make them executable: git update-index --chmod=+x {string.Join(" ", notExecutable)}");
     }
 
     private static string[] MapLines() =>

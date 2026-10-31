@@ -1,0 +1,15 @@
+{
+  "specs": "docs/visual/spec",
+  "prose": ["docs/**", "**/*.md"],
+  "kinds": [
+    { "kind": "server test (xunit)", "paths": ["Myapp.Server.Tests/*/**/*.cs"], "how": "[Trait(\"criterion\", \"<id>\")] on the test" },
+    { "kind": "architecture test (xunit)", "paths": ["Myapp.Server.Tests/*.cs"], "how": "[Trait(\"criterion\", \"<id>\")] on the test" },
+    { "kind": "e2e test (playwright)", "paths": ["Myapp.Web/src/**/*.e2e.ts"], "how": "the id in the title: test(\"<id>: …\")" },
+    { "kind": "web test (vitest)", "paths": ["Myapp.Web/src/**/*.test.ts", "Myapp.Web/src/**/*.test.tsx"], "how": "the id in the title: it(\"<id>: …\")" },
+    { "kind": "lint (eslint)", "paths": ["Myapp.Web/eslint.config.js"], "how": "// <id> on the line above the rule" },
+    { "kind": "type check (tsc)", "paths": ["Myapp.Web/tsconfig*.json"], "how": "// <id> on the line above the option" },
+    { "kind": "lint (.NET analyzer)", "paths": [".editorconfig"], "how": "# <id> on its own line above the rule" },
+    { "kind": "banned API", "paths": ["BannedSymbols.txt"], "how": "the id in the message: P:…;<id> use …" },
+    { "kind": "build rule", "paths": ["Directory.Build.props"], "how": "<!-- <id> --> above the property" }
+  ]
+}

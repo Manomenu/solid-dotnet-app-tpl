@@ -47,6 +47,13 @@ fi
 rm -- "$SELF" "${SELF%.sh}.proj"
 done_steps+=("deleted scripts/.internal/init-project.sh and init-project.proj")
 
+# Why: dotnet new writes every file without its executable bit; git skips a hook that is not executable, and the
+# index carries the mode on Windows too, where chmod alone does not reach it
+executables=(scripts/.internal/*.sh .githooks/pre-commit)
+chmod +x "${executables[@]}"
+git add --chmod=+x -- "${executables[@]}"
+done_steps+=("made the scripts and the pre-commit hook executable and staged them so (git add --chmod=+x)")
+
 echo "Project ready. What init-project.sh did:"
 printf '  - %s\n' "${done_steps[@]}"
 echo "Next: bash scripts/.internal/check.sh, then commit (the first commit is yours)."

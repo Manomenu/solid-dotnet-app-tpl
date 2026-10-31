@@ -4,7 +4,9 @@
 #   check.sh           quick, plus prettier, knip, API types up to date, acceptance criteria guarded, shellcheck and gitleaks
 # Acceptance criteria are not in --quick: the Stop hook runs it after every turn, and a criterion written into
 # a spec before its guardrail (or one the owner must first decide on) would block the agent from stopping to ask.
-# Quiet on success: one line per step. A failed step prints the tail of its log. A step that cannot run
+# Quiet: a green gate prints one line. Otherwise it lists only the failed and skipped steps (passed ones are counted),
+# after the tail of each failed log: whoever reads it, often an agent's context, pays only for what needs fixing.
+# A step that cannot run
 # (a tool is missing) is SKIP, never PASS; with CI set a SKIP fails the gate, locally the report ends with
 # "NOT VERIFIED: <steps>". Exit code is non-zero on any failure.
 set -euo pipefail
@@ -159,6 +161,7 @@ for pid in "${PIDS[@]}"; do wait "$pid" || true; done
 TOTAL=$((SECONDS - GATE_START))
 
 FAILED=0
+PASSED=0
 NOT_VERIFIED=()
 REPORT=()
 FAILURES=()
@@ -175,7 +178,7 @@ for key in "${ORDER[@]}"; do
     fi
     read -r status secs <"$LOGS/$key.result"
     if [ "$status" -eq 0 ]; then
-        REPORT+=("$(printf 'PASS %4ss  %s' "$secs" "${NAME[$key]}")")
+        PASSED=$((PASSED + 1))
     else
         REPORT+=("$(printf 'FAIL %4ss  %s' "$secs" "${NAME[$key]}")")
         FAILURES+=("${NAME[$key]}" "$LOGS/$key.log")
@@ -189,11 +192,15 @@ for ((i = 0; i < ${#FAILURES[@]}; i += 2)); do
     tail -n "$FAILURE_LINES" "${FAILURES[i + 1]}"
 done
 
-echo
-for line in "${REPORT[@]}"; do
-    echo "  $line"
-done
-echo "  total ${TOTAL}s"
+if [ ${#REPORT[@]} -eq 0 ]; then
+    echo "PASS check.sh${1:+ $1}: all $PASSED steps in ${TOTAL}s"
+else
+    echo
+    for line in "${REPORT[@]}"; do
+        echo "  $line"
+    done
+    echo "  $PASSED passed, total ${TOTAL}s"
+fi
 if [ "$QUICK" -eq 1 ] && [ "$TOTAL" -gt "$QUICK_TARGET" ]; then
     echo "WARN: the quick gate took ${TOTAL}s, the target is ${QUICK_TARGET}s (a warning: wall time depends on the machine)"
 fi

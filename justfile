@@ -22,6 +22,12 @@ server *args:
 logs *args:
     @./scripts/.internal/logs.sh "$@"
 
+# Which guardrails keep each acceptance criterion of the specs true: id, kind, file:line (or one: just criteria AC-<feature>-<n>)
+[group('run')]
+[positional-arguments]
+criteria *args:
+    @./scripts/.internal/criteria.sh "$@"
+
 # Web UI on :3300, proxies /api to the server — run `just server` alongside
 [group('run')]
 web *args:

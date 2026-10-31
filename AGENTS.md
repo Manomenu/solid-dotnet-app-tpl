@@ -11,9 +11,10 @@ Areas: not used until a second product area appears — how to add them:
 | Command | Use it to |
 | --- | --- |
 | `scripts/.internal/check.sh --quick` | during work: build with analyzers, csharpier, server tests against the real database, tsc, eslint, vitest (about 20 seconds) |
-| `scripts/.internal/check.sh` | before calling a change done: quick, plus prettier, knip, API types, compose config, shellcheck, gitleaks |
+| `scripts/.internal/check.sh` | before calling a change done: quick, plus prettier, knip, API types, acceptance criteria, compose config, shellcheck, gitleaks |
 | `scripts/.internal/e2e.sh` | after changing anything a user clicks: Playwright against a real server and its own database (not in the gate) |
 | `scripts/.internal/logs.sh` (`just logs`) | why did it fail? the last warnings and errors of the newest server log, one line each; `--trace <id>` takes the `traceId` of an error response, `--all`, `--compose`, `-n N` |
+| `scripts/.internal/criteria.sh [AC-<feature>-<n>]` (`just criteria`) | which guardrails keep each acceptance criterion true: id, kind, file:line; fails on an unguarded criterion (the full gate runs it, not `--quick`) |
 | `scripts/.internal/api-types.sh` | after changing a record the API exposes: regenerates `openapi.d.ts` (never edit it) |
 | `scripts/.internal/db.sh up\|down\|status\|psql` | the local PostgreSQL on `localhost:5533` (container `myapp-postgres`) |
 | `just fmt` | fix formatting: CSharpier and Prettier |
@@ -59,6 +60,38 @@ Add a sentence only for what none of these can check, and say in one line why.
 A guard's message always states the fix. Never weaken a gate step to make a change pass — fix
 the change. A step that cannot run reports SKIP, never PASS, and the report ends with a line listing
 the steps that were not verified; in CI a SKIP is a failure.
+
+## Specs: acceptance criteria live as guardrails
+
+Development is spec-driven. A spec (`docs/visual/spec/`) says what and why; its acceptance criteria
+sit in `<section data-role="acceptance">`, one `<li>` each, each with its own id `AC-<feature>-<n>`.
+An id names one criterion for good: a dropped criterion takes its id with it, the next one gets the
+next free number, never a reused or renumbered one (old guardrails would silently guard the new
+text). Outside the spec a criterion exists only as a guardrail on the gate
+that fails when the criterion breaks: a unit, integration or e2e test, a lint rule, an architecture
+test. Not as a checklist, a QA note or a comment. The guardrail names the id where it stands:
+
+| Kind | Where | How it names the id |
+| --- | --- | --- |
+| `server test (xunit)` | `Myapp.Server.Tests/<Feature>/*.cs` | `[Trait("criterion", "AC-notes-1")]` on the test |
+| `architecture test (xunit)` | `Myapp.Server.Tests/*.cs` (the repository guards) | the same `Trait` |
+| `web test (vitest)` | `Myapp.Web/src/**/*.test.ts(x)` | the id in the title: `it("AC-notes-1: …")` |
+| `e2e test (playwright)` | `Myapp.Web/src/**/*.e2e.ts` | the id in the title: `test("AC-notes-1: …")` |
+| `lint (eslint)` | `Myapp.Web/eslint.config.js` | `// AC-notes-1` on the line above the rule |
+| `type check (tsc)` | `Myapp.Web/tsconfig*.json` | `// AC-notes-1` on the line above the option |
+| `lint (.NET analyzer)` | `.editorconfig` | `# AC-notes-1` on its own line above the rule |
+| `banned API` | `BannedSymbols.txt` | the id in the message: `P:…;AC-notes-1 use …` |
+| `build rule` | `Directory.Build.props` | `<!-- AC-notes-1 -->` above the property |
+
+`criteria.sh` lists each criterion with every guardrail, its kind and file:line, and fails on a criterion no guardrail
+names, an id no spec defines, an id where the gate checks nothing, and a spec that breaks the
+format above (no section, a criterion without an id or with two, an id defined twice). Files ignored
+by git are not read. A new kind is a line in its `case`, a row here and in the README.
+
+- A criterion no automated check can prove is a wrong criterion, not a missing test. Ask the owner
+  whether it becomes plain description in the spec or leaves the spec; never keep it unguarded.
+- The script sees only that an id is named, not that the guardrail would fail (why this is a
+  sentence): before a spec'd feature is merged, check that with `/suwagent:visual-guardrails`.
 
 ## Layout: by feature
 

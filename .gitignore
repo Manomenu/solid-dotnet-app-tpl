@@ -24,3 +24,8 @@ CLAUDE.local.md
 .idea/
 *.DotSettings.user
 .vscode/*.log
+docs/visual/plan/
+docs/visual/recap/
+docs/visual/deviation/
+docs/visual/qa/
+docs/visual/guardrails/

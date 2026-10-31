@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # The quality gate. CI runs exactly this script; humans run `just check`, hooks run `--quick`.
 #   check.sh --quick   build with analyzers, csharpier, server tests against the real database, tsc, eslint, vitest
-#   check.sh           quick, plus prettier, knip, API types up to date, shellcheck and gitleaks
+#   check.sh           quick, plus prettier, knip, API types up to date, acceptance criteria guarded, shellcheck and gitleaks
+# Acceptance criteria are not in --quick: the Stop hook runs it after every turn, and a criterion written into
+# a spec before its guardrail (or one the owner must first decide on) would block the agent from stopping to ask.
 # Quiet on success: one line per step. A failed step prints the tail of its log. A step that cannot run
 # (a tool is missing) is SKIP, never PASS; with CI set a SKIP fails the gate, locally the report ends with
 # "NOT VERIFIED: <steps>". Exit code is non-zero on any failure.
@@ -71,6 +73,8 @@ web_knip() { cd "$ROOT/Myapp.Web" && pnpm exec knip; }
 
 api_types() { "$ROOT/scripts/.internal/api-types.sh" --check; }
 
+acceptance_criteria() { "$ROOT/scripts/.internal/criteria.sh"; }
+
 compose_files() {
     cd "$ROOT"
     docker compose config --quiet
@@ -86,7 +90,7 @@ secrets_in_git() {
 }
 
 export ROOT
-export -f build_server format_server local_database test_server shell_scripts secrets_in_git web_typecheck web_eslint web_vitest web_prettier web_knip api_types compose_files
+export -f build_server format_server local_database test_server shell_scripts secrets_in_git web_typecheck web_eslint web_vitest web_prettier web_knip api_types acceptance_criteria compose_files
 declare_step build "build server (compiler, analyzers, banned APIs, NuGet audit)" 300
 declare_step format "format server (csharpier check)" 120
 if [ -z "${CI:-}" ]; then declare_step postgres "postgres for tests (db.sh up)" 120; fi
@@ -99,6 +103,7 @@ if [ "$QUICK" -eq 0 ]; then
     declare_step prettier "format Myapp.Web (prettier --check)" 120
     declare_step knip "dead code Myapp.Web (knip)" 180
     declare_step apitypes "API types up to date (api-types.sh --check)" 300
+    declare_step criteria "acceptance criteria guarded (criteria.sh)" 60
     declare_step shellcheck "shell scripts (shellcheck)" 120
     declare_step gitleaks "secrets in git (gitleaks)" 300
     docker compose version >/dev/null 2>&1 || SKIPPED[compose]="docker compose not installed"
@@ -137,6 +142,7 @@ launch vitest web_vitest
 if [ "$QUICK" -eq 0 ]; then
     launch prettier web_prettier
     launch knip web_knip
+    launch criteria acceptance_criteria
     launch compose compose_files
     launch shellcheck shell_scripts
     launch gitleaks secrets_in_git

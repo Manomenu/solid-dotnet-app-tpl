@@ -23,7 +23,8 @@ cd Invoices && bash scripts/.internal/check.sh
 - `--port-offset N` (0-9) shifts every port by `10 * N`, so projects run side by side. Base ports: server 6300,
   web 3300, PostgreSQL 5533, compose web 8190, e2e 6301/3301.
 - `--allow-scripts yes` lets the post action run `scripts/.internal/init-project.sh`: it regenerates the
-  lockfiles, creates the git repository on `master` with the hooks enabled, and removes the template notes
+  lockfiles, the API contract (`openapi.json`) and the web types from it, creates `docs/visual/spec/` for the
+  living specs and the git repository on `master` with the hooks enabled, and removes the template notes
   (this block included). Without it, run `dotnet msbuild scripts/.internal/init-project.proj` yourself. The
   post action goes through MSBuild so that on Windows `bash` is Git's, not WSL's; install Git for Windows.
 - `dotnet new uninstall <path>` removes the template. To share it as a file instead of a folder:

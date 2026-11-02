@@ -419,7 +419,7 @@
   ],
   "postActions": [
     {
-      "description": "Regenerates the lockfiles, creates the git repository (master) and enables the hooks, removes the template notes",
+      "description": "Regenerates the lockfiles, the API contract and the web types, creates docs/visual/spec/ and the git repository (master) with the hooks enabled, removes the template notes",
       "actionId": "3A7C4B45-1F5D-4A30-959A-51B88E82B5D2",
       "args": {
         "executable": "dotnet",

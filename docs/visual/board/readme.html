@@ -405,11 +405,11 @@ pre.out { font: 12px/1.5 var(--mono); background: var(--code-bg); border: 1px so
 
 <section id="flow">
   <div class="flow">
-    <div><span class="tag accent">once</span><h4>Create</h4><p class="when"><code>dotnet new solid-dotnet</code></p><ul><li>renames everything</li><li>shifts ports</li><li>lockfiles, git, hooks</li></ul></div>
-    <div><span class="tag note">agent</span><h4>Edit</h4><p class="when">PreToolUse hook</p><ul><li>generated files and applied migrations are blocked</li></ul></div>
-    <div><span class="tag ok">~15 s</span><h4>Quick gate</h4><p class="when">Stop hook, every turn</p><ul><li>build, analyzers</li><li>server tests on PostgreSQL</li><li>tsc, eslint, vitest</li></ul></div>
-    <div><span class="tag ok">~20 s</span><h4>Full gate</h4><p class="when">before a commit</p><ul><li>+ prettier, knip, API types</li><li>+ compose, shellcheck, gitleaks</li></ul></div>
-    <div class="alt"><span class="tag accent">CI</span><h4>Same script</h4><p class="when">+ e2e, images, smoke test</p><ul><li>SKIP = FAIL</li></ul></div>
+    <div><span class="tag accent">once</span><h4>Create</h4><p class="when"><code>dotnet new solid-dotnet</code></p><ul><li>renames everything, shifts ports</li><li>lockfiles, API contract and types</li><li>git, hooks, <code>docs/visual/spec/</code></li></ul></div>
+    <div><span class="tag note">agent</span><h4>Edit</h4><p class="when">PreToolUse hook</p><ul><li>generated files, applied migrations and tracked recordings are blocked</li><li>the gate itself too</li></ul></div>
+    <div><span class="tag ok">≤ 20 s budget</span><h4>Quick gate</h4><p class="when">Stop hook, every turn</p><ul><li>build, analyzers</li><li>server tests on PostgreSQL</li><li>tsc, eslint, vitest</li></ul></div>
+    <div><span class="tag ok">~20 s</span><h4>Full gate</h4><p class="when">before a push</p><ul><li>+ prettier, knip, API contract and types</li><li>+ acceptance criteria guarded</li><li>+ compose, shellcheck, gitleaks</li></ul></div>
+    <div class="alt"><span class="tag accent">CI</span><h4>Same script</h4><p class="when">+ e2e, images, smoke test</p><ul><li>SKIP = FAIL</li><li>api-diff on every pull request: a breaking API change is red at the owner</li></ul></div>
   </div>
   <div class="strip"><span class="lbl">Rule for rules</span> the agent repeats a mistake → not a new sentence in AGENTS.md, but a type → an analyzer → a test → a hook</div>
 </section>
@@ -432,6 +432,8 @@ pre.out { font: 12px/1.5 var(--mono); background: var(--code-bg); border: 1px so
     <div class="if">Before calling a change done</div><div class="then">check.sh <small>the one definition of "done"</small></div>
     <div class="if">You changed something a user clicks</div><div class="then">e2e.sh <small>Playwright, own database</small></div>
     <div class="if">Something failed and you need to know why</div><div class="then">just logs <small>last errors, one line each; --trace &lt;id&gt;</small></div>
+    <div class="if">You changed a record the API sends or receives</div><div class="then">just api-types, then just api-diff <small>regenerate the contract; does it break a consumer?</small></div>
+    <div class="if">Which tests hang on another repository's contract?</div><div class="then">just contracts <small>tag name@version, no criterion id</small></div>
     <div class="if">You added logic with rules</div><div class="then note">just mutate <small>surviving mutants = weak tests</small></div>
     <div class="if">Prove the containers work</div><div class="then">just up + smoke.sh <small>the stack as it ships</small></div>
   </div>

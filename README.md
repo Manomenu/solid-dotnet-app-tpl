@@ -32,7 +32,7 @@ cd Invoices && bash scripts/.internal/check.sh
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/visual/board/img/readme/flow-dark.png">
-  <img alt="How work flows. Create once with dotnet new solid-dotnet: it renames everything, shifts ports, regenerates lockfiles, initializes git and hooks. The agent edits; a PreToolUse hook blocks generated files and applied migrations. Quick gate, about 15 seconds, run by the Stop hook every turn: build with analyzers, server tests on PostgreSQL, tsc, eslint, vitest. Full gate, about 20 seconds, before a commit: adds prettier, knip, API types, compose, shellcheck, gitleaks. CI runs the same script plus e2e, images and a smoke test; SKIP counts as FAIL. Rule for rules: when the agent repeats a mistake, add not a sentence to AGENTS.md but a type, an analyzer, a test or a hook." src="docs/visual/board/img/readme/flow-light.png" width="100%">
+  <img alt="How work flows. Create once with dotnet new solid-dotnet: it renames everything, shifts ports, regenerates lockfiles, the API contract and types, initializes git and hooks, creates docs/visual/spec. The agent edits; a PreToolUse hook blocks generated files, applied migrations, tracked recordings and the gate itself. Quick gate, within a 20-second budget, run by the Stop hook every turn: build with analyzers, server tests on PostgreSQL, tsc, eslint, vitest. Full gate, about 20 seconds, before a push: adds prettier, knip, API contract and types, acceptance criteria guarded, compose, shellcheck, gitleaks. CI runs the same script plus e2e, images and a smoke test, and api-diff on every pull request; SKIP counts as FAIL. Rule for rules: when the agent repeats a mistake, add not a sentence to AGENTS.md but a type, an analyzer, a test or a hook." src="docs/visual/board/img/readme/flow-light.png" width="100%">
 </picture>
 
 <picture>
@@ -44,7 +44,7 @@ The full list, each guard with its fix: [docs/architecture.md, "What the gate fo
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/visual/board/img/readme/choose-dark.png">
-  <img alt="Which command when. While working: check.sh --quick, which the Stop hook runs for you. Before calling a change done: check.sh, the one definition of done. You changed something a user clicks: e2e.sh, Playwright with its own database. Something failed and you need to know why: just logs, the last errors one line each, or --trace with a request id. You added logic with rules: just mutate, where surviving mutants mean weak tests. Prove the containers work: just up and smoke.sh, the stack as it ships." src="docs/visual/board/img/readme/choose-light.png" width="100%">
+  <img alt="Which command when. While working: check.sh --quick, which the Stop hook runs for you. Before calling a change done: check.sh, the one definition of done. You changed something a user clicks: e2e.sh, Playwright with its own database. Something failed and you need to know why: just logs, the last errors one line each, or --trace with a request id. You changed a record the API sends or receives: just api-types, then just api-diff to see whether the contract breaks a consumer. Which tests hang on another repository's contract: just contracts. You added logic with rules: just mutate, where surviving mutants mean weak tests. Prove the containers work: just up and smoke.sh, the stack as it ships." src="docs/visual/board/img/readme/choose-light.png" width="100%">
 </picture>
 
 <picture>
@@ -64,12 +64,20 @@ web app with types generated from the server's OpenAPI document, and a Notes fea
 
 ## What the gate guarantees
 
-`bash scripts/.internal/check.sh` (`--quick` while working) fails on: any compiler or analyzer warning, banned
+`bash scripts/.internal/check.sh` (`--quick` while working, within a 20-second budget) fails on: any compiler or analyzer warning, banned
 APIs, a layer used against its order, dead types and packages, vague names, stray comments, `dynamic`, unpinned
-images, stale generated types, an unresolvable compose file. The full list, each with its fix:
+images, a stale API contract or generated types, an acceptance criterion without a guardrail, an unresolvable compose file. The full list, each with its fix:
 [docs/architecture.md, "What the gate forbids"](docs/architecture.md#what-the-gate-forbids).
 Browser tests run separately (`scripts/.internal/e2e.sh`), and `just up` starts the container stack and
 smoke-tests it.
+
+## The API contract
+
+`Myapp.Server/openapi.json` is generated from the endpoints and committed: the contract on the boundary.
+`just api-types` regenerates it with the web types (`openapi.d.ts`, whose first line names the contract's
+sha256), `just api-diff` compares it with `master` and fails on a change that breaks a consumer (oasdiff), and CI
+runs that comparison on every pull request. An app in another repository that adapts to a new version of this
+contract tags its tests with `contract <name>@<version>` instead of a criterion id; `just contracts` lists them.
 
 ## Spec ↔ guardrails sync
 

@@ -30,7 +30,7 @@ dotnet build "$ROOT/Myapp.Server" --nologo -v quiet \
 cd "$ROOT/Myapp.Web"
 [ -d node_modules ] || pnpm install --frozen-lockfile --silent
 pnpm exec openapi-typescript "$TMP/Myapp.Server.json" --output "$TMP/schema.d.ts" >/dev/null
-digest="$(sha256sum "$TMP/Myapp.Server.json" | cut -c1-12)"
+digest="$(sha256sum "$TMP/Myapp.Server.json" | cut -d' ' -f1)"
 {
     echo "// Generated from Myapp.Server/openapi.json (sha256 $digest) by scripts/.internal/api-types.sh; never edit."
     cat "$TMP/schema.d.ts"

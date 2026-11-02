@@ -32,9 +32,19 @@ done_steps+=("formatted the C# files (the new name changes using order and line 
 if command -v pnpm >/dev/null 2>&1; then
     (cd "$web" && pnpm install --silent && pnpm exec prettier --write --log-level warn .)
     done_steps+=("regenerated the pnpm lockfile in ${web#./} and formatted its files")
+    # Why: the OpenAPI document carries the project's name, so the committed contract and the digest in the
+    # generated types belong to the template's name until they are made again here
+    bash scripts/.internal/api-types.sh >/dev/null
+    done_steps+=("regenerated the API contract (openapi.json) and the web types from it (api-types.sh)")
 else
-    done_steps+=("SKIPPED pnpm install in ${web#./}: pnpm is not installed (corepack enable), run it before the gate")
+    done_steps+=("SKIPPED pnpm install and api-types.sh in ${web#./}: pnpm is not installed (corepack enable); run both before the gate")
 fi
+
+# Why: the template keeps docs/visual/ out of generated projects (its own pages would be noise), but the folder
+# of the living specs is where criteria.sh and the agents look
+mkdir -p docs/visual/spec
+touch docs/visual/spec/.gitkeep
+done_steps+=("created docs/visual/spec/ for the living specs")
 
 if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     done_steps+=("left git alone: this folder is already inside a repository")

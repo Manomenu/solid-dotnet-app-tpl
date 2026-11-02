@@ -105,8 +105,8 @@ them the exact change to make there.
 - A test that adapts this app to another repository's contract carries the contract's name and
   version, not an id: `[Trait("contract", "rabaty@v2")]`, or `contract rabaty@v2` in a web test's
   title. Its intent lives in the owner's spec, reached through the version; `contracts.sh` lists them.
-- Behaviour recorded as it is today (`Myapp.Server.Tests/Characterization/`) is not an agent's to
-  change: a failing recording is fixed in the code; the owner re-records with `ALLOW_GATE_EDIT=1`.
+- Behaviour recorded as it is today (`Myapp.Server.Tests/Characterization/`): an agent records, never
+  re-records; a failing recording is fixed in the code; the owner re-records with `ALLOW_GATE_EDIT=1`.
 
 ## Review: two paths
 

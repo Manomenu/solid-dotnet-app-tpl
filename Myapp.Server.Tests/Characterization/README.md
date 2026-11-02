@@ -6,7 +6,8 @@ saved as the expected value. It is the safety net before changing code nobody fu
 record first, change second, and a recording that no longer matches says exactly what changed.
 
 This folder is empty in the template. In a project that takes over legacy code, put the
-recordings here, under the feature's name, and keep them out of the agent's hands: the
-PreToolUse hook refuses an agent's edit of anything under `Characterization/`, so a failing
-recording is fixed in the code, never in the recording. When the behaviour really is meant to
-change, the owner re-records in a session started with `ALLOW_GATE_EDIT=1 claude`.
+recordings here, under the feature's name. An agent may create a recording (record first,
+change second); it may not change one: the PreToolUse hook refuses an edit of a file that
+already exists here, so a failing recording is fixed in the code, never in the recording.
+When the behaviour really is meant to change, the owner re-records in a session started
+with `ALLOW_GATE_EDIT=1 claude`.

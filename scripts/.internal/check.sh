@@ -35,6 +35,12 @@ declare -A NAME
 declare -A SKIPPED
 declare -A LIMIT
 QUICK_LIMIT="${CHECK_QUICK_LIMIT:-20}"
+case "$QUICK_LIMIT" in
+    '' | *[!0-9]*)
+        echo "check.sh: CHECK_QUICK_LIMIT must be a whole number of seconds, not '$QUICK_LIMIT'" >&2
+        exit 2
+        ;;
+esac
 
 declare_step() { ORDER+=("$1"); NAME["$1"]="$2"; LIMIT["$1"]="$3"; }
 
@@ -162,6 +168,9 @@ if [ "$QUICK" -eq 0 ]; then
 fi
 for pid in "${PIDS[@]}"; do wait "$pid" || true; done
 TOTAL=$((SECONDS - GATE_START))
+# Why: the budget is decided before the summary, so a green run over budget never prints PASS
+OVER_BUDGET=0
+if [ "$QUICK" -eq 1 ] && [ "$TOTAL" -gt "$QUICK_LIMIT" ]; then OVER_BUDGET=1; fi
 
 FAILED=0
 PASSED=0
@@ -188,6 +197,10 @@ for key in "${ORDER[@]}"; do
         FAILED=1
     fi
 done
+if [ "$OVER_BUDGET" -eq 1 ]; then
+    REPORT+=("FAIL ${TOTAL}s  the quick gate is over its budget of ${QUICK_LIMIT}s: move the slow step to the full gate or speed it up; a first run after a reboot or on a fresh checkout may exceed it once; a machine that is slow across the board runs with CHECK_QUICK_LIMIT=<seconds>")
+    FAILED=1
+fi
 
 for ((i = 0; i < ${#FAILURES[@]}; i += 2)); do
     echo
@@ -203,10 +216,6 @@ else
         echo "  $line"
     done
     echo "  $PASSED passed, total ${TOTAL}s"
-fi
-if [ "$QUICK" -eq 1 ] && [ "$TOTAL" -gt "$QUICK_LIMIT" ]; then
-    echo "FAIL: the quick gate took ${TOTAL}s, the budget is ${QUICK_LIMIT}s. Move the slow step to the full gate or speed it up; on a machine that is slow across the board run with CHECK_QUICK_LIMIT=<seconds>."
-    FAILED=1
 fi
 if [ ${#NOT_VERIFIED[@]} -gt 0 ]; then
     echo "NOT VERIFIED: ${NOT_VERIFIED[*]}"

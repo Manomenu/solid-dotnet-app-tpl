@@ -42,7 +42,7 @@ public sealed class HookGuardEditTests
     [InlineData("Myapp.Web/tsconfig.app.json")]
     [InlineData("BannedSymbols.txt")]
     [InlineData("Directory.Build.props")]
-    [InlineData("Myapp.Server.Tests/Characterization/NotesRecorded.cs")]
+    [InlineData("Myapp.Server.Tests/Characterization/README.md")]
     public void An_agent_cannot_edit_the_gate_and_is_told_to_ask_the_owner(string path)
     {
         var (exitCode, errors) = Run(path);
@@ -69,6 +69,7 @@ public sealed class HookGuardEditTests
 
     [Theory]
     [InlineData("Myapp.Server/Notes/NoteStore.cs")]
+    [InlineData("Myapp.Server.Tests/Characterization/NotesRecorded.cs")]
     [InlineData("Myapp.Web/src/notes/notes.test.ts")]
     [InlineData("AGENTS.md")]
     public void Everything_else_stays_editable(string path) => Assert.Equal(0, Run(path).ExitCode);

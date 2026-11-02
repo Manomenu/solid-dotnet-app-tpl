@@ -20,8 +20,10 @@ if [ "${ALLOW_GATE_EDIT:-}" != "1" ]; then
             echo "Do not work around it: ask the user to start a session with ALLOW_GATE_EDIT=1 claude and give them the exact change to make there (the file, what to change, why)." >&2
             exit 2
             ;;
-        */Characterization/*)
-            echo "Blocked: $path records behaviour as it is today (a characterization test); an agent does not change the recording on its own, it changes the code until the recording passes again." >&2
+        */Myapp.Server.Tests/Characterization/*)
+            # Why: recording behaviour for the first time is the agent's job; changing a recording is the owner's
+            [ -e "$path" ] || exit 0
+            echo "Blocked: $path records behaviour as it is today (a characterization test); an agent does not change a recording on its own, it changes the code until the recording passes again." >&2
             echo "Do not work around it: ask the user to start a session with ALLOW_GATE_EDIT=1 claude and give them the exact change to make there (the file, what to change, why)." >&2
             exit 2
             ;;

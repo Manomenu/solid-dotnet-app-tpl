@@ -20,6 +20,11 @@ if [ "${ALLOW_GATE_EDIT:-}" != "1" ]; then
             echo "Do not work around it: ask the user to start a session with ALLOW_GATE_EDIT=1 claude and give them the exact change to make there (the file, what to change, why)." >&2
             exit 2
             ;;
+        */Characterization/*)
+            echo "Blocked: $path records behaviour as it is today (a characterization test); an agent does not change the recording on its own, it changes the code until the recording passes again." >&2
+            echo "Do not work around it: ask the user to start a session with ALLOW_GATE_EDIT=1 claude and give them the exact change to make there (the file, what to change, why)." >&2
+            exit 2
+            ;;
     esac
 fi
 
@@ -39,8 +44,8 @@ case "$path" in
         echo "Blocked: $path is a generated lockfile. Change package.json and run: pnpm install" >&2
         exit 2
         ;;
-    */openapi.d.ts)
-        echo "Blocked: $path is generated from the server's OpenAPI document. Regenerate it with scripts/.internal/api-types.sh (just api-types) instead of editing it." >&2
+    */openapi.d.ts | */Myapp.Server/openapi.json)
+        echo "Blocked: $path is generated from the server's endpoints. Regenerate it with scripts/.internal/api-types.sh (just api-types) instead of editing it." >&2
         exit 2
         ;;
 esac

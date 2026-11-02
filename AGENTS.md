@@ -10,12 +10,14 @@ Areas: not used until a second product area appears — how to add them:
 
 | Command | Use it to |
 | --- | --- |
-| `scripts/.internal/check.sh --quick` | during work: build with analyzers, csharpier, server tests against the real database, tsc, eslint, vitest (about 20 seconds) |
-| `scripts/.internal/check.sh` | before calling a change done: quick, plus prettier, knip, API types, acceptance criteria, compose config, shellcheck, gitleaks |
+| `scripts/.internal/check.sh --quick` | during work: build with analyzers, csharpier, server tests against the real database, tsc, eslint, vitest; budget 20 seconds, above it the gate fails |
+| `scripts/.internal/check.sh` | before calling a change done: quick, plus prettier, knip, API contract and types, acceptance criteria, compose config, shellcheck, gitleaks |
 | `scripts/.internal/e2e.sh` | after changing anything a user clicks: Playwright against a real server and its own database (not in the gate) |
 | `scripts/.internal/logs.sh` (`just logs`) | why did it fail? the last warnings and errors of the newest server log, one line each; `--trace <id>` takes the `traceId` of an error response, `--all`, `--compose`, `-n N` |
 | `scripts/.internal/criteria.sh [AC-<feature>-<n>]` (`just criteria`) | which guardrails keep each acceptance criterion true: id, kind, file:line; fails on an unguarded criterion (the full gate runs it, not `--quick`); `just criteria-update` moves the pinned tool to its newest version |
-| `scripts/.internal/api-types.sh` | after changing a record the API exposes: regenerates `openapi.d.ts` (never edit it) |
+| `scripts/.internal/api-types.sh` | after changing a record the API exposes: regenerates the contract `Myapp.Server/openapi.json` and `openapi.d.ts` from it (never edit either) |
+| `scripts/.internal/api-diff.sh [ref]` (`just api-diff`) | before pushing an API change: does the contract break a consumer? compares `openapi.json` with `master`; CI runs it on every pull request |
+| `scripts/.internal/contracts.sh [name@version]` (`just contracts`) | which tests adapt this app to another repository's contract, and to which version |
 | `scripts/.internal/db.sh up\|down\|status\|psql` | the local PostgreSQL on `localhost:5533` (container `myapp-postgres`) |
 | `just fmt` | fix formatting: CSharpier and Prettier |
 | `just up` / `just down` | the container stack on port 8190, with its smoke test |
@@ -100,6 +102,18 @@ them the exact change to make there.
   whether it becomes plain description in the spec or leaves the spec; never keep it unguarded.
 - The script sees only that an id is named, not that the guardrail would fail (why this is a
   sentence): before a spec'd feature is merged, check that with `/suwagent:visual-guardrails`.
+- A test that adapts this app to another repository's contract carries the contract's name and
+  version, not an id: `[Trait("contract", "rabaty@v2")]`, or `contract rabaty@v2` in a web test's
+  title. Its intent lives in the owner's spec, reached through the version; `contracts.sh` lists them.
+- Behaviour recorded as it is today (`Myapp.Server.Tests/Characterization/`) is not an agent's to
+  change: a failing recording is fixed in the code; the owner re-records with `ALLOW_GATE_EDIT=1`.
+
+## Review: two paths
+
+A reviewer reads the spec and the guardrails page, not the test code; the diff is read by a
+reviewing agent in its own session. The reviewer also reads the diff only when the change touches
+something on the always-careful list: login and permissions, payments, data migrations, code
+without characterization tests. The list is kept short and revised after incidents, not by metrics.
 
 ## Layout: by feature
 

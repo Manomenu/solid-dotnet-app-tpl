@@ -58,6 +58,25 @@ jobs:
       - name: The gate
         run: bash scripts/.internal/check.sh
 
+  api-diff:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Install oasdiff (pinned, checksum verified)
+        working-directory: ${{ runner.temp }}
+        run: |
+          set -euo pipefail
+          curl -sSfL -o oasdiff.tar.gz https://github.com/oasdiff/oasdiff/releases/download/v1.35.0/oasdiff_1.35.0_linux_amd64.tar.gz
+          echo "a8023002fcb2eaa7f5758148a9303cb63d33b939886df312268bc0fc7b939140  oasdiff.tar.gz" | sha256sum --check
+          tar -xzf oasdiff.tar.gz oasdiff
+          sudo install oasdiff /usr/local/bin/oasdiff
+      - name: The API contract does not break its consumers (api-diff.sh against the base branch)
+        run: bash scripts/.internal/api-diff.sh "origin/${{ github.base_ref }}"
+
   e2e:
     runs-on: ubuntu-24.04
     timeout-minutes: 20

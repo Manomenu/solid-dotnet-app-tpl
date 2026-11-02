@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 # The quality gate. CI runs exactly this script; humans run `just check`, hooks run `--quick`.
 #   check.sh --quick   build with analyzers, csharpier, server tests against the real database, tsc, eslint, vitest
-#   check.sh           quick, plus prettier, knip, API types up to date, acceptance criteria guarded, shellcheck and gitleaks
+#   check.sh           quick, plus prettier, knip, API contract and types up to date, acceptance criteria guarded, shellcheck and gitleaks
+# The quick gate has a time budget, CHECK_QUICK_LIMIT seconds (default 20): the Stop hook runs it after every turn of an
+# agent, and a gate that takes minutes gets switched off. Above the budget it fails and says so: move the slow step to the
+# full gate or make it faster; raise the budget only on a machine that is slow across the board.
 # Acceptance criteria are not in --quick: the Stop hook runs it after every turn, and a criterion written into
 # a spec before its guardrail (or one the owner must first decide on) would block the agent from stopping to ask.
 # Quiet: a green gate prints one line. Otherwise it lists only the failed and skipped steps (passed ones are counted),
@@ -31,7 +34,7 @@ ORDER=()
 declare -A NAME
 declare -A SKIPPED
 declare -A LIMIT
-QUICK_TARGET=60
+QUICK_LIMIT="${CHECK_QUICK_LIMIT:-20}"
 
 declare_step() { ORDER+=("$1"); NAME["$1"]="$2"; LIMIT["$1"]="$3"; }
 
@@ -104,7 +107,7 @@ if [ "$QUICK" -eq 0 ]; then
     declare_step compose "compose stack resolves, with and without the db profile (docker compose config)" 120
     declare_step prettier "format Myapp.Web (prettier --check)" 120
     declare_step knip "dead code Myapp.Web (knip)" 180
-    declare_step apitypes "API types up to date (api-types.sh --check)" 300
+    declare_step apitypes "API contract and types up to date (api-types.sh --check)" 300
     declare_step criteria "acceptance criteria guarded (criteria.sh)" 60
     declare_step shellcheck "shell scripts (shellcheck)" 120
     declare_step gitleaks "secrets in git (gitleaks)" 300
@@ -201,8 +204,9 @@ else
     done
     echo "  $PASSED passed, total ${TOTAL}s"
 fi
-if [ "$QUICK" -eq 1 ] && [ "$TOTAL" -gt "$QUICK_TARGET" ]; then
-    echo "WARN: the quick gate took ${TOTAL}s, the target is ${QUICK_TARGET}s (a warning: wall time depends on the machine)"
+if [ "$QUICK" -eq 1 ] && [ "$TOTAL" -gt "$QUICK_LIMIT" ]; then
+    echo "FAIL: the quick gate took ${TOTAL}s, the budget is ${QUICK_LIMIT}s. Move the slow step to the full gate or speed it up; on a machine that is slow across the board run with CHECK_QUICK_LIMIT=<seconds>."
+    FAILED=1
 fi
 if [ ${#NOT_VERIFIED[@]} -gt 0 ]; then
     echo "NOT VERIFIED: ${NOT_VERIFIED[*]}"

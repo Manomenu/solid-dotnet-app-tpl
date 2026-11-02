@@ -1,14 +1,20 @@
 #!/usr/bin/env bash
-# TypeScript types for the web app, generated from the server's OpenAPI document. The C# records
-# the endpoints return are the single source of truth; this file is never edited by hand.
+# The server's OpenAPI document and the web app's TypeScript types generated from it. The C# records
+# the endpoints return are the single source of truth; neither output is ever edited by hand.
 #
-#   api-types.sh           regenerate Myapp.Web/src/api/openapi.d.ts
-#   api-types.sh --check   fail if the committed file is out of date (the gate runs this)
+#   api-types.sh           regenerate Myapp.Server/openapi.json and Myapp.Web/src/api/openapi.d.ts
+#   api-types.sh --check   fail if either committed file is out of date (the gate runs this)
+#
+# Myapp.Server/openapi.json is the contract on the boundary: committed, so that api-diff.sh can compare
+# it with the main branch and a consumer in another repository can take it from a backend commit. The
+# first line of openapi.d.ts names the sha256 of the document it was generated from: a consumer can tell
+# which contract its types come from without a package registry.
 #
 # The document is written by the build (Microsoft.Extensions.ApiDescription.Server), which starts
 # the app only up to the point where its routes are known — no database needed.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+CONTRACT="$ROOT/Myapp.Server/openapi.json"
 TARGET="$ROOT/Myapp.Web/src/api/openapi.d.ts"
 
 TMP="$(mktemp -d)"
@@ -24,14 +30,24 @@ dotnet build "$ROOT/Myapp.Server" --nologo -v quiet \
 cd "$ROOT/Myapp.Web"
 [ -d node_modules ] || pnpm install --frozen-lockfile --silent
 pnpm exec openapi-typescript "$TMP/Myapp.Server.json" --output "$TMP/schema.d.ts" >/dev/null
+digest="$(sha256sum "$TMP/Myapp.Server.json" | cut -c1-12)"
+{
+    echo "// Generated from Myapp.Server/openapi.json (sha256 $digest) by scripts/.internal/api-types.sh; never edit."
+    cat "$TMP/schema.d.ts"
+} >"$TMP/openapi.d.ts"
 
 if [ "${1:-}" = "--check" ]; then
-    if ! diff -q "$TMP/schema.d.ts" "$TARGET" >/dev/null 2>&1; then
-        echo "Myapp.Web/src/api/openapi.d.ts is out of date with the server's API — run: just api-types" >&2
+    stale=()
+    if ! diff -q "$TMP/Myapp.Server.json" "$CONTRACT" >/dev/null 2>&1; then stale+=("Myapp.Server/openapi.json"); fi
+    if ! diff -q "$TMP/openapi.d.ts" "$TARGET" >/dev/null 2>&1; then stale+=("Myapp.Web/src/api/openapi.d.ts"); fi
+    if [ ${#stale[@]} -gt 0 ]; then
+        echo "${stale[*]} out of date with the server's API — run: just api-types" >&2
         exit 1
     fi
-    echo "API types up to date"
+    echo "API contract and types up to date"
 else
-    cp "$TMP/schema.d.ts" "$TARGET"
+    cp "$TMP/Myapp.Server.json" "$CONTRACT"
+    cp "$TMP/openapi.d.ts" "$TARGET"
+    echo "${CONTRACT#"$ROOT"/}"
     echo "${TARGET#"$ROOT"/}"
 fi

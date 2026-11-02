@@ -49,10 +49,21 @@ up:
 down:
     docker compose --profile db down --remove-orphans
 
-# Regenerate the web app's TypeScript types from the server's OpenAPI document (after changing a record the API sends or receives)
+# Regenerate the API contract (Myapp.Server/openapi.json) and the web app's types from it (after changing a record the API sends or receives)
 [group('dev')]
 api-types:
     @./scripts/.internal/api-types.sh
+
+# Does the API contract break its consumers? Compares openapi.json with master (or the given ref) with oasdiff
+[group('dev')]
+api-diff *args:
+    @./scripts/.internal/api-diff.sh {{ args }}
+
+# Which tests adapt this app to another repository's contract, and to which version (or one: just contracts rabaty@v2)
+[group('dev')]
+[positional-arguments]
+contracts *args:
+    @./scripts/.internal/contracts.sh "$@"
 
 # Browser tests (Playwright) against a real server and an empty database of their own; not part of `just check`
 [group('maintenance')]

@@ -42,6 +42,7 @@ public sealed class HookGuardEditTests
     [InlineData("Myapp.Web/tsconfig.app.json")]
     [InlineData("BannedSymbols.txt")]
     [InlineData("Directory.Build.props")]
+    [InlineData("Myapp.Server.Tests/Characterization/NotesRecorded.cs")]
     public void An_agent_cannot_edit_the_gate_and_is_told_to_ask_the_owner(string path)
     {
         var (exitCode, errors) = Run(path);
@@ -54,6 +55,17 @@ public sealed class HookGuardEditTests
     [Fact]
     public void The_owner_lets_a_session_edit_the_gate() =>
         Assert.Equal(0, Run("scripts/.internal/check.sh", allowGateEdit: true).ExitCode);
+
+    [Theory]
+    [InlineData("Myapp.Web/src/api/openapi.d.ts")]
+    [InlineData("Myapp.Server/openapi.json")]
+    public void Generated_api_files_are_refused_with_the_command_that_regenerates_them(string path)
+    {
+        var (exitCode, errors) = Run(path);
+
+        Assert.Equal(2, exitCode);
+        Assert.Contains("api-types.sh", errors, StringComparison.Ordinal);
+    }
 
     [Theory]
     [InlineData("Myapp.Server/Notes/NoteStore.cs")]

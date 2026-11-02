@@ -44,7 +44,9 @@ directory name by `checkout-env.sh`; its databases are left behind, not dropped.
 ## Claude Code hooks
 
 `.claude/settings.json` runs `scripts/.internal/check.sh --quick` when Claude stops, and blocks
-the stop while it fails (the loop is cut after one retry). Edits to migrations that already
+the stop while it fails (the loop is cut after one retry). The quick gate has a budget of 20
+seconds and fails above it; `CHECK_QUICK_LIMIT=<seconds>` raises it on a machine that is slow
+across the board. Edits to migrations that already
 exist, to lockfiles and to other generated files are refused with a message saying what to run.
 
 ## Personal agent rules

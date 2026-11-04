@@ -1,136 +1,51 @@
 # AGENTS.md
 
 Rules for anyone — human or AI agent — changing this repository. `CLAUDE.md` only points here;
-this file is the one to edit. Where things live: [docs/architecture.md](docs/architecture.md).
-Setup and everyday commands: [docs/development.md](docs/development.md). Not built yet: [TODO.md](TODO.md).
-Areas: not used until a second product area appears — how to add them:
-[docs/architecture.md#areas-when-a-second-product-area-appears](docs/architecture.md#areas-when-a-second-product-area-appears).
+this file is the one to edit. Setup: [docs/development.md](docs/development.md). Not built yet: [TODO.md](TODO.md).
 
 ## Commands
 
-| Command | Use it to |
-| --- | --- |
-| `Myapp.Gate/scripts/check.sh --quick` | during work: build with analyzers, csharpier, server tests against the real database, tsc, eslint, vitest; budget 20 seconds, above it the gate fails |
-| `Myapp.Gate/scripts/check.sh` | before calling a change done: quick, plus prettier, knip, API contract and types, acceptance criteria, compose config, shellcheck, gitleaks |
-| `scripts/.internal/e2e.sh` | after changing anything a user clicks: Playwright against a real server and its own database (not in the gate) |
-| `scripts/.internal/logs.sh` (`just logs`) | why did it fail? the last warnings and errors of the newest server log, one line each; `--trace <id>` takes the `traceId` of an error response, `--all`, `--compose`, `-n N` |
-| `Myapp.Gate/scripts/criteria.sh [AC-<feature>-<n>]` (`just criteria`) | which guardrails keep each acceptance criterion true: id, kind, file:line; fails on an unguarded criterion (the full gate runs it, not `--quick`); `just criteria-update` moves the pinned tool to its newest version |
-| `scripts/.internal/api-types.sh` | after changing a record the API exposes: regenerates the contract `Myapp.Server/openapi.json` and `openapi.d.ts` from it (never edit either) |
-| `scripts/.internal/api-diff.sh [ref]` (`just api-diff`) | before pushing an API change: does the contract break a consumer? compares `openapi.json` with `master`; CI runs it on every pull request |
-| `scripts/.internal/contracts.sh [name@version]` (`just contracts`) | which tests adapt this app to another repository's contract, and to which version |
-| `scripts/.internal/db.sh up\|down\|status\|psql` | the local PostgreSQL on `localhost:5533` (container `myapp-postgres`) |
-| `just fmt` | fix formatting: CSharpier and Prettier |
-| `just up` / `just down` | the container stack on port 8190, with its smoke test |
-
-Humans use `just` (lists every recipe); agents call `scripts/.internal/` directly.
-Ports of this template: server 6300, web 3300, PostgreSQL 5533, compose web 8190.
+- For people: a recipe in `justfile` (or `.just/`) with a one-line description; `just` lists them.
+- For agents: a script in `scripts/.internal/`, or in `Myapp.Gate/scripts/` when it checks quality; each answers `--help`. A recipe only calls the script.
+- `check.sh --quick` while working, `check.sh` before calling a change done. `e2e.sh` is not in the
+  gate: run it after changing anything a user clicks.
 
 ## Git
 
-- **The main branch is `master`**, never `main` (`git init -b master`).
+- **The main branch is `master`**, never `main`.
 - Work on a feature branch, never on `master`. Agents do not rewrite or discard history: no
   amend, reset, rebase, stash, force-push or deleting branches. Merging and releasing are the owner's.
 - A change with a red gate is not committed: it stays in the working tree and the summary says why.
-- **One task, one branch.** The branch changes only what the task needs to work. Refactors,
-  renames, extra logging, config or version bumps and unrelated fixes noticed on the way go to
-  their own branch, or into `TODO.md`. Say so once when you reach for one; if the owner confirms
-  it belongs here, put it in.
+- **One task, one branch.** Unrelated refactors, renames, version bumps and fixes go to their own
+  branch or into `TODO.md`; say so once when you reach for one, and put it in if the owner confirms.
 - Personal rules (how you commit, your tools) go in the gitignored `CLAUDE.local.md`, not here.
 
-## KISS and YAGNI — the first rule
+## Rules
 
-The repo grows **only when a real need shows up**; one developer maintains it after hours.
+- KISS and YAGNI first: the repo grows only when a real need shows up; one developer maintains it after hours. When in doubt, leave it out, and say in the change what was left out and why.
+- Plan a change by listing what it makes obsolete, and delete that first, in the same change.
+- Added logic with rules → `just mutate`; surviving mutants → stronger tests.
+- Correction or a new rule? Make the mistake impossible or loud first: a type → a lint → a test → a hook. Add a sentence here only for what none of these can check.
+- A guard's message states the fix. Never weaken a guard to make a change pass: fix the change.
 
-- No dependency, setting, env var, compose service or abstraction "for later": it arrives with
-  the first code that uses it. No interface with one implementation; tests use the real thing
-  (a real PostgreSQL) or a recorded answer.
-- No new component (queue, cache, worker, sidecar) without the feature that needs it.
-- When in doubt, leave it out — and say in the change what was left out and why.
+## Specs
 
-You added logic with rules → `just mutate`; surviving mutants → stronger tests.
+A spec's acceptance criteria live as guardrails: `Myapp.Gate/scripts/criteria.sh` and `Myapp.Gate/criteria.json` say what fits, its messages the fix.
+What it cannot see:
 
-## Subtract before you add
-Plan a change by listing what it makes obsolete, and delete that first, in the same change:
-migrate every caller, then remove the old code. No shims, no [Obsolete], no "legacy" path kept just in case.
+- Set ids with `vdoc.py ids`, never by hand: a dropped id is never reused, an id is never renumbered.
+- A criterion no automated check can prove is a wrong criterion: ask the owner, never keep it unguarded.
+- Before merging a spec'd feature, run `/suwagent:visual-guardrails`: `criteria.sh` sees that an id is named, not that the test would fail.
 
-## Rules live as low as they can
-When I correct you, or when you are about to add a rule to AGENTS.md / CLAUDE.md,
-first try to make the mistake impossible or loud, in this order:
-a type → an analyzer or lint (with the fix in its message) → a test → a hook.
-Add a sentence only for what none of these can check, and say in one line why.
+## Review
 
-A guard's message always states the fix. Never weaken a gate step to make a change pass — fix
-the change. A step that cannot run reports SKIP, never PASS, and the report ends with a line listing
-the steps that were not verified; in CI a SKIP is a failure.
+A person also reads the diff only when the change touches the always-careful list: login and permissions,
+payments, data migrations, code without characterization tests. The list is revised after incidents.
 
-## Specs: acceptance criteria live as guardrails
+## Where code goes
 
-Development is spec-driven. A spec (`docs/visual/spec/`) says what and why; its acceptance criteria
-sit in `<section data-role="acceptance">`, one `<li>` each, each with its own id `AC-<feature>-<n>`.
-An id names one criterion for good: a dropped criterion takes its id with it, the next one gets the
-next free number, never a reused or renumbered one (old guardrails would silently guard the new
-text). Outside the spec a criterion exists only as a guardrail on the gate
-that fails when the criterion breaks: a unit, integration or e2e test, a lint rule, an architecture
-test. Not as a checklist, a QA note or a comment. The guardrail names the id where it stands:
-
-| Kind | Where | How it names the id |
-| --- | --- | --- |
-| `server test (xunit)` | `Myapp.Server.Tests/<Feature>/*.cs` | `[Trait("criterion", "AC-notes-1")]` on the test |
-| `architecture test (xunit)` | `Myapp.Gate/**/*.cs` (the repository guards) | the same `Trait` |
-| `web test (vitest)` | `Myapp.Web/src/**/*.test.ts(x)` | the id in the title: `it("AC-notes-1: …")` |
-| `e2e test (playwright)` | `Myapp.Web/src/**/*.e2e.ts` | the id in the title: `test("AC-notes-1: …")` |
-| `lint (eslint)` | `Myapp.Web/eslint.config.js` | `// AC-notes-1` on the line above the rule |
-| `type check (tsc)` | `Myapp.Web/tsconfig*.json` | `// AC-notes-1` on the line above the option |
-| `lint (.NET analyzer)` | `.editorconfig` | `# AC-notes-1` on its own line above the rule |
-| `banned API` | `BannedSymbols.txt` | the id in the message: `P:…;AC-notes-1 use …` |
-| `build rule` | `Directory.Build.props` | `<!-- AC-notes-1 -->` above the property |
-
-`criteria.sh` runs the suwagent plugin's `vdoc.py criteria`, pinned by commit and SHA-256: it lists
-each criterion with every guardrail, its kind and file:line, and fails on a criterion no guardrail
-names, an id no spec defines, an id where the gate checks nothing, and a spec that breaks the
-format above (no section, a criterion without an id or with two, an id defined twice). Files ignored
-by git are not read. The kinds are `Myapp.Gate/criteria.json`; a new kind is an entry there and a row in both
-tables. `just criteria-update` moves the pin to the plugin's newest version.
-
-The hook `hook-guard-edit.sh` refuses an agent's edit of the gate and the lint configs (all of `Myapp.Gate/`
-except `layers.json`, `.claude/settings.json`, `.github/workflows/`,
-`.editorconfig`, `eslint.config.js`, `BannedSymbols.txt`, `Directory.Build.props`, `tsconfig*.json`).
-When a change needs one, ask the owner to start a session with `ALLOW_GATE_EDIT=1 claude` and give
-them the exact change to make there.
-
-- A criterion no automated check can prove is a wrong criterion, not a missing test. Ask the owner
-  whether it becomes plain description in the spec or leaves the spec; never keep it unguarded.
-- The script sees only that an id is named, not that the guardrail would fail (why this is a
-  sentence): before a spec'd feature is merged, check that with `/suwagent:visual-guardrails`.
-- A test that adapts this app to another repository's contract carries the contract's name and
-  version, not an id: `[Trait("contract", "rabaty@v2")]`, or `contract rabaty@v2` in a web test's
-  title. Its intent lives in the owner's spec, reached through the version; `contracts.sh` lists them.
-- Behaviour recorded as it is today (`Myapp.Server.Tests/Characterization/`): an agent records, never
-  changes a tracked recording; a failing one is fixed in the code; the owner re-records with `ALLOW_GATE_EDIT=1`.
-
-## Review: two paths
-
-A reviewer reads the spec and the guardrails page, not the test code; the diff is read by a
-reviewing agent in its own session. The reviewer also reads the diff only when the change touches
-something on the always-careful list: login and permissions, payments, data migrations, code
-without characterization tests. The list is kept short and revised after incidents, not by metrics.
-
-## Layout: by feature
-
-The server grows by features: everything that makes one feature work sits in **one folder**
-named in the users' terms (`Notes/`), not by technical kind (`Models/`, `Services/`). `Notes/`
-is the pattern end to end: route (`NoteEndpoints`) → store with hand-written SQL (`NoteStore`)
-→ records (`Note`). Wiring is explicit: `Api/ServerApp.cs` calls every `Map…`.
-
-- A new capability starts as a new folder, or goes into the feature it belongs to — never into
-  a shared bucket. Shared code is earned by the second feature that needs it, and is named
-  after what it is (`Database`), not after who uses it.
-- A new feature gets its layer and a new project its row in `Myapp.Gate/layers.json`, a new top-level folder its line in `docs/architecture.md`.
-- Web: one folder per feature under `src/` (screen, logic with its test, `api.ts`), shared look in `src/design/` (shadcn, Tailwind), types from the generated `openapi.d.ts`; rules live in plain `.ts` modules, components only wire them.
-- Schema changes go into a new numbered script in `Database/Migrations/up/`, never an edited one.
-- Records an endpoint sends or receives are a contract with the outside; a row from our own SQL
-  is not. Keep them apart once they differ.
-- A problem the caller can fix is a ProblemDetails whose `detail` says what to do.
+[docs/architecture.md](docs/architecture.md). Read it before adding a folder, a project or a feature.
+Docs say what and why, not where: a line that must change when the code moves does not belong in the docs.
 
 ## What no test can check
 
@@ -139,6 +54,3 @@ is the pattern end to end: route (`NoteEndpoints`) → store with hand-written S
 - A comment says *why*, never *what*; if code needs a *what* comment, rename the code.
 - Secrets never enter the repo: not in code, settings, tests or history. Local values live in
   user secrets or the gitignored `.env`; a real hit is removed and rotated, never allow-listed.
-- Delegate larger, well-defined work (a clear goal, known files, a check that says when done)
-  to a cheaper model; keep design decisions and the review of the result.
-- When several changes share one branch, build them all, then run the full gate once.

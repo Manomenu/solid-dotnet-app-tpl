@@ -106,6 +106,38 @@ public sealed partial class TemplateTests
     }
 
     [Fact]
+    public void Every_choice_of_the_port_offset_has_a_case_in_every_port_symbol()
+    {
+        var choices = Template()
+            .GetProperty("symbols")
+            .GetProperty("portOffset")
+            .GetProperty("choices")
+            .EnumerateArray()
+            .Select(choice => choice.GetProperty("choice").GetString())
+            .ToList();
+        var symbols = Template()
+            .GetProperty("symbols")
+            .EnumerateObject()
+            .Where(symbol => symbol.Value.TryGetProperty("generator", out var generator) && generator.GetString() == "switch")
+            .ToList();
+
+        Assert.NotEmpty(symbols);
+        foreach (var symbol in symbols)
+        {
+            var conditions = symbol
+                .Value.GetProperty("parameters")
+                .GetProperty("cases")
+                .EnumerateArray()
+                .Select(item => item.GetProperty("condition").GetString());
+            var missing = choices.Where(choice => !conditions.Contains($"(portOffset == \"{choice}\")")).ToList();
+            Assert.True(
+                missing.Count == 0,
+                $"{symbol.Name}: give each choice its own case, condition (portOffset == \"n\"); a case without one, such as \"true\", leaves the port empty: {string.Join(", ", missing)}"
+            );
+        }
+    }
+
+    [Fact]
     public void Every_port_symbol_replaces_a_base_port_and_shifts_it_by_ten_per_step()
     {
         var wrong = PortSymbols().Where(port => !Shifted(port.Base, port.Values)).Select(port => port.Symbol).ToList();

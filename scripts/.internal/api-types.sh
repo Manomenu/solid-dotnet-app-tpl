@@ -13,6 +13,10 @@
 # The document is written by the build (Microsoft.Extensions.ApiDescription.Server), which starts
 # the app only up to the point where its routes are known — no database needed.
 set -euo pipefail
+if [ "${1:-}" = "--help" ]; then
+    sed -n '2,/^[^#]/{/^#/s/^# \{0,1\}//p}' "$0"
+    exit 0
+fi
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 CONTRACT="$ROOT/Myapp.Server/openapi.json"
 TARGET="$ROOT/Myapp.Web/src/api/openapi.d.ts"

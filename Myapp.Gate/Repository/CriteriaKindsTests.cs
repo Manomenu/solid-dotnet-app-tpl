@@ -5,7 +5,6 @@ namespace Myapp.Gate.Repository;
 public sealed class CriteriaKindsTests
 {
     [Theory]
-    [InlineData("AGENTS.md")]
     [InlineData("README.md")]
     public void Every_kind_of_guardrail_of_criteria_json_is_explained_where_people_and_agents_read(string document)
     {

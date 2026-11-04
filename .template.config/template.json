@@ -122,7 +122,7 @@
             "value": "6390"
           },
           {
-            "condition": "true",
+            "condition": "(portOffset == \"0\")",
             "value": "6300"
           }
         ]
@@ -173,7 +173,7 @@
             "value": "3390"
           },
           {
-            "condition": "true",
+            "condition": "(portOffset == \"0\")",
             "value": "3300"
           }
         ]
@@ -224,7 +224,7 @@
             "value": "5623"
           },
           {
-            "condition": "true",
+            "condition": "(portOffset == \"0\")",
             "value": "5533"
           }
         ]
@@ -275,7 +275,7 @@
             "value": "8280"
           },
           {
-            "condition": "true",
+            "condition": "(portOffset == \"0\")",
             "value": "8190"
           }
         ]
@@ -326,7 +326,7 @@
             "value": "6391"
           },
           {
-            "condition": "true",
+            "condition": "(portOffset == \"0\")",
             "value": "6301"
           }
         ]
@@ -377,7 +377,7 @@
             "value": "3391"
           },
           {
-            "condition": "true",
+            "condition": "(portOffset == \"0\")",
             "value": "3301"
           }
         ]

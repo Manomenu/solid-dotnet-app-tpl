@@ -8,6 +8,10 @@
 # ports, checkout-env.sh), next to the development one, and its own server and web app (playwright.config.ts):
 # what you run by hand is not touched. Locally it starts PostgreSQL (db.sh up); CI provides it as a service.
 set -euo pipefail
+if [ "${1:-}" = "--help" ]; then
+    sed -n '2,/^[^#]/{/^#/s/^# \{0,1\}//p}' "$0"
+    exit 0
+fi
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 # shellcheck source=scripts/.internal/checkout-env.sh
 source "$ROOT/scripts/.internal/checkout-env.sh"

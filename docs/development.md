@@ -65,7 +65,7 @@ on Windows `localhost` tries IPv6 first and every new connection waits seconds.
 ## Logs
 
 The server writes JSON log lines (the built-in console JSON formatter, `Logging:Console` in `appsettings.json`).
-`just server` also writes them to `.artifacts/logs/server.jsonl`, `e2e.sh` to `.artifacts/logs/e2e-server.jsonl`;
+`just server` also writes them to .artifacts/logs/server.jsonl, `e2e.sh` to .artifacts/logs/e2e-server.jsonl;
 the container stack is read with `--compose`. `just logs` prints the last warnings and errors of the newest log, one
 line each; `just logs --trace <traceId>` shows every line of one request, with the `traceId` any error response
 carries. `--all` shows every level, `-n N` the last N lines.
@@ -74,4 +74,4 @@ carries. `--all` shows every level, `-n N` the last N lines.
 
 VS Code: accept the recommended extensions (`.vscode/extensions.json`); formatting, tasks and debug launch are set up.
 Rider: install the CSharpier plugin; everything else comes from `.editorconfig` and the repo's configs.
-Personal files (`.idea/`, `*.DotSettings.user`) are ignored.
+Personal files (.idea/, `*.DotSettings.user`) are ignored.

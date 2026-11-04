@@ -14,7 +14,9 @@ this file is the one to edit. Setup: [docs/development.md](docs/development.md).
 
 - **The main branch is `master`**, never `main`.
 - Work on a feature branch, never on `master`. Agents do not rewrite or discard history: no
-  amend, reset, rebase, stash, force-push or deleting branches. Merging and releasing are the owner's.
+  amend, reset, rebase, stash, force-push or deleting an unmerged branch. Merging and releasing are the owner's.
+- **A branch merged into `master` is deleted** right after the merge: local, remote and its worktree, with
+  `git branch -d`, which refuses unmerged work. Needed again? Start a new one from `master`.
 - A change with a red gate is not committed: it stays in the working tree and the summary says why.
 - **One task, one branch.** Unrelated refactors, renames, version bumps and fixes go to their own
   branch or into `TODO.md`; say so once when you reach for one, and put it in if the owner confirms.

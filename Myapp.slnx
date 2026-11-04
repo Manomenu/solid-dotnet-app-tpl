@@ -3,4 +3,7 @@
     <Project Path="Myapp.Server/Myapp.Server.csproj" />
     <Project Path="Myapp.Server.Tests/Myapp.Server.Tests.csproj" />
   </Folder>
+  <Folder Name="/Myapp.Gate/">
+    <Project Path="Myapp.Gate/Myapp.Gate.csproj" />
+  </Folder>
 </Solution>

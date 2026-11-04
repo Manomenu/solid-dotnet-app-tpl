@@ -1,7 +1,7 @@
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
-namespace Myapp.Server.Tests;
+namespace Myapp.Gate.Repository;
 
 public sealed partial class TemplateTests
 {
@@ -35,7 +35,7 @@ public sealed partial class TemplateTests
         "CLAUDE.local.md",
         "pack/**",
         "docs/visual/**",
-        "Myapp.Server.Tests/TemplateTests.cs",
+        "Myapp.Gate/Repository/TemplateTests.cs",
         "**/packages.lock.json",
         "**/pnpm-lock.yaml",
     ];

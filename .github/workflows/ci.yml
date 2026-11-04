@@ -56,7 +56,7 @@ jobs:
           tar -xJf shellcheck.tar.xz
           sudo install shellcheck-v0.11.0/shellcheck /usr/local/bin/shellcheck
       - name: The gate
-        run: bash scripts/.internal/check.sh
+        run: bash Myapp.Gate/scripts/check.sh
 
   api-diff:
     if: github.event_name == 'pull_request'

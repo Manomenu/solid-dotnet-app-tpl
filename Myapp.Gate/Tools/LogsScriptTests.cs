@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace Myapp.Server.Tests;
+namespace Myapp.Gate.Tools;
 
 public sealed class LogsScriptTests
 {
@@ -16,7 +16,7 @@ public sealed class LogsScriptTests
         };
         start.ArgumentList.Add("scripts/.internal/logs.sh");
         start.ArgumentList.Add("--file");
-        start.ArgumentList.Add("Myapp.Server.Tests/LogSamples/server.jsonl");
+        start.ArgumentList.Add("Myapp.Gate/Tools/LogSamples/server.jsonl");
         foreach (var argument in arguments)
         {
             start.ArgumentList.Add(argument);

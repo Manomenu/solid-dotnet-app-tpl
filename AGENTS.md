@@ -10,11 +10,11 @@ Areas: not used until a second product area appears — how to add them:
 
 | Command | Use it to |
 | --- | --- |
-| `scripts/.internal/check.sh --quick` | during work: build with analyzers, csharpier, server tests against the real database, tsc, eslint, vitest; budget 20 seconds, above it the gate fails |
-| `scripts/.internal/check.sh` | before calling a change done: quick, plus prettier, knip, API contract and types, acceptance criteria, compose config, shellcheck, gitleaks |
+| `Myapp.Gate/scripts/check.sh --quick` | during work: build with analyzers, csharpier, server tests against the real database, tsc, eslint, vitest; budget 20 seconds, above it the gate fails |
+| `Myapp.Gate/scripts/check.sh` | before calling a change done: quick, plus prettier, knip, API contract and types, acceptance criteria, compose config, shellcheck, gitleaks |
 | `scripts/.internal/e2e.sh` | after changing anything a user clicks: Playwright against a real server and its own database (not in the gate) |
 | `scripts/.internal/logs.sh` (`just logs`) | why did it fail? the last warnings and errors of the newest server log, one line each; `--trace <id>` takes the `traceId` of an error response, `--all`, `--compose`, `-n N` |
-| `scripts/.internal/criteria.sh [AC-<feature>-<n>]` (`just criteria`) | which guardrails keep each acceptance criterion true: id, kind, file:line; fails on an unguarded criterion (the full gate runs it, not `--quick`); `just criteria-update` moves the pinned tool to its newest version |
+| `Myapp.Gate/scripts/criteria.sh [AC-<feature>-<n>]` (`just criteria`) | which guardrails keep each acceptance criterion true: id, kind, file:line; fails on an unguarded criterion (the full gate runs it, not `--quick`); `just criteria-update` moves the pinned tool to its newest version |
 | `scripts/.internal/api-types.sh` | after changing a record the API exposes: regenerates the contract `Myapp.Server/openapi.json` and `openapi.d.ts` from it (never edit either) |
 | `scripts/.internal/api-diff.sh [ref]` (`just api-diff`) | before pushing an API change: does the contract break a consumer? compares `openapi.json` with `master`; CI runs it on every pull request |
 | `scripts/.internal/contracts.sh [name@version]` (`just contracts`) | which tests adapt this app to another repository's contract, and to which version |
@@ -76,7 +76,7 @@ test. Not as a checklist, a QA note or a comment. The guardrail names the id whe
 | Kind | Where | How it names the id |
 | --- | --- | --- |
 | `server test (xunit)` | `Myapp.Server.Tests/<Feature>/*.cs` | `[Trait("criterion", "AC-notes-1")]` on the test |
-| `architecture test (xunit)` | `Myapp.Server.Tests/*.cs` (the repository guards) | the same `Trait` |
+| `architecture test (xunit)` | `Myapp.Gate/**/*.cs` (the repository guards) | the same `Trait` |
 | `web test (vitest)` | `Myapp.Web/src/**/*.test.ts(x)` | the id in the title: `it("AC-notes-1: …")` |
 | `e2e test (playwright)` | `Myapp.Web/src/**/*.e2e.ts` | the id in the title: `test("AC-notes-1: …")` |
 | `lint (eslint)` | `Myapp.Web/eslint.config.js` | `// AC-notes-1` on the line above the rule |
@@ -89,11 +89,11 @@ test. Not as a checklist, a QA note or a comment. The guardrail names the id whe
 each criterion with every guardrail, its kind and file:line, and fails on a criterion no guardrail
 names, an id no spec defines, an id where the gate checks nothing, and a spec that breaks the
 format above (no section, a criterion without an id or with two, an id defined twice). Files ignored
-by git are not read. The kinds are `criteria.json`; a new kind is an entry there and a row in both
+by git are not read. The kinds are `Myapp.Gate/criteria.json`; a new kind is an entry there and a row in both
 tables. `just criteria-update` moves the pin to the plugin's newest version.
 
-The hook `hook-guard-edit.sh` refuses an agent's edit of the gate and the lint configs (`check.sh`,
-`criteria.sh`, `criteria.json`, the hook scripts, `.claude/settings.json`, `.github/workflows/`,
+The hook `hook-guard-edit.sh` refuses an agent's edit of the gate and the lint configs (all of `Myapp.Gate/`
+except `layers.json`, `.claude/settings.json`, `.github/workflows/`,
 `.editorconfig`, `eslint.config.js`, `BannedSymbols.txt`, `Directory.Build.props`, `tsconfig*.json`).
 When a change needs one, ask the owner to start a session with `ALLOW_GATE_EDIT=1 claude` and give
 them the exact change to make there.
@@ -125,8 +125,7 @@ is the pattern end to end: route (`NoteEndpoints`) → store with hand-written S
 - A new capability starts as a new folder, or goes into the feature it belongs to — never into
   a shared bucket. Shared code is earned by the second feature that needs it, and is named
   after what it is (`Database`), not after who uses it.
-- A new feature gets its layer in `ContractsTests.cs`, a new project its row in
-  `ProjectReferencesTests.cs`, a new top-level folder its line in `docs/architecture.md`.
+- A new feature gets its layer and a new project its row in `Myapp.Gate/layers.json`, a new top-level folder its line in `docs/architecture.md`.
 - Web: one folder per feature under `src/` (screen, logic with its test, `api.ts`), shared look in `src/design/` (shadcn, Tailwind), types from the generated `openapi.d.ts`; rules live in plain `.ts` modules, components only wire them.
 - Schema changes go into a new numbered script in `Database/Migrations/up/`, never an edited one.
 - Records an endpoint sends or receives are a contract with the outside; a row from our own SQL

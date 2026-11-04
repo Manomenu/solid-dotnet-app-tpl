@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace Myapp.Server.Tests;
+namespace Myapp.Gate.Repository;
 
 public sealed class CriteriaKindsTests
 {
@@ -9,7 +9,7 @@ public sealed class CriteriaKindsTests
     [InlineData("README.md")]
     public void Every_kind_of_guardrail_of_criteria_json_is_explained_where_people_and_agents_read(string document)
     {
-        using var config = JsonDocument.Parse(RepositoryFiles.Read("criteria.json"));
+        using var config = JsonDocument.Parse(RepositoryFiles.Read("Myapp.Gate/criteria.json"));
         var kinds = config.RootElement.GetProperty("kinds").EnumerateArray().Select(kind => kind.GetProperty("kind").GetString()).ToList();
         var text = RepositoryFiles.Read(document);
 

@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>Myapp.Gate</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="TngTech.ArchUnitNET.xUnitV3" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+    <PackageReference Include="xunit.v3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Myapp.Server/Myapp.Server.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Myapp.Gate.Design" />
+    <Using Include="Myapp.Gate.Code" />
+    <Using Include="Myapp.Gate.Repository" />
+    <Using Include="Xunit" />
+  </ItemGroup>
+</Project>

@@ -8,7 +8,8 @@ lines: a new top-level folder needs its line here, a deleted one loses it.
 - `Myapp.slnx` — the .NET solution: the server and its tests.
 - `Myapp.Server/` — the HTTP API (ASP.NET Core minimal APIs, Npgsql, Dapper with hand-written SQL). One folder and namespace per feature: `Api/` wires the routes, `Notes/` is the example feature, `Health/` checks the database, `Database/` is the pool and the grate migrations.
 - `Myapp.Server/Database/Migrations/up/` — numbered SQL migrations `NNNN_what_it_does.sql`, applied at start-up by grate and never edited afterwards.
-- `Myapp.Server.Tests/` — xUnit v3 tests against a real PostgreSQL. Mirrors the server's folders; the root holds the repository guards (layers, project graph, naming, comments, pragmas, AGENTS.md size, unused types); `Characterization/` holds behaviour recorded before changing legacy code.
+- `Myapp.Server.Tests/` — xUnit v3 tests against a real PostgreSQL. Mirrors the server's folders; `Characterization/` holds behaviour recorded before changing legacy code.
+- `Myapp.Gate/` — the quality machinery: the gate script, the repository guards, the criteria check, the Claude Code hooks. See "The gate" below.
 - `Myapp.Web/` — the web app (React 19, shadcn/ui, Tailwind 4, Vite, TypeScript strict, pnpm). A folder per feature under `src/` (`notes/` is the example); `src/design/` is the shared design system (shadcn components, `cn`); `src/api/` the HTTP client and the generated `openapi.d.ts`.
 - `compose.yaml` — the whole stack on a laptop from the same Dockerfiles: db (profile `db`), server, web; everything configured from `.env` (`.env.example`) with ASP.NET names (`Section__Key`); only web publishes a port (8190).
 - `Myapp.Server/Dockerfile`, `Myapp.Web/Dockerfile` — the two images (pinned bases, locked restore, build context is the repo root); the web image is nginx serving the build and proxying `/api` to the server.
@@ -22,15 +23,29 @@ lines: a new top-level folder needs its line here, a deleted one loses it.
 - `scripts/.internal/init-project.proj` and `init-project.sh` — the template's post action; they run once in a new project and delete themselves.
 <!-- template:end -->
 - `docs/` — documentation for people working on the repo: this map, `development.md`, the specs in `visual/spec/` (their acceptance criteria live as guardrails, see AGENTS.md), decisions above one feature in `adr/`.
-- `scripts/` — `scripts/.internal/` holds what the gate, the hooks and `just` run: `check.sh`, `db.sh`, `checkout-env.sh`, `api-types.sh`, `api-diff.sh`, `contracts.sh`, `e2e.sh`, `smoke.sh`, `logs.sh`, `criteria.sh`, the Claude Code hook scripts.
+- `scripts/` — `scripts/.internal/` holds the everyday tools the gate and `just` run: `db.sh`, `checkout-env.sh`, `api-types.sh`, `api-diff.sh`, `contracts.sh`, `e2e.sh`, `smoke.sh`, `logs.sh`.
 - `.claude/` — the committed Claude Code settings: a Stop hook that runs the quick gate, a PreToolUse hook that protects migrations, generated files, and the gate with the lint configs (`ALLOW_GATE_EDIT=1 claude` lifts the last).
 - `.config/` — `dotnet-tools.json`: the pinned CSharpier.
 - `.just/` — modules of the `justfile` (`just db`).
 
-Files at the root: `criteria.json` (the kinds of guardrail the acceptance criteria check knows), `Directory.Build.props` (strict compiler and analyzers), `Directory.Build.rsp`
+Files at the root: `Directory.Build.props` (strict compiler and analyzers), `Directory.Build.rsp`
 (no idle MSBuild workers), `Directory.Packages.props` (every package version, once),
 `BannedSymbols.txt` (APIs the build refuses, each with what to use instead), `.editorconfig`
 (every disabled rule has its reason), `global.json`, `nuget.config`, `.gitattributes`, `.gitignore`.
+
+## The gate
+
+Quality machinery lives apart from what it checks, for two reasons: a guard tests the whole repository, not one
+project, and an agent that cannot pass a guard must not be able to change it.
+
+- Belongs in the gate: anything that decides whether a change passes. A tool for everyday work stays in `scripts/`,
+  even when the gate calls it.
+- A hook refuses an agent's edit of the whole folder, so a new guard is protected from its first line. The owner lifts
+  it for one session with `ALLOW_GATE_EDIT=1 claude`.
+- Data that changes with every feature is the exception: `layers.json` stays editable, because its diff is one
+  readable line and a protected file would stop every feature at the owner's door.
+- Guards are grouped by what they check: design, code, the repository, tools. Scripts sit apart from tests.
+- Some configs stay at the repository root because the tools look for them there; the hook protects them all the same.
 
 ## What the gate forbids
 
@@ -68,7 +83,7 @@ in the top order and has an order of its own inside. Steps, each with the test t
 
 1. Move the feature folders of the existing area under `Myapp.Server/<Area>/` (a move only, in a
    change of its own); namespaces follow the folders (IDE0130 fails the build otherwise).
-2. In `ContractsTests.cs` put the area on one level of `Layers` (`"Orders | Billing"`) and add an
+2. In `Myapp.Gate/layers.json` put the area on one level of `serverLayers` (`"Orders | Billing"`) and add an
    `Areas` dictionary: area name to the order of its features, same `a | b` syntax. Extend
    `Every_server_namespace_has_a_layer` to look one segment deeper for names in `Areas`
    and `EdgesOf` to take a prefix.

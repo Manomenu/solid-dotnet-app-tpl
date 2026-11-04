@@ -70,7 +70,7 @@ local_database() { "$ROOT/scripts/.internal/db.sh" up >/dev/null; }
 
 test_server() { (cd "$ROOT" && dotnet test --solution Myapp.slnx --no-build --no-progress); }
 
-shell_scripts() { (cd "$ROOT" && { find scripts -name "*.sh"; echo .githooks/pre-commit; } | xargs shellcheck -S warning); }
+shell_scripts() { (cd "$ROOT" && { find scripts Myapp.Gate/scripts -name "*.sh"; echo .githooks/pre-commit; } | xargs shellcheck -S warning); }
 
 web_typecheck() { cd "$ROOT/Myapp.Web" && pnpm exec tsc --noEmit -p tsconfig.app.json && pnpm exec tsc --noEmit -p tsconfig.node.json; }
 
@@ -84,7 +84,7 @@ web_knip() { cd "$ROOT/Myapp.Web" && pnpm exec knip; }
 
 api_types() { "$ROOT/scripts/.internal/api-types.sh" --check; }
 
-acceptance_criteria() { "$ROOT/scripts/.internal/criteria.sh"; }
+acceptance_criteria() { "$ROOT/Myapp.Gate/scripts/criteria.sh"; }
 
 compose_files() {
     cd "$ROOT"
@@ -124,7 +124,7 @@ if [ "$QUICK" -eq 0 ]; then
         SKIPPED[criteria]="python3 not installed"
     else
         fetched=0
-        "$ROOT/scripts/.internal/criteria.sh" --fetch >/dev/null 2>&1 || fetched=$?
+        "$ROOT/Myapp.Gate/scripts/criteria.sh" --fetch >/dev/null 2>&1 || fetched=$?
         # Why: only a missing download is a SKIP; a checksum mismatch runs the step, which fails and says why
         if [ "$fetched" -eq 3 ]; then SKIPPED[criteria]="the pinned vdoc.py cannot be downloaded (no network?)"; fi
     fi

@@ -1,0 +1,8 @@
+{
+  "serverLayers": ["Api", "Notes | Health", "Database"],
+  "projects": {
+    "Myapp.Server": { "references": [], "internalsVisibleTo": ["Myapp.Gate", "Myapp.Server.Tests"] },
+    "Myapp.Server.Tests": { "references": ["Myapp.Server"], "internalsVisibleTo": [] },
+    "Myapp.Gate": { "references": ["Myapp.Server"], "internalsVisibleTo": [] }
+  }
+}

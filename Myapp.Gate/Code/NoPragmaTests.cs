@@ -2,7 +2,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Myapp.Server.Tests;
+namespace Myapp.Gate.Code;
 
 public sealed class NoPragmaTests
 {

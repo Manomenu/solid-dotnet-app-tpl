@@ -26,12 +26,12 @@ logs *args:
 [group('run')]
 [positional-arguments]
 criteria *args:
-    @./scripts/.internal/criteria.sh "$@"
+    @./Myapp.Gate/scripts/criteria.sh "$@"
 
 # Move the pinned vdoc.py of the acceptance criteria check to the suwagent plugin's newest master
 [group('run')]
 criteria-update:
-    @./scripts/.internal/criteria.sh --update
+    @./Myapp.Gate/scripts/criteria.sh --update
 
 # Web UI on :3300, proxies /api to the server — run `just server` alongside
 [group('run')]
@@ -73,12 +73,12 @@ e2e *args:
 # The whole gate: build with analyzers, csharpier, tests, shellcheck, gitleaks (the same CI runs)
 [group('maintenance')]
 check:
-    @./scripts/.internal/check.sh
+    @./Myapp.Gate/scripts/check.sh
 
 # The quick gate: build with analyzers, csharpier, server tests (what the Claude Code Stop hook runs)
 [group('maintenance')]
 check-quick:
-    @./scripts/.internal/check.sh --quick
+    @./Myapp.Gate/scripts/check.sh --quick
 
 # Format the code: CSharpier for C#, Prettier for the web app
 [group('maintenance')]

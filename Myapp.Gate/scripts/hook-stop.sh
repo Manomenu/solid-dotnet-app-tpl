@@ -27,12 +27,12 @@ if [ -f "$green" ] && [ "$(cat "$green")" = "$now" ]; then
     exit 0
 fi
 
-if output="$(bash "$ROOT/scripts/.internal/check.sh" --quick 2>&1)"; then
+if output="$(bash "$ROOT/Myapp.Gate/scripts/check.sh" --quick 2>&1)"; then
     printf '%s\n' "$now" >"$green"
     exit 0
 fi
 {
-    echo "The quick gate (scripts/.internal/check.sh --quick) is red. Fix it before finishing:"
+    echo "The quick gate (Myapp.Gate/scripts/check.sh --quick) is red. Fix it before finishing:"
     printf '%s\n' "$output" | tail -n 60
 } >&2
 exit 2

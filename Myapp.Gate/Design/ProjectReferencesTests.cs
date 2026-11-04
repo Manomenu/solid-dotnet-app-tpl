@@ -1,16 +1,10 @@
 using System.Xml.Linq;
 
-namespace Myapp.Server.Tests;
+namespace Myapp.Gate.Design;
 
 public sealed class ProjectReferencesTests
 {
-    private sealed record Allowed(string[] References, string[] InternalsVisibleTo);
-
-    private static readonly Dictionary<string, Allowed> Table = new()
-    {
-        ["Myapp.Server"] = new([], ["Myapp.Server.Tests"]),
-        ["Myapp.Server.Tests"] = new(["Myapp.Server"], []),
-    };
+    private static readonly Dictionary<string, (string[] References, string[] InternalsVisibleTo)> Table = LayersFile.Projects();
 
     private static string Attr(XElement element, string name) =>
         (string?)element.Attribute(name) ?? throw new InvalidOperationException($"<{element.Name}> has no {name} attribute");
@@ -38,8 +32,8 @@ public sealed class ProjectReferencesTests
         var unknown = Projects().Keys.Except(Table.Keys).Order().ToList();
         var missing = Table.Keys.Except(Projects().Keys).Order().ToList();
 
-        Assert.True(unknown.Count == 0, $"add to Table in ProjectReferencesTests.cs what it may reference: {string.Join(", ", unknown)}");
-        Assert.True(missing.Count == 0, $"in Table but not in Myapp.slnx, remove from Table: {string.Join(", ", missing)}");
+        Assert.True(unknown.Count == 0, $"add to projects in Myapp.Gate/layers.json what it may reference: {string.Join(", ", unknown)}");
+        Assert.True(missing.Count == 0, $"in Myapp.Gate/layers.json but not in Myapp.slnx, remove it there: {string.Join(", ", missing)}");
     }
 
     [Theory]
@@ -55,10 +49,10 @@ public sealed class ProjectReferencesTests
         var forbidden = references.Except(Table[project].References).ToList();
         Assert.True(
             forbidden.Count == 0,
-            $"{project} must not reference {string.Join(", ", forbidden)}: move the shared code down, or change Table in ProjectReferencesTests.cs and say why"
+            $"{project} must not reference {string.Join(", ", forbidden)}: move the shared code down, or change projects in Myapp.Gate/layers.json and say why"
         );
         var missing = Table[project].References.Except(references).ToList();
-        Assert.True(missing.Count == 0, $"{project} no longer references {string.Join(", ", missing)}: update Table");
+        Assert.True(missing.Count == 0, $"{project} no longer references {string.Join(", ", missing)}: update Myapp.Gate/layers.json");
     }
 
     [Theory]
@@ -70,9 +64,12 @@ public sealed class ProjectReferencesTests
         var forbidden = visibleTo.Except(Table[project].InternalsVisibleTo).ToList();
         Assert.True(
             forbidden.Count == 0,
-            $"{project} must not show its internals to {string.Join(", ", forbidden)}: update Table if intended"
+            $"{project} must not show its internals to {string.Join(", ", forbidden)}: update Myapp.Gate/layers.json if intended"
         );
         var missing = Table[project].InternalsVisibleTo.Except(visibleTo).ToList();
-        Assert.True(missing.Count == 0, $"{project} no longer shows its internals to {string.Join(", ", missing)}: update Table");
+        Assert.True(
+            missing.Count == 0,
+            $"{project} no longer shows its internals to {string.Join(", ", missing)}: update Myapp.Gate/layers.json"
+        );
     }
 }

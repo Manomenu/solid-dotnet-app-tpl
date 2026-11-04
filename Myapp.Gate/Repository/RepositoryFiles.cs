@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace Myapp.Server.Tests;
+namespace Myapp.Gate.Repository;
 
 internal static class RepositoryFiles
 {

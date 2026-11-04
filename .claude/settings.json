@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${CLAUDE_PROJECT_DIR}/scripts/.internal/hook-stop.sh\"",
+            "command": "bash \"${CLAUDE_PROJECT_DIR}/Myapp.Gate/scripts/hook-stop.sh\"",
             "timeout": 600
           }
         ]
@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${CLAUDE_PROJECT_DIR}/scripts/.internal/hook-guard-edit.sh\""
+            "command": "bash \"${CLAUDE_PROJECT_DIR}/Myapp.Gate/scripts/hook-guard-edit.sh\""
           }
         ]
       }

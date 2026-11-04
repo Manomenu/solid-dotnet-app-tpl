@@ -1,7 +1,7 @@
 using System.Reflection;
 using Myapp.Server.Api;
 
-namespace Myapp.Server.Tests;
+namespace Myapp.Gate.Design;
 
 public sealed class SubtractTests
 {

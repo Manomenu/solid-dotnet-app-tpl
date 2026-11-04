@@ -17,6 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Myapp.Gate" />
     <InternalsVisibleTo Include="Myapp.Server.Tests" />
   </ItemGroup>
 </Project>

@@ -10,6 +10,10 @@
 # Uses oasdiff (https://github.com/oasdiff/oasdiff): `oasdiff breaking base revision --fail-on ERR`. Run
 # api-types.sh first when the server changed, so that the working tree's document is current.
 set -euo pipefail
+if [ "${1:-}" = "--help" ]; then
+    sed -n '2,/^[^#]/{/^#/s/^# \{0,1\}//p}' "$0"
+    exit 0
+fi
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 CONTRACT="Myapp.Server/openapi.json"
 

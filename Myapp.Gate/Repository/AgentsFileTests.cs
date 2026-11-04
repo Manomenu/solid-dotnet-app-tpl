@@ -4,7 +4,7 @@ namespace Myapp.Gate.Repository;
 
 public sealed partial class AgentsFileTests
 {
-    public const int MaxLines = 150;
+    public const int MaxLines = 100;
 
     private static readonly string[] Acronyms =
     [

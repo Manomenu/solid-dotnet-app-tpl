@@ -7,7 +7,7 @@ lines: a new top-level folder needs its line here, a deleted one loses it.
 
 - `Myapp.slnx` — the .NET solution: the server and its tests.
 - `Myapp.Server/` — the HTTP API (ASP.NET Core minimal APIs, Npgsql, Dapper with hand-written SQL). One folder and namespace per feature: `Api/` wires the routes, `Notes/` is the example feature, `Health/` checks the database, `Database/` is the pool and the grate migrations.
-- `Myapp.Server/Database/Migrations/up/` — numbered SQL migrations `NNNN_what_it_does.sql`, applied at start-up by grate and never edited afterwards.
+- `Myapp.Server/Database/Migrations/up/` — numbered SQL migrations, applied at start-up by grate and never edited afterwards.
 - `Myapp.Server.Tests/` — xUnit v3 tests against a real PostgreSQL. Mirrors the server's folders; `Characterization/` holds behaviour recorded before changing legacy code.
 - `Myapp.Gate/` — the quality machinery: the gate script, the repository guards, the criteria check, the Claude Code hooks. See "The gate" below.
 - `Myapp.Web/` — the web app (React 19, shadcn/ui, Tailwind 4, Vite, TypeScript strict, pnpm). A folder per feature under `src/` (`notes/` is the example); `src/design/` is the shared design system (shadcn components, `cn`); `src/api/` the HTTP client and the generated `openapi.d.ts`.
@@ -70,15 +70,28 @@ Each line is a build rule or a test; its message says the fix. Rules live as low
 - Comments (`CommentsTests`): only `// Why: ...` and tool markers; no TODO, FIXME, workaround or commented-out code; XML docs only in a `*.Contracts` project.
 - Settings (`AppSettingsTests`): every section of appsettings is bound by an options class.
 - Acceptance criteria (`check.sh` without `--quick` runs `criteria.sh`: the suwagent plugin's `vdoc.py criteria`, pinned, with the kinds of `criteria.json`; `CriteriaKindsTests` keeps each kind in README and AGENTS.md): each spec in `docs/visual/spec/` has an acceptance section with one unique `AC-<feature>-<n>` per criterion, each is named by a guardrail of a known kind, every id a guardrail names is in a spec, no id stands where the gate checks nothing.
-- Docs (`AgentsFileTests`, `RepositoryLayoutTests`): AGENTS.md at most 150 lines, no tree drawings, no capitals shouting; CLAUDE.md is `@AGENTS.md`; every top-level folder is in the map above.
+- Docs (`AgentsFileTests`, `RepositoryLayoutTests`): AGENTS.md at most 100 lines, no tree drawings, no capitals shouting; CLAUDE.md is `@AGENTS.md`; every top-level folder is in the map above.
 - The gate itself (`check.sh`): a ceiling per step, a WARN when the quick gate passes 60 s.
+
+## How code is split
+
+The server and the web grow by feature: everything that makes one feature work sits in one folder named in the users'
+terms, not by technical kind. Wiring is explicit, so grep finds every route.
+
+- A new capability starts as a new folder, or goes into the feature it belongs to, never into a shared bucket. Shared
+  code is earned by the second feature that needs it, and is named after what it is, not after who uses it.
+- A new folder arrives with its first code.
+- Rules live in plain modules with a test beside them; screens only wire them.
+- Records an endpoint sends or receives are a contract with the outside; a row from our own SQL is not. Keep them
+  apart once they differ.
+- A problem the caller can fix is a ProblemDetails whose `detail` says what to do.
 
 ## Areas (when a second product area appears)
 
 Not used today: every feature sits directly under `Myapp.Server/` in one flat order. Do not
 introduce an area for the first product area — only when a second one arrives.
 
-An area groups the features of one product area (`Orders/` beside `Billing/`). It is one entry
+An area groups the features of one product area (orders beside billing). It is one entry
 in the top order and has an order of its own inside. Steps, each with the test that proves it:
 
 1. Move the feature folders of the existing area under `Myapp.Server/<Area>/` (a move only, in a
@@ -90,7 +103,7 @@ in the top order and has an order of its own inside. Steps, each with the test t
    Proof: it fails for a feature folder missing from the area's order.
 3. Areas never use each other: siblings on one level are forbidden edges, which `EdgesOf` yields.
    Proof: make `Billing` call `Orders` and see the layer test fail.
-4. What both areas need moves down into a shared feature below the areas (`Notifications/`
+4. What both areas need moves down into a shared feature below the areas (notifications
    between the areas and `Database`), and shared features never use an area (the same edges).
 5. `Api/` stays above all areas and maps each area's routes in a method of its own, so grep finds them.
 6. Web (phase 2): `src/<area>/<feature>/`, an `areaFeature` pattern in the `boundaries` rules of

@@ -22,7 +22,13 @@ public sealed class HookGuardEditTests
         }
         using var process = Process.Start(start) ?? throw new InvalidOperationException("bash did not start");
         process.StandardInput.Write(
-            JsonSerializer.Serialize(new { tool_name = "Edit", tool_input = new { file_path = $"{RepositoryFiles.Root}/{path}" } })
+            JsonSerializer.Serialize(
+                new
+                {
+                    tool_name = "Edit",
+                    tool_input = new { file_path = Path.IsPathRooted(path) ? path : $"{RepositoryFiles.Root}/{path}" },
+                }
+            )
         );
         process.StandardInput.Close();
         var errors = process.StandardError.ReadToEnd();
@@ -44,7 +50,6 @@ public sealed class HookGuardEditTests
     [InlineData("Myapp.Web/tsconfig.app.json")]
     [InlineData("BannedSymbols.txt")]
     [InlineData("Directory.Build.props")]
-    [InlineData("Myapp.Server.Tests/Characterization/README.md")]
     public void An_agent_cannot_edit_the_gate_and_is_told_to_ask_the_owner(string path)
     {
         var (exitCode, errors) = Run(path);
@@ -52,6 +57,43 @@ public sealed class HookGuardEditTests
         Assert.Equal(2, exitCode);
         Assert.Contains("ALLOW_GATE_EDIT=1 claude", errors, StringComparison.Ordinal);
         Assert.Contains("ask the user", errors, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void A_recording_git_tracks_is_refused_and_a_new_one_is_not()
+    {
+        var repository = Path.Combine(Path.GetTempPath(), "myapp-hook-" + Guid.NewGuid().ToString("N"));
+        var folder = Path.Combine(repository, "Myapp.Server.Tests", "Characterization");
+        Directory.CreateDirectory(folder);
+        try
+        {
+            var tracked = Path.Combine(folder, "Tracked.cs");
+            File.WriteAllText(tracked, "");
+            Git(repository, "init", "-q");
+            Git(repository, "add", "-A");
+
+            var (exitCode, errors) = Run(tracked);
+
+            Assert.Equal(2, exitCode);
+            Assert.Contains("ALLOW_GATE_EDIT=1 claude", errors, StringComparison.Ordinal);
+            Assert.Equal(0, Run(Path.Combine(folder, "New.cs")).ExitCode);
+        }
+        finally
+        {
+            Directory.Delete(repository, recursive: true);
+        }
+    }
+
+    private static void Git(string directory, params string[] arguments)
+    {
+        var start = new ProcessStartInfo("git") { WorkingDirectory = directory };
+        foreach (var argument in arguments)
+        {
+            start.ArgumentList.Add(argument);
+        }
+        using var process = Process.Start(start) ?? throw new InvalidOperationException("git did not start");
+        process.WaitForExit();
+        Assert.Equal(0, process.ExitCode);
     }
 
     [Fact]

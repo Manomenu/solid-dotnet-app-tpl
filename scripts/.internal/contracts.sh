@@ -10,6 +10,10 @@
 #   contracts.sh              every contract tag: contract@version, file:line
 #   contracts.sh rabaty@v2    the tests of one contract version
 set -euo pipefail
+if [ "${1:-}" = "--help" ]; then
+    sed -n '2,/^[^#]/{/^#/s/^# \{0,1\}//p}' "$0"
+    exit 0
+fi
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "$ROOT"
 

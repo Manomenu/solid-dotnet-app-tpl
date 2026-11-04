@@ -3,6 +3,10 @@
 # Read-only requests through the web's nginx, the way traffic arrives: the page answers, and the server behind it
 # answers with its database. Prints what failed and what to look at; exit code is non-zero on any failure.
 set -euo pipefail
+if [ "${1:-}" = "--help" ]; then
+    sed -n '2,/^[^#]/{/^#/s/^# \{0,1\}//p}' "$0"
+    exit 0
+fi
 
 BASE="${1:-}"
 if [ -z "$BASE" ]; then

@@ -8,5 +8,5 @@ instead, one file per decision, and the specs link to it.
 A file is never edited: a change of mind is a new file that names the one it supersedes.
 "Why it used to be Y" is knowledge too.
 
-Name: `NNNN-what-was-decided.md`. Content: the context, the options weighed, the choice, its
+Name: a four-digit number, then what was decided. Content: the context, the options weighed, the choice, its
 consequences; half a page, dated.

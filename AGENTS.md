@@ -35,6 +35,7 @@ What it cannot see:
 
 - Set ids with `vdoc.py ids`, never by hand: a dropped id is never reused, an id is never renumbered.
 - A criterion no automated check can prove is a wrong criterion: ask the owner, never keep it unguarded.
+- A criterion gets the lightest check that can fail for it: a plain test before a server test, a server test before a browser test; browser tests cover what only a browser can.
 - Before merging a spec'd feature, run `/suwagent:visual-guardrails`: `criteria.sh` sees that an id is named, not that the test would fail.
 
 ## Review

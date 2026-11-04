@@ -8,7 +8,7 @@
 #   criteria.sh --update           move the pin to the plugin's newest master (`just criteria-update`)
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-SELF="$ROOT/scripts/.internal/criteria.sh"
+SELF="$ROOT/Myapp.Gate/scripts/criteria.sh"
 REPO="Manomenu/suwalski-agent-plugin"
 TOOL_COMMIT=02a5f3d98c5caa9f69af3fa0508efa566a6d78f2
 TOOL_SHA256=d83e3a4e7c7f31bbe28d7eacc8eb5dbab8ba4298601839e827638ce716a91088
@@ -47,6 +47,6 @@ case "${1:-}" in
         ;;
     *)
         fetch
-        exec python3 "$TOOL" criteria --root "$ROOT" --config criteria.json "$@"
+        exec python3 "$TOOL" criteria --root "$ROOT" --config Myapp.Gate/criteria.json "$@"
         ;;
 esac

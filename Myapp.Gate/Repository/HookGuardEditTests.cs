@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Text.Json;
 
-namespace Myapp.Server.Tests;
+namespace Myapp.Gate.Repository;
 
 public sealed class HookGuardEditTests
 {
@@ -14,7 +14,7 @@ public sealed class HookGuardEditTests
             RedirectStandardError = true,
             WorkingDirectory = RepositoryFiles.Root,
         };
-        start.ArgumentList.Add("scripts/.internal/hook-guard-edit.sh");
+        start.ArgumentList.Add("Myapp.Gate/scripts/hook-guard-edit.sh");
         start.Environment.Remove("ALLOW_GATE_EDIT");
         if (allowGateEdit)
         {
@@ -31,10 +31,12 @@ public sealed class HookGuardEditTests
     }
 
     [Theory]
-    [InlineData("scripts/.internal/check.sh")]
-    [InlineData("scripts/.internal/criteria.sh")]
-    [InlineData("scripts/.internal/hook-guard-edit.sh")]
-    [InlineData("criteria.json")]
+    [InlineData("Myapp.Gate/scripts/check.sh")]
+    [InlineData("Myapp.Gate/scripts/criteria.sh")]
+    [InlineData("Myapp.Gate/scripts/hook-guard-edit.sh")]
+    [InlineData("Myapp.Gate/criteria.json")]
+    [InlineData("Myapp.Gate/Design/ContractsTests.cs")]
+    [InlineData("Myapp.Gate/Myapp.Gate.csproj")]
     [InlineData(".claude/settings.json")]
     [InlineData(".github/workflows/ci.yml")]
     [InlineData(".editorconfig")]
@@ -54,7 +56,7 @@ public sealed class HookGuardEditTests
 
     [Fact]
     public void The_owner_lets_a_session_edit_the_gate() =>
-        Assert.Equal(0, Run("scripts/.internal/check.sh", allowGateEdit: true).ExitCode);
+        Assert.Equal(0, Run("Myapp.Gate/scripts/check.sh", allowGateEdit: true).ExitCode);
 
     [Theory]
     [InlineData("Myapp.Web/src/api/openapi.d.ts")]
@@ -71,6 +73,7 @@ public sealed class HookGuardEditTests
     [InlineData("Myapp.Server/Notes/NoteStore.cs")]
     [InlineData("Myapp.Server.Tests/Characterization/NotesRecorded.cs")]
     [InlineData("Myapp.Web/src/notes/notes.test.ts")]
+    [InlineData("Myapp.Gate/layers.json")]
     [InlineData("AGENTS.md")]
     public void Everything_else_stays_editable(string path) => Assert.Equal(0, Run(path).ExitCode);
 }

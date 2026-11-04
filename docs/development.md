@@ -4,7 +4,7 @@
 
 - .NET SDK 10 (`global.json` pins the band), `just`, Docker (it runs the local PostgreSQL).
 - A POSIX shell: on Windows use **Git Bash** (the scripts in `scripts/.internal/` are bash; run
-  them with `bash scripts/.internal/check.sh`). Agents call the scripts directly, humans use `just`.
+  them with `bash Myapp.Gate/scripts/check.sh`). Agents call the scripts directly, humans use `just`.
 - Node 24 and pnpm 11 (`corepack enable`), for `Myapp.Web`; once per machine `pnpm exec playwright install chromium` in `Myapp.Web/` for the browser tests.
 - For the full gate: `shellcheck` and `gitleaks`. A missing tool is reported as SKIP (a failure
   in CI), and the report ends with `NOT VERIFIED: <steps>`.
@@ -27,7 +27,7 @@ just check                # the whole gate
 just fmt                  # csharpier format
 ```
 
-The same without `just`: `bash scripts/.internal/check.sh --quick`, `bash scripts/.internal/check.sh`,
+The same without `just`: `bash Myapp.Gate/scripts/check.sh --quick`, `bash Myapp.Gate/scripts/check.sh`,
 `bash scripts/.internal/db.sh up`.
 
 ## Settings
@@ -43,7 +43,7 @@ directory name by `checkout-env.sh`; its databases are left behind, not dropped.
 
 ## Claude Code hooks
 
-`.claude/settings.json` runs `scripts/.internal/check.sh --quick` when Claude stops, and blocks
+`.claude/settings.json` runs `Myapp.Gate/scripts/check.sh --quick` when Claude stops, and blocks
 the stop while it fails (the loop is cut after one retry). The quick gate has a budget of 20
 seconds and fails above it; `CHECK_QUICK_LIMIT=<seconds>` raises it on a machine that is slow
 across the board. Edits to migrations that already

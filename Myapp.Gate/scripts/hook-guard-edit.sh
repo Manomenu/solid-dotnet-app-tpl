@@ -13,8 +13,9 @@ path="$(printf '%s' "$path" | tr '\134' '/')"
 
 if [ "${ALLOW_GATE_EDIT:-}" != "1" ]; then
     case "$path" in
-        */scripts/.internal/check.sh | */scripts/.internal/criteria.sh | */scripts/.internal/hook-*.sh | */criteria.json | \
-            */.claude/settings.json | */.github/workflows/* | */.editorconfig | */eslint.config.js | */BannedSymbols.txt | \
+        # Why: which layer may use which changes with every new feature; it is data, and its diff is one readable line.
+        */Myapp.Gate/layers.json) ;;
+        */Myapp.Gate/* | */.claude/settings.json | */.github/workflows/* | */.editorconfig | */eslint.config.js | */BannedSymbols.txt | \
             */Directory.Build.props | */tsconfig*.json)
             echo "Blocked: $path is part of the gate (a check, a hook or a lint config), which an agent does not change on its own." >&2
             echo "Do not work around it: ask the user to start a session with ALLOW_GATE_EDIT=1 claude and give them the exact change to make there (the file, what to change, why)." >&2

@@ -2,7 +2,7 @@ using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Myapp.Server.Tests;
+namespace Myapp.Gate.Code;
 
 public sealed partial class CommentsTests
 {

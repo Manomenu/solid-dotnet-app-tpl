@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace Myapp.Server.Tests;
+namespace Myapp.Gate.Repository;
 
 public sealed partial class ImagePinsTests
 {

@@ -1,7 +1,7 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Myapp.Server.Tests;
+namespace Myapp.Gate.Code;
 
 internal sealed class SourceFile(string path, string text)
 {

@@ -15,7 +15,7 @@
 git clone https://github.com/Manomenu/solid-dotnet-app-tpl.git
 dotnet new install ./solid-dotnet-app-tpl
 dotnet new solid-dotnet -n Invoices --port-offset 2 --allow-scripts yes
-cd Invoices && bash scripts/.internal/check.sh
+cd Invoices && bash Myapp.Gate/scripts/check.sh
 ```
 
 - `-n Invoices` renames `Myapp`/`myapp` everywhere: projects, namespaces, folders, docker names, databases.
@@ -64,7 +64,7 @@ web app with types generated from the server's OpenAPI document, and a Notes fea
 
 ## What the gate guarantees
 
-`bash scripts/.internal/check.sh` (`--quick` while working, within a 20-second budget) fails on: any compiler or analyzer warning, banned
+`bash Myapp.Gate/scripts/check.sh` (`--quick` while working, within a 20-second budget) fails on: any compiler or analyzer warning, banned
 APIs, a layer used against its order, dead types and packages, vague names, stray comments, `dynamic`, unpinned
 images, a stale API contract or generated types, an acceptance criterion without a guardrail, an unresolvable compose file. The full list, each with its fix:
 [docs/architecture.md, "What the gate forbids"](docs/architecture.md#what-the-gate-forbids).
@@ -107,12 +107,12 @@ AC-notes-1       server test (xunit)          Myapp.Server.Tests/Notes/NoteEndpo
 AC-notes-1       e2e test (playwright)        Myapp.Web/src/notes/NotesScreen.e2e.ts:4
 ```
 
-Where each kind of guardrail lives and how it names the id (the kinds are `criteria.json`):
+Where each kind of guardrail lives and how it names the id (the kinds are `Myapp.Gate/criteria.json`):
 
 | Kind | Where | How it names the id |
 | --- | --- | --- |
 | `server test (xunit)` | `Myapp.Server.Tests/<Feature>/` | `[Trait("criterion", "AC-notes-1")]` on the test |
-| `architecture test (xunit)` | `Myapp.Server.Tests/` root: the repository guards | the same `Trait` |
+| `architecture test (xunit)` | `Myapp.Gate/`: the repository guards | the same `Trait` |
 | `web test (vitest)` | `Myapp.Web/src/**/*.test.ts(x)` | in the title: `it("AC-notes-1: a blank note is refused", …)` |
 | `e2e test (playwright)` | `Myapp.Web/src/**/*.e2e.ts` | in the title: `test("AC-notes-1: …", …)` |
 | `lint (eslint)` | `Myapp.Web/eslint.config.js` | a comment `// AC-notes-1` on the line above the rule |
@@ -122,9 +122,9 @@ Where each kind of guardrail lives and how it names the id (the kinds are `crite
 | `build rule` | `Directory.Build.props` | an XML comment `<!-- AC-notes-1 -->` above the property |
 
 **How it runs.** The check is `vdoc.py criteria` of the
-[suwagent plugin](https://github.com/Manomenu/suwalski-agent-plugin). `scripts/.internal/criteria.sh`
+[suwagent plugin](https://github.com/Manomenu/suwalski-agent-plugin). `Myapp.Gate/scripts/criteria.sh`
 downloads it at the commit and SHA-256 it pins (into `~/.cache/suwagent/`), the same on a laptop and in
-CI, and runs it with `criteria.json`. `just criteria-update` moves the pin to the plugin's newest
+CI, and runs it with `Myapp.Gate/criteria.json`. `just criteria-update` moves the pin to the plugin's newest
 version; without a network the step is a SKIP locally and a failure in CI. Agents cannot edit the gate,
 the hooks or the lint configs (a Claude Code hook refuses it); to change them with an agent, start it
 with `ALLOW_GATE_EDIT=1 claude`.

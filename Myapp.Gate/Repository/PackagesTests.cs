@@ -1,6 +1,6 @@
 using System.Xml.Linq;
 
-namespace Myapp.Server.Tests;
+namespace Myapp.Gate.Repository;
 
 public sealed class PackagesTests
 {

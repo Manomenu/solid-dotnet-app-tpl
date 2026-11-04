@@ -5,13 +5,11 @@ using ArchUnitNET.xUnitV3;
 using Myapp.Server.Api;
 using static ArchUnitNET.Fluent.ArchRuleDefinition;
 
-namespace Myapp.Server.Tests;
+namespace Myapp.Gate.Design;
 
 public sealed class ContractsTests
 {
     private const string Root = "Myapp.Server";
-
-    private static readonly string[] Layers = ["Api", "Notes | Health", "Database"];
 
     internal static readonly Architecture Server = new ArchLoader().LoadAssemblies(typeof(ServerApp).Assembly).Build();
 
@@ -35,7 +33,7 @@ public sealed class ContractsTests
     public static TheoryData<string, string> Edges()
     {
         var data = new TheoryData<string, string>();
-        foreach (var (part, forbidden) in EdgesOf(Layers))
+        foreach (var (part, forbidden) in EdgesOf(LayersFile.ServerLayers))
         {
             data.Add(part, forbidden);
         }
@@ -51,7 +49,7 @@ public sealed class ContractsTests
             .Should()
             .NotDependOnAny(Types().That().ResideInNamespaceMatching(Pattern(forbidden)))
             .Because(
-                $"{part} must not use {forbidden}: move the shared code down to a shared layer or pass it in from above (Layers in ContractsTests.cs)"
+                $"{part} must not use {forbidden}: move the shared code down to a shared layer or pass it in from above (serverLayers in Myapp.Gate/layers.json)"
             )
             .WithoutRequiringPositiveResults()
             .Check(Server);
@@ -59,7 +57,7 @@ public sealed class ContractsTests
     [Fact]
     public void Every_server_namespace_has_a_layer()
     {
-        var layered = Layers.SelectMany(layer => layer.Split('|', StringSplitOptions.TrimEntries)).ToHashSet();
+        var layered = LayersFile.ServerLayers.SelectMany(layer => layer.Split('|', StringSplitOptions.TrimEntries)).ToHashSet();
         var missing = Server
             .Namespaces.Select(ns => ns.FullName)
             .Where(name => name.StartsWith(Root + ".", StringComparison.Ordinal))
@@ -71,7 +69,7 @@ public sealed class ContractsTests
 
         Assert.True(
             missing.Length == 0,
-            $"add the namespace to Layers in ContractsTests.cs, at the place it belongs: {string.Join(", ", missing)}. If this starts a second product area, see docs/architecture.md#areas-when-a-second-product-area-appears."
+            $"add the namespace to serverLayers in Myapp.Gate/layers.json, at the place it belongs: {string.Join(", ", missing)}. If this starts a second product area, see docs/architecture.md#areas-when-a-second-product-area-appears."
         );
     }
 

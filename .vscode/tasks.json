@@ -5,7 +5,7 @@
         {
             "label": "check --quick",
             "type": "shell",
-            "command": "bash scripts/.internal/check.sh --quick",
+            "command": "bash Myapp.Gate/scripts/check.sh --quick",
             "group": { "kind": "test", "isDefault": true },
             "presentation": { "reveal": "always", "panel": "dedicated" },
             "problemMatcher": []
@@ -13,7 +13,7 @@
         {
             "label": "check (full gate)",
             "type": "shell",
-            "command": "bash scripts/.internal/check.sh",
+            "command": "bash Myapp.Gate/scripts/check.sh",
             "group": "test",
             "presentation": { "reveal": "always", "panel": "dedicated" },
             "problemMatcher": []

@@ -1,4 +1,4 @@
-namespace Myapp.Server.Tests;
+namespace Myapp.Gate.Design;
 
 public sealed class InterfacesTests
 {

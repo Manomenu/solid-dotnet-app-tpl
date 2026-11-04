@@ -52,7 +52,7 @@ dotnet_diagnostic.IDE0046.severity = none
 dotnet_diagnostic.CA1032.severity = none
 
 # Reason (tests): names are sentences (Health_answers_ok); xUnit needs public classes; SQL built in a test is its own, never input.
-[Myapp.Server.Tests/**.cs]
+[{Myapp.Server.Tests,Myapp.Gate}/**.cs]
 dotnet_diagnostic.CA1707.severity = none
 dotnet_diagnostic.CA1515.severity = none
 dotnet_diagnostic.CA2100.severity = none

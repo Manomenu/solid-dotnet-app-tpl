@@ -2,7 +2,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using Myapp.Server.Api;
 
-namespace Myapp.Server.Tests;
+namespace Myapp.Gate.Design;
 
 internal static class SolutionTypes
 {

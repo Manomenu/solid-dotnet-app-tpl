@@ -6,6 +6,9 @@ set shell := ["bash", "-euo", "pipefail", "-c"]
 # The local PostgreSQL — `just db` lists its recipes (.just/db.just)
 mod db '.just/db.just'
 
+# The local stack in one tmux session — `just tmux-dev start [--restart]|stop` (.just/tmux-dev.just)
+mod tmux-dev '.just/tmux-dev.just'
+
 [private]
 default:
     @just --list --unsorted

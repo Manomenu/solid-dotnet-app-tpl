@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
 # The quality gate. CI runs exactly this script; humans run `just check`, hooks run `--quick`.
-#   check.sh --quick   build with analyzers, csharpier, server tests against the real database, tsc, eslint, vitest
-#   check.sh           quick, plus prettier, knip, API contract and types up to date, acceptance criteria guarded, shellcheck and gitleaks
+#   check.sh --quick   the repository guards (Myapp.Gate tests), with build, csharpier, eslint, tsc and shellcheck only for what changed;
+#                      no database, no vitest
+#   check.sh           build, csharpier and every test (server against the real database, guards, vitest) over the whole repository, plus tsc,
+#                      eslint, prettier, knip, API contract and types up to date, acceptance criteria guarded, compose, shellcheck and gitleaks
+# What changed is what differs from where this branch left master, committed or not, plus new untracked files. With no .NET
+# file changed, quick builds only Myapp.Gate; tsc runs only if web code changed. The tests that prove acceptance criteria
+# run only in the full gate.
 # The quick gate has a time budget, CHECK_QUICK_LIMIT seconds (default 20): the Stop hook runs it after every turn of an
 # agent, and a gate that takes minutes gets switched off. Above the budget it fails and says so: move the slow step to the
 # full gate or make it faster; raise the budget only on a machine that is slow across the board.
@@ -70,6 +75,63 @@ local_database() { "$ROOT/scripts/.internal/db.sh" up >/dev/null; }
 
 test_server() { (cd "$ROOT" && dotnet test --solution Myapp.slnx --no-build --no-progress); }
 
+# Why: a quick check must cost what the change costs, not what the repository has grown to.
+changed_files() {
+    cd "$ROOT"
+    local base
+    # Why: in a new repository master or even HEAD may not exist yet; with no commit everything tracked is new
+    base="$(git merge-base HEAD master 2>/dev/null || git rev-parse --verify -q HEAD || true)"
+    {
+        if [ -n "$base" ]; then git diff --name-only --diff-filter=d "$base"; else git ls-files --cached; fi
+        git ls-files --others --exclude-standard
+    } | sort -u
+}
+
+dotnet_changed() { changed_files | grep -qE '\.(cs|csproj|props|targets|slnx|rsp)$|(^|/)(\.editorconfig|BannedSymbols\.txt|global\.json|packages\.lock\.json)$'; }
+
+build_changed() {
+    cd "$ROOT"
+    if dotnet_changed; then
+        dotnet build Myapp.slnx --nologo -v quiet
+    else
+        dotnet build Myapp.Gate/Myapp.Gate.csproj --nologo -v quiet
+    fi
+}
+
+format_changed() {
+    cd "$ROOT"
+    local files
+    mapfile -t files < <(changed_files | grep -E '\.cs$' || true)
+    if [ "${#files[@]}" -gt 0 ]; then
+        dotnet tool restore >/dev/null && dotnet csharpier check "${files[@]}"
+    fi
+}
+
+test_guards() { (cd "$ROOT" && dotnet test --project Myapp.Gate/Myapp.Gate.csproj --no-build --no-progress); }
+
+web_changed_files() { changed_files | grep -E '^Myapp\.Web/.*\.(ts|tsx|js|jsx|mjs|cjs)$' | sed 's#^Myapp\.Web/##' || true; }
+
+typecheck_changed() {
+    if [ -n "$(web_changed_files)" ]; then web_typecheck; fi
+}
+
+eslint_changed() {
+    local files
+    mapfile -t files < <(web_changed_files)
+    if [ "${#files[@]}" -gt 0 ]; then
+        cd "$ROOT/Myapp.Web" && pnpm exec eslint --no-warn-ignored --max-warnings 0 "${files[@]}"
+    fi
+}
+
+shell_changed() {
+    cd "$ROOT"
+    local files
+    mapfile -t files < <(changed_files | grep -E '\.sh$|^\.githooks/pre-commit$' || true)
+    if [ "${#files[@]}" -gt 0 ]; then
+        shellcheck -S warning "${files[@]}"
+    fi
+}
+
 shell_scripts() { (cd "$ROOT" && { find scripts Myapp.Gate/scripts -name "*.sh"; echo .githooks/pre-commit; } | xargs shellcheck -S warning); }
 
 web_typecheck() { cd "$ROOT/Myapp.Web" && pnpm exec tsc --noEmit -p tsconfig.app.json && pnpm exec tsc --noEmit -p tsconfig.node.json; }
@@ -102,14 +164,23 @@ secrets_in_git() {
 
 export ROOT
 export -f build_server format_server local_database test_server shell_scripts secrets_in_git web_typecheck web_eslint web_vitest web_prettier web_knip api_types acceptance_criteria compose_files
-declare_step build "build server (compiler, analyzers, banned APIs, NuGet audit)" 300
-declare_step format "format server (csharpier check)" 120
-if [ -z "${CI:-}" ]; then declare_step postgres "postgres for tests (db.sh up)" 120; fi
-declare_step test "test server (xunit, repository guards, real PostgreSQL)" 600
-declare_step tsc "typecheck Myapp.Web (tsc: app, e2e tests, config)" 120
-declare_step eslint "lint Myapp.Web (eslint strict + import contracts)" 180
-declare_step vitest "test Myapp.Web (vitest)" 180
-if [ "$QUICK" -eq 0 ]; then
+export -f changed_files dotnet_changed build_changed format_changed test_guards web_changed_files typecheck_changed eslint_changed shell_changed
+if [ "$QUICK" -eq 1 ]; then
+    declare_step build "build what changed (compiler, analyzers, banned APIs)" 300
+    declare_step format "format changed C# (csharpier check)" 120
+    declare_step test "repository guards (Myapp.Gate)" 120
+    declare_step tsc "typecheck Myapp.Web if it changed (tsc)" 120
+    declare_step eslint "lint changed web files (eslint)" 180
+    declare_step shellcheck "changed shell scripts (shellcheck)" 60
+    command -v shellcheck >/dev/null 2>&1 || SKIPPED[shellcheck]="shellcheck not installed"
+else
+    declare_step build "build server (compiler, analyzers, banned APIs, NuGet audit)" 300
+    declare_step format "format server (csharpier check)" 120
+    if [ -z "${CI:-}" ]; then declare_step postgres "postgres for tests (db.sh up)" 120; fi
+    declare_step test "test server (xunit, repository guards, real PostgreSQL)" 600
+    declare_step tsc "typecheck Myapp.Web (tsc: app, e2e tests, config)" 120
+    declare_step eslint "lint Myapp.Web (eslint strict + import contracts)" 180
+    declare_step vitest "test Myapp.Web (vitest)" 180
     declare_step compose "compose stack resolves, with and without the db profile (docker compose config)" 120
     declare_step prettier "format Myapp.Web (prettier --check)" 120
     declare_step knip "dead code Myapp.Web (knip)" 180
@@ -140,12 +211,19 @@ fi
 
 GATE_START=$SECONDS
 PIDS=()
-(
-    run_step build build_server
-    if [ -z "${CI:-}" ]; then run_step postgres local_database; fi
-    run_step test test_server
-    if [ "$QUICK" -eq 0 ] && [ -z "${SKIPPED[apitypes]+x}" ]; then run_step apitypes api_types; fi
-) &
+if [ "$QUICK" -eq 1 ]; then
+    (
+        run_step build build_changed
+        run_step test test_guards
+    ) &
+else
+    (
+        run_step build build_server
+        if [ -z "${CI:-}" ]; then run_step postgres local_database; fi
+        run_step test test_server
+        if [ -z "${SKIPPED[apitypes]+x}" ]; then run_step apitypes api_types; fi
+    ) &
+fi
 PIDS+=($!)
 launch() {
     local key="$1"
@@ -154,11 +232,16 @@ launch() {
         PIDS+=($!)
     fi
 }
-launch format format_server
-launch tsc web_typecheck
-launch eslint web_eslint
-launch vitest web_vitest
-if [ "$QUICK" -eq 0 ]; then
+if [ "$QUICK" -eq 1 ]; then
+    launch format format_changed
+    launch tsc typecheck_changed
+    launch eslint eslint_changed
+    launch shellcheck shell_changed
+else
+    launch format format_server
+    launch tsc web_typecheck
+    launch eslint web_eslint
+    launch vitest web_vitest
     launch prettier web_prettier
     launch knip web_knip
     launch criteria acceptance_criteria

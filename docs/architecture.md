@@ -71,7 +71,7 @@ Each line is a build rule or a test; its message says the fix. Rules live as low
 - Settings (`AppSettingsTests`): every section of appsettings is bound by an options class.
 - Acceptance criteria (`check.sh` without `--quick` runs `criteria.sh`: the suwagent plugin's `vdoc.py criteria`, pinned, with the kinds of `criteria.json`; `CriteriaKindsTests` keeps each kind in README and AGENTS.md): each spec in `docs/visual/spec/` has an acceptance section with one unique `AC-<feature>-<n>` per criterion, each is named by a guardrail of a known kind, every id a guardrail names is in a spec, no id stands where the gate checks nothing.
 - Docs (`AgentsFileTests`, `RepositoryLayoutTests`): AGENTS.md at most 100 lines, no tree drawings, no capitals shouting; CLAUDE.md is `@AGENTS.md`; every top-level folder is in the map above.
-- The gate itself (`check.sh`): a ceiling per step, a WARN when the quick gate passes 60 s.
+- The gate itself (`check.sh`): a ceiling per step, the quick gate fails above its budget (20 s by default) and checks only what changed.
 
 ## How code is split
 

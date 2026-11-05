@@ -23,8 +23,8 @@ just api-types            # regenerate Myapp.Web/src/api/openapi.d.ts after chan
 just mutate               # Stryker.NET (MTP runner, preview) on the server code changed since master; needs a master with commits
 just pack-template        # the dotnet new template as a NuGet package in .artifacts/nupkg
 just up / just down      # the container stack on http://127.0.0.1:8190, then the smoke test
-just check-quick          # build, csharpier, server tests, tsc, eslint, vitest: about 20 seconds
-just check                # the whole gate
+just check-quick          # the repository guards, and build, csharpier, eslint, tsc, shellcheck for what changed only: seconds
+just check                # the whole gate: every test, the whole repository
 just fmt                  # csharpier format
 ```
 
@@ -47,7 +47,9 @@ directory name by `checkout-env.sh`; its databases are left behind, not dropped.
 `.claude/settings.json` runs `Myapp.Gate/scripts/check.sh --quick` when Claude stops, and blocks
 the stop while it fails (the loop is cut after one retry). The quick gate has a budget of 20
 seconds and fails above it; `CHECK_QUICK_LIMIT=<seconds>` raises it on a machine that is slow
-across the board. Edits to migrations that already
+across the board. It costs what the change costs: the repository guards, plus build, csharpier, eslint, tsc
+and shellcheck only for what differs from where the branch left `master` (committed or not, and new files).
+No database and no vitest; the tests that prove acceptance criteria run only in the full gate. Edits to migrations that already
 exist, to lockfiles and to other generated files are refused with a message saying what to run.
 
 ## Personal agent rules

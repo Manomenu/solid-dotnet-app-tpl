@@ -1,7 +1,7 @@
 <!-- template:start -->
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/visual/board/img/readme/hero-dark.png">
-  <img alt="solid-dotnet-app-tpl: a dotnet new template. A .NET 10 app where the wrong change fails the build, with a message that says the fix: made for coding agents and the people reviewing them. ASP.NET Core and PostgreSQL, React and shadcn/ui · Tailwind, one gate in about 20 seconds, Claude Code hooks. One command decides done; 18 kinds of guard, each with its fix; a quick gate of about 15 seconds after every agent turn." src="docs/visual/board/img/readme/hero-light.png" width="100%">
+  <img alt="solid-dotnet-app-tpl: a dotnet new template. A .NET 10 app where the wrong change fails the build, with a message that says the fix: made for coding agents and the people reviewing them. ASP.NET Core and PostgreSQL, React and shadcn/ui · Tailwind, one gate in about 20 seconds, Claude Code hooks. One command decides done; 18 kinds of guard, each with its fix; a quick gate of a few seconds after every agent turn." src="docs/visual/board/img/readme/hero-light.png" width="100%">
 </picture>
 
 <picture>
@@ -32,7 +32,7 @@ cd Invoices && bash Myapp.Gate/scripts/check.sh
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/visual/board/img/readme/flow-dark.png">
-  <img alt="How work flows. Create once with dotnet new solid-dotnet: it renames everything, shifts ports, regenerates lockfiles, the API contract and types, initializes git and hooks, creates docs/visual/spec. The agent edits; a PreToolUse hook blocks generated files, applied migrations, tracked recordings and the gate itself. Quick gate, within a 20-second budget, run by the Stop hook every turn: build with analyzers, server tests on PostgreSQL, tsc, eslint, vitest. Full gate, about 20 seconds, before a push: adds prettier, knip, API contract and types, acceptance criteria guarded, compose, shellcheck, gitleaks. CI runs the same script plus e2e, images and a smoke test, and api-diff on every pull request; SKIP counts as FAIL. Rule for rules: when the agent repeats a mistake, add not a sentence to AGENTS.md but a type, an analyzer, a test or a hook." src="docs/visual/board/img/readme/flow-light.png" width="100%">
+  <img alt="How work flows. Create once with dotnet new solid-dotnet: it renames everything, shifts ports, regenerates lockfiles, the API contract and types, initializes git and hooks, creates docs/visual/spec. The agent edits; a PreToolUse hook blocks generated files, applied migrations, tracked recordings and the gate itself. Quick gate, within a 20-second budget, run by the Stop hook every turn: the repository guards, and build, csharpier, eslint, tsc and shellcheck only for what changed; no database, no vitest. Full gate, about 20 seconds, before a push: the whole repository and every test, and adds prettier, knip, API contract and types, acceptance criteria guarded, compose, shellcheck, gitleaks. CI runs the same script plus e2e, images and a smoke test, and api-diff on every pull request; SKIP counts as FAIL. Rule for rules: when the agent repeats a mistake, add not a sentence to AGENTS.md but a type, an analyzer, a test or a hook." src="docs/visual/board/img/readme/flow-light.png" width="100%">
 </picture>
 
 <picture>
@@ -64,7 +64,7 @@ web app with types generated from the server's OpenAPI document, and a Notes fea
 
 ## What the gate guarantees
 
-`bash Myapp.Gate/scripts/check.sh` (`--quick` while working, within a 20-second budget) fails on: any compiler or analyzer warning, banned
+`bash Myapp.Gate/scripts/check.sh` (`--quick` while working, within a 20-second budget: the repository guards, and build, csharpier, eslint, tsc and shellcheck only for what changed since the branch left `master`) fails on: any compiler or analyzer warning, banned
 APIs, a layer used against its order, dead types and packages, vague names, stray comments, `dynamic`, unpinned
 images, a stale API contract or generated types, an acceptance criterion without a guardrail, an unresolvable compose file. The full list, each with its fix:
 [docs/architecture.md, "What the gate forbids"](docs/architecture.md#what-the-gate-forbids).

@@ -78,7 +78,7 @@ e2e *args:
 check:
     @./Myapp.Gate/scripts/check.sh
 
-# The quick gate: build with analyzers, csharpier, server tests (what the Claude Code Stop hook runs)
+# The quick gate: the repository guards, and build, csharpier, eslint, tsc, shellcheck for what changed (what the Claude Code Stop hook runs)
 [group('maintenance')]
 check-quick:
     @./Myapp.Gate/scripts/check.sh --quick

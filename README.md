@@ -65,7 +65,7 @@ web app with types generated from the server's OpenAPI document, and a Notes fea
 ## What the gate guarantees
 
 `bash Myapp.Gate/scripts/check.sh` (`--quick` while working, within a 20-second budget: the repository guards, and build, csharpier, eslint, tsc and shellcheck only for what changed since the branch left `master`) fails on: any compiler or analyzer warning, banned
-APIs, a layer used against its order, dead types and packages, vague names, stray comments, `dynamic`, unpinned
+APIs, a layer used against its order, a folder or project off the lists the guards read, dead types and packages, vague names, stray comments, `dynamic`, unpinned
 images, a stale API contract or generated types, an acceptance criterion without a guardrail, an unresolvable compose file. The full list, each with its fix:
 [docs/architecture.md, "What the gate forbids"](docs/architecture.md#what-the-gate-forbids).
 Browser tests run separately (`scripts/.internal/e2e.sh`), and `just up` starts the container stack and

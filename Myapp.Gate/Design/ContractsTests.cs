@@ -11,6 +11,8 @@ public sealed class ContractsTests
 {
     private const string Root = "Myapp.Server";
 
+    internal static readonly string[] LayeredProjects = [Root];
+
     internal static readonly Architecture Server = new ArchLoader().LoadAssemblies(typeof(ServerApp).Assembly).Build();
 
     public static IEnumerable<(string Part, string Forbidden)> EdgesOf(string[] layers)

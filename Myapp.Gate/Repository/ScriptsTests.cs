@@ -15,12 +15,7 @@ public sealed class ScriptsTests
         foreach (
             var path in RepositoryFiles
                 .Paths()
-                .Where(path =>
-                    (
-                        path.StartsWith("scripts/.internal/", StringComparison.Ordinal)
-                        || path.StartsWith("Myapp.Gate/scripts/", StringComparison.Ordinal)
-                    ) && path.EndsWith(".sh", StringComparison.Ordinal)
-                )
+                .Where(path => path.EndsWith(".sh", StringComparison.Ordinal))
                 .Where(path => !NotForCalling.Contains(Path.GetFileName(path)))
         )
         {

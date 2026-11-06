@@ -6,9 +6,11 @@ namespace Myapp.Gate.Design;
 
 internal static class SolutionTypes
 {
+    public static Assembly[] Assemblies { get; } = [typeof(ServerApp).Assembly, typeof(SolutionTypes).Assembly];
+
     public static IReadOnlyList<Type> All { get; } =
     [
-        .. new[] { typeof(ServerApp).Assembly, typeof(SolutionTypes).Assembly }
+        .. Assemblies
             .SelectMany(assembly => assembly.DefinedTypes)
             .Select(info => info.AsType())
             .Where(type => type.GetCustomAttribute<CompilerGeneratedAttribute>() is null)

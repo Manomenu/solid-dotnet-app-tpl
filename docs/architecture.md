@@ -60,6 +60,7 @@ Each line is a build rule or a test; its message says the fix. Rules live as low
 - Build: analyzers `latest-all`, warnings are errors, unused private members (IDE0051, IDE0052, CA1823), no `#pragma warning disable` (`NoPragmaTests`).
 - Banned APIs (`BannedSymbols.txt`): `DateTime.Now`/`UtcNow`, blocking on tasks, `Thread.Sleep`, `Console`, `Activator`, reflection discovery, `Type.GetType(string)`, Newtonsoft.
 - Layers (`ContractsTests`): a layer uses only the layers below it, every namespace has a layer, every `*Endpoints` class is mapped from `Api`, one per namespace.
+- Unlisted folders and projects (`Every_server_namespace_has_a_layer`, `UnlistedProjectsTests`): a guard over a list covers nothing left off it, so a folder or project off the list fails until it is added; shell scripts are guarded by `git ls-files`, not by a list of folders.
 - Project graph (`ProjectReferencesTests`): which project may reference which and see whose internals.
 - Names (`NamingTests`): unique type names, one top-level type per file named like the file.
 - Forbidden names (`ForbiddenNamesTests`): no folder (web `src/` included), project, namespace or type named Common, Helpers, Utils, Manager, Shared, Core, Domain, Services, Models, Components, Hooks, Ui and the like; no `*Repository`, `*Service`, `*UnitOfWork` types.

@@ -4,11 +4,9 @@ using Myapp.Server.Notes;
 
 namespace Myapp.Server.Tests.Notes;
 
-public sealed class NoteEndpointsTests(TestDatabase database) : IDisposable
+public sealed class NoteEndpointsTests(TestDatabase database, ClassServer server) : IClassFixture<ClassServer>
 {
-    private readonly TestApp app = new();
-
-    public void Dispose() => app.Dispose();
+    private TestApp App => server.App;
 
     [Fact]
     public async Task A_created_note_is_listed()
@@ -16,7 +14,7 @@ public sealed class NoteEndpointsTests(TestDatabase database) : IDisposable
         _ = database.Pool;
         var cancellation = TestContext.Current.CancellationToken;
         var text = $"note {Guid.NewGuid():N}";
-        using var client = app.CreateClient();
+        using var client = App.CreateClient();
 
         var created = await client.PostAsJsonAsync("/api/notes", new { text }, cancellation);
         var listed = await client.GetFromJsonAsync<Note[]>("/api/notes", cancellation);
@@ -32,7 +30,7 @@ public sealed class NoteEndpointsTests(TestDatabase database) : IDisposable
     public async Task A_blank_note_is_refused_with_what_to_send_instead(string text)
     {
         _ = database.Pool;
-        using var client = app.CreateClient();
+        using var client = App.CreateClient();
 
         var response = await client.PostAsJsonAsync("/api/notes", new { text }, TestContext.Current.CancellationToken);
         var body = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);

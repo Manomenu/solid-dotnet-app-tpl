@@ -17,6 +17,8 @@ public sealed class SubtractTests
             .Assemblies.SelectMany(assembly => assembly.DefinedTypes)
             .SelectMany(type => new MemberInfo[] { type }.Concat(type.GetMembers(AllMembers)))
             .Where(member => member.GetCustomAttribute<ObsoleteAttribute>() is not null)
+            // Why: the compiler marks the constructors of a type with required members obsolete for compilers that cannot set them
+            .Where(member => member.GetCustomAttribute<System.Runtime.CompilerServices.CompilerFeatureRequiredAttribute>() is null)
             .Select(member => member is Type type ? type.FullName : $"{member.DeclaringType?.FullName}.{member.Name}")
             .Order()
             .ToList();

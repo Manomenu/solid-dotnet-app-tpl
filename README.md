@@ -68,15 +68,14 @@ web app with types generated from the server's OpenAPI document, and a Notes fea
 APIs, a layer used against its order, a folder or project off the lists the guards read, dead types and packages, vague names, stray comments, `dynamic`, unpinned
 images, a stale API contract or generated types, an acceptance criterion without a guardrail, an unresolvable compose file. The full list, each with its fix:
 [docs/architecture.md, "What the gate forbids"](docs/architecture.md#what-the-gate-forbids).
-Browser tests run separately (`scripts/.internal/e2e.sh`), and `just up` starts the container stack and
-smoke-tests it.
+Browser tests run separately (`scripts/.internal/e2e.sh`), and `just tmux-dev start` is the one way to run the stack.
 
 ## The API contract
 
-`Myapp.Server/openapi.json` is generated from the endpoints and committed: the contract on the boundary.
-`just api-types` regenerates it with the web types (`openapi.d.ts`, whose first line names the contract's
-sha256), `just api-diff` compares it with `master` and fails on a change that breaks a consumer (oasdiff), and CI
-runs that comparison on every pull request. An app in another repository that adapts to a new version of this
+`contract/openapi.json` is generated from the endpoints and committed: the contract on the boundary, with its version
+in `contract/package.json`. `just api-types` regenerates it with the web types (`openapi.d.ts`, whose first line names
+the contract's sha256), and the full gate (`api-diff.sh`, oasdiff) compares it with `master`: a changed contract needs a
+higher version, a change that breaks a consumer a higher major. An app in another repository that adapts to a new version of this
 contract tags its tests with `contract <name>@<version>` instead of a criterion id; `just contracts` lists them.
 
 ## Spec ↔ guardrails sync

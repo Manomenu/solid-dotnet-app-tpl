@@ -1,0 +1,8 @@
+{
+    "name": "myapp-contract",
+    "version": "0.1.0",
+    "description": "The HTTP API of myapp as an OpenAPI document. Bump the version in the merge request that changes openapi.json: minor for an addition, major for a break.",
+    "files": ["openapi.json"],
+    "exports": { "./openapi.json": "./openapi.json" },
+    "license": "UNLICENSED"
+}

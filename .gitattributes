@@ -16,3 +16,4 @@
 **/packages.lock.json linguist-generated=true
 **/pnpm-lock.yaml linguist-generated=true
 **/src/api/openapi.d.ts linguist-generated=true
+contract/openapi.json linguist-generated=true

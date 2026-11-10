@@ -13,16 +13,14 @@
 
 ```sh
 just                      # every recipe, grouped
-just db up                # PostgreSQL on localhost:5533 (container myapp-postgres)
-just server               # the API on http://127.0.0.1:6300 (dotnet watch)
-just web                  # the web app on http://localhost:3300, proxies /api to the server
-just tmux-dev start       # db, server and web in one tmux session (stop: just tmux-dev stop)
+just tmux-dev start       # the one way to run the stack: PostgreSQL (compose.yaml, localhost:5533), the API on
+                          # http://127.0.0.1:6300 (dotnet watch, .env loaded) and the web app on http://localhost:3300 (pnpm dev)
 just e2e                  # browser tests (own server, own database, own ports; not part of the gate)
 just logs                 # why did it fail? last warnings/errors of the newest server log (see below)
-just api-types            # regenerate Myapp.Web/src/api/openapi.d.ts after changing a record the API exposes
+just api-types            # regenerate contract/openapi.json and Myapp.Web/src/api/openapi.d.ts after changing a record the API
+                          # exposes; then raise the contract's version in contract/package.json
 just mutate               # Stryker.NET (MTP runner, preview) on the server code changed since master; needs a master with commits
 just pack-template        # the dotnet new template as a NuGet package in .artifacts/nupkg
-just up / just down      # the container stack on http://127.0.0.1:8190, then the smoke test
 just check-quick          # the repository guards, and build, csharpier, eslint, tsc, shellcheck for what changed only: seconds
 just check                # the whole gate: every test, the whole repository
 just fmt                  # csharpier format
@@ -59,8 +57,8 @@ Claude Code loads it, and git ignores it.
 
 ## The container stack
 
-`just up` builds both images and starts db, server and web (`docker compose --profile db up -d --build --wait`),
-then runs `scripts/.internal/smoke.sh` against it. Settings come from `.env` (copy `.env.example`); every value
+`docker compose --profile db up -d --build --wait` builds both images and starts db, server and web on
+http://127.0.0.1:8190, and `scripts/.internal/smoke.sh http://127.0.0.1:8190` checks it, as CI does. Settings come from `.env` (copy `.env.example`); every value
 has a default. With an external PostgreSQL, set `ConnectionStrings__Default` in `.env` and run
 `docker compose up -d --build --wait` (no `db` profile). Use `127.0.0.1`, not `localhost`, in connection strings:
 on Windows `localhost` tries IPv6 first and every new connection waits seconds.
@@ -68,7 +66,7 @@ on Windows `localhost` tries IPv6 first and every new connection waits seconds.
 ## Logs
 
 The server writes JSON log lines (the built-in console JSON formatter, `Logging:Console` in `appsettings.json`).
-`just server` also writes them to .artifacts/logs/server.jsonl, `e2e.sh` to .artifacts/logs/e2e-server.jsonl;
+The server of `just tmux-dev start` also writes them to .artifacts/logs/server.jsonl, `e2e.sh` to .artifacts/logs/e2e-server.jsonl;
 the container stack is read with `--compose`. `just logs` prints the last warnings and errors of the newest log, one
 line each; `just logs --trace <traceId>` shows every line of one request, with the `traceId` any error response
 carries. `--all` shows every level, `-n N` the last N lines.

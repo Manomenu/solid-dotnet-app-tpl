@@ -7,7 +7,7 @@
 #   logs.sh -n 50           the last 50 lines (default 20)
 #   logs.sh --file <path>   a specific log file
 # One line each: time level category traceId=... message, and for an exception its type and first line.
-# The logs are written by `just server` (.artifacts/logs/server.jsonl) and e2e.sh (.artifacts/logs/e2e-server.jsonl).
+# The logs are written by the server of `just tmux-dev start` (server.sh, .artifacts/logs/server.jsonl) and e2e.sh (.artifacts/logs/e2e-server.jsonl).
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 
@@ -54,7 +54,7 @@ else
         file="$(ls -t "$ROOT"/.artifacts/logs/*.jsonl 2>/dev/null | head -n 1 || true)"
     fi
     if [ -z "$file" ] || [ ! -f "$file" ]; then
-        echo "logs.sh: no log file yet. Start the server with \`just server\` or run e2e.sh (they write .artifacts/logs/*.jsonl), or read the container stack with --compose." >&2
+        echo "logs.sh: no log file yet. Start the server with \`just tmux-dev start\` or run e2e.sh (they write .artifacts/logs/*.jsonl), or read the container stack with --compose." >&2
         exit 1
     fi
     source_name="${file#"$ROOT"/}"

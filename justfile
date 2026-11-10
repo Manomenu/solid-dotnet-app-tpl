@@ -3,21 +3,12 @@
 
 set shell := ["bash", "-euo", "pipefail", "-c"]
 
-# The local PostgreSQL — `just db` lists its recipes (.just/db.just)
-mod db '.just/db.just'
-
-# The local stack in one tmux session — `just tmux-dev start [--restart]|stop` (.just/tmux-dev.just)
-mod tmux-dev '.just/tmux-dev.just'
+# The local stack in one tmux session, the one way to run it — `just tmux-dev start [--restart]|stop` (tmux-dev.just)
+mod tmux-dev
 
 [private]
 default:
     @just --list --unsorted
-
-# HTTP API on :6300, rebuilt on every change — needs `just db up`; its JSON log is also written to .artifacts/logs/server.jsonl
-[group('run')]
-server *args:
-    mkdir -p .artifacts/logs
-    dotnet watch --quiet --project Myapp.Server run {{ args }} 2>&1 | tee .artifacts/logs/server.jsonl
 
 # Why did it fail? The last warnings and errors of the newest server log, one line each (--all, --trace <id>, --compose, -n N)
 [group('run')]
@@ -36,28 +27,12 @@ criteria *args:
 criteria-update:
     @./Myapp.Gate/scripts/criteria.sh --update
 
-# Web UI on :3300, proxies /api to the server — run `just server` alongside
-[group('run')]
-web *args:
-    cd Myapp.Web && { [ -d node_modules ] || pnpm install; } && pnpm dev {{ args }}
-
-# Build and start the whole stack with its own PostgreSQL on http://127.0.0.1:8190 (WEB_PORT in .env); waits until every service is healthy
-[group('infra')]
-up:
-    docker compose --profile db up -d --build --wait
-    ./scripts/.internal/smoke.sh http://127.0.0.1:${WEB_PORT:-8190}
-
-# Stop the stack (images and the database volume stay)
-[group('infra')]
-down:
-    docker compose --profile db down --remove-orphans
-
-# Regenerate the API contract (Myapp.Server/openapi.json) and the web app's types from it (after changing a record the API sends or receives)
+# Regenerate the API contract (contract/openapi.json) and the web app's types from it, after changing a record the API sends or receives; then raise the contract's version in contract/package.json
 [group('dev')]
 api-types:
     @./scripts/.internal/api-types.sh
 
-# Does the API contract break its consumers? Compares openapi.json with master (or the given ref) with oasdiff
+# Does the API contract break its consumers, and does its version say so? Compares contract/openapi.json with master (or the given ref) with oasdiff
 [group('dev')]
 api-diff *args:
     @./scripts/.internal/api-diff.sh {{ args }}
@@ -73,7 +48,7 @@ contracts *args:
 e2e *args:
     @./scripts/.internal/e2e.sh {{ args }}
 
-# The whole gate: build with analyzers, csharpier, tests, shellcheck, gitleaks (the same CI runs)
+# The whole gate: build with analyzers, csharpier, tests, the API contract and its version, shellcheck, gitleaks (the same CI runs)
 [group('maintenance')]
 check:
     @./Myapp.Gate/scripts/check.sh

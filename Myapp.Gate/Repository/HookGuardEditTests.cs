@@ -102,7 +102,7 @@ public sealed class HookGuardEditTests
 
     [Theory]
     [InlineData("Myapp.Web/src/api/openapi.d.ts")]
-    [InlineData("Myapp.Server/openapi.json")]
+    [InlineData("contract/openapi.json")]
     public void Generated_api_files_are_refused_with_the_command_that_regenerates_them(string path)
     {
         var (exitCode, errors) = Run(path);

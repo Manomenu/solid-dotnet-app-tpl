@@ -5,7 +5,7 @@ this file is the one to edit. Setup: [docs/development.md](docs/development.md).
 
 ## Commands
 
-- For people: a recipe in `justfile` (or `.just/`) with a one-line description; `just` lists them.
+- For people: a recipe in `justfile`, in a module of the whole repository beside it (`tmux-dev.just`), or in a tool's folder as `<folder>/mod.just`, with a one-line description; `just` lists them. `just tmux-dev start` is the one way to run the stack.
 - For agents: a script in `scripts/.internal/`, or in `Myapp.Gate/scripts/` when it checks quality; each answers `--help`. A recipe only calls the script.
 - `check.sh --quick` while working, `check.sh` before calling a change done. `e2e.sh` is not in the
   gate: run it after changing anything a user clicks.

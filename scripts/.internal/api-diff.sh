@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
-# Does this change break the API contract? Compares Myapp.Server/openapi.json of the working tree with the one on
-# a base ref (default: master, or origin/master when master is not a local branch) and fails on a breaking change:
-# a removed endpoint or field, a narrowed type, a new required parameter. Consumers in other repositories learn of
-# such a change here, in the owner's CI, before any of them does. Compatible additions pass.
+# Does this change break the API contract, and does its version say so? Compares contract/openapi.json of the working
+# tree with the one on a base ref (default: master, or origin/master when master is not a local branch). Consumers in
+# other repositories pin a version of the contract, so a changed document needs a new version in contract/package.json:
+# a higher one for a compatible change, a higher major for a breaking change (a removed endpoint or field, a narrowed
+# type, a new required parameter). The full gate runs it, so a consumer learns of a break here, before any of them does.
 #
-#   api-diff.sh [base-ref]   exit 1 on a breaking change, 2 when the base ref is missing or a document cannot be read,
-#                            3 when oasdiff is not installed, 0 otherwise (also when the base has no contract yet)
+#   api-diff.sh [base-ref]   exit 1 on a change the version does not account for, 2 when the base ref is missing or a
+#                            document cannot be read, 3 when oasdiff is not installed, 0 otherwise (also when the base has
+#                            no contract yet)
 #
 # Uses oasdiff (https://github.com/oasdiff/oasdiff): `oasdiff breaking base revision --fail-on ERR`. Run
 # api-types.sh first when the server changed, so that the working tree's document is current.
@@ -15,7 +17,8 @@ if [ "${1:-}" = "--help" ]; then
     exit 0
 fi
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-CONTRACT="Myapp.Server/openapi.json"
+CONTRACT="contract/openapi.json"
+PACKAGE="contract/package.json"
 
 base="${1:-}"
 if [ -z "$base" ]; then
@@ -49,9 +52,23 @@ if ! oasdiff breaking "$TMP/base.json" "$ROOT/$CONTRACT" >"$TMP/load.log" 2>&1; 
     echo "api-diff.sh: oasdiff could not compare the documents (see above); is $CONTRACT valid JSON? Run: just api-types" >&2
     exit 2
 fi
+version_of() { python3 -c 'import json,sys; print(json.load(sys.stdin)["version"])'; }
+now="$(version_of <"$ROOT/$PACKAGE")"
+was="$(git -C "$ROOT" show "$base:$PACKAGE" 2>/dev/null | version_of 2>/dev/null || true)"
+# Why: sort -V orders 0.10.0 after 0.9.0, which a plain comparison of strings gets wrong
+higher() { [ "$1" != "$2" ] && [ "$(printf '%s\n%s\n' "$1" "$2" | sort -V | tail -n 1)" = "$1" ]; }
+
 if oasdiff breaking "$TMP/base.json" "$ROOT/$CONTRACT" --fail-on ERR; then
-    echo "API contract changed since $base, compatibly (nothing breaks a consumer)"
+    if [ -n "$was" ] && ! higher "$now" "$was"; then
+        echo "api-diff.sh: the API contract changed since $base, but $PACKAGE still says $now. Raise its minor version (a compatible change), so a consumer can pin the new one." >&2
+        exit 1
+    fi
+    echo "API contract changed since $base, compatibly (nothing breaks a consumer), as version $now"
 else
-    echo "api-diff.sh: the API contract breaks consumers (see above). Keep the old shape and add the new one beside it, or agree the break with every consumer first." >&2
+    if [ -n "$was" ] && [ "${now%%.*}" -gt "${was%%.*}" ]; then
+        echo "API contract breaks consumers since $base (see above), as the new major version $now: every consumer moves to it on purpose."
+        exit 0
+    fi
+    echo "api-diff.sh: the API contract breaks consumers (see above). Keep the old shape and add the new one beside it, or, agreed with every consumer, raise the major version in $PACKAGE." >&2
     exit 1
 fi

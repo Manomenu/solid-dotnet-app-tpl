@@ -23,10 +23,11 @@ lines: a new top-level folder needs its line here, a deleted one loses it.
 - `scripts/.internal/init-project.proj` and `init-project.sh` — the template's post action; they run once in a new project and delete themselves.
 <!-- template:end -->
 - `docs/` — documentation for people working on the repo: this map, `development.md`, the specs in `visual/spec/` (their acceptance criteria live as guardrails, see AGENTS.md), decisions above one feature in `adr/`.
-- `scripts/` — `scripts/.internal/` holds the everyday tools the gate and `just` run: `db.sh`, `checkout-env.sh`, `api-types.sh`, `api-diff.sh`, `contracts.sh`, `e2e.sh`, `smoke.sh`, `logs.sh`.
+- `scripts/` — `scripts/.internal/` holds the everyday tools the gate and `just` run: `db.sh`, `server.sh`, `tmux-dev.sh`, `checkout-env.sh`, `api-types.sh`, `api-diff.sh`, `contracts.sh`, `e2e.sh`, `smoke.sh`, `logs.sh`; the gate refuses one that nothing calls (`ScriptsCalledTests`).
 - `.claude/` — the committed Claude Code settings: a Stop hook that runs the quick gate, a PreToolUse hook that protects migrations, generated files, and the gate with the lint configs (`ALLOW_GATE_EDIT=1 claude` lifts the last).
 - `.config/` — `dotnet-tools.json`: the pinned CSharpier.
-- `.just/` — modules of the `justfile` (`just db`).
+- `contract/` — the API contract (`openapi.json`) and its version (`package.json`), generated and committed for consumers.
+- `tmux-dev.just` — the `justfile` module of the local stack; a tool's own module is `<folder>/mod.just` (`JustModulesTests`).
 
 Files at the root: `Directory.Build.props` (strict compiler and analyzers), `Directory.Build.rsp`
 (no idle MSBuild workers), `Directory.Packages.props` (every package version, once),
@@ -56,7 +57,7 @@ Each line is a build rule or a test; its message says the fix. Rules live as low
 - Logs (`HealthEndpointsTests`, `LogsScriptTests`): an error response carries the `traceId` that its log lines carry; `logs.sh` reads them back.
 - Editor (`VsCodeSettingsTests`): `.vscode/settings.json` has no style keys; recommended extension ids are well formed.
 - Images (`ImagePinsTests`): every `FROM` and `image:` carries a version, never `latest`.
-- Containers (`check.sh`): `docker compose config` resolves with and without the `db` profile; `smoke.sh` (run by `just up`) checks `/healthz` and `/api/health` of the running stack.
+- Containers (`check.sh`): `docker compose config` resolves with and without the `db` profile; `smoke.sh` (run by CI after the stack starts) checks `/healthz` and `/api/health` of the running stack; every compose port is on 127.0.0.1 (`ComposePortsTests`).
 - Build: analyzers `latest-all`, warnings are errors, unused private members (IDE0051, IDE0052, CA1823), no `#pragma warning disable` (`NoPragmaTests`).
 - Banned APIs (`BannedSymbols.txt`): `DateTime.Now`/`UtcNow`, blocking on tasks, `Thread.Sleep`, `Console`, `Activator`, reflection discovery, `Type.GetType(string)`, Newtonsoft.
 - Layers (`ContractsTests`): a layer uses only the layers below it, every namespace has a layer, every `*Endpoints` class is mapped from `Api`, one per namespace.

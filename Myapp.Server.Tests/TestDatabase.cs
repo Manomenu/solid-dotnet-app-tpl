@@ -20,7 +20,7 @@ public sealed class TestDatabase : IAsyncLifetime
         {
             if (unavailable is not null)
             {
-                Assert.Skip($"PostgreSQL unavailable — start it with `just db up` ({unavailable})");
+                Assert.Skip($"PostgreSQL unavailable — start it with scripts/.internal/db.sh up ({unavailable})");
             }
             return pool ?? throw new InvalidOperationException("the test database is not initialized");
         }

@@ -2,10 +2,10 @@
 # The server's OpenAPI document and the web app's TypeScript types generated from it. The C# records
 # the endpoints return are the single source of truth; neither output is ever edited by hand.
 #
-#   api-types.sh           regenerate Myapp.Server/openapi.json and Myapp.Web/src/api/openapi.d.ts
+#   api-types.sh           regenerate contract/openapi.json and Myapp.Web/src/api/openapi.d.ts
 #   api-types.sh --check   fail if either committed file is out of date (the gate runs this)
 #
-# Myapp.Server/openapi.json is the contract on the boundary: committed, so that api-diff.sh can compare
+# contract/openapi.json is the contract on the boundary, with its version in contract/package.json: committed, so that api-diff.sh can compare
 # it with the main branch and a consumer in another repository can take it from a backend commit. The
 # first line of openapi.d.ts names the sha256 of the document it was generated from: a consumer can tell
 # which contract its types come from without a package registry.
@@ -18,7 +18,7 @@ if [ "${1:-}" = "--help" ]; then
     exit 0
 fi
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-CONTRACT="$ROOT/Myapp.Server/openapi.json"
+CONTRACT="$ROOT/contract/openapi.json"
 TARGET="$ROOT/Myapp.Web/src/api/openapi.d.ts"
 
 TMP="$(mktemp -d)"
@@ -36,13 +36,13 @@ cd "$ROOT/Myapp.Web"
 pnpm exec openapi-typescript "$TMP/Myapp.Server.json" --output "$TMP/schema.d.ts" >/dev/null
 digest="$(sha256sum "$TMP/Myapp.Server.json" | cut -d' ' -f1)"
 {
-    echo "// Generated from Myapp.Server/openapi.json (sha256 $digest) by scripts/.internal/api-types.sh; never edit."
+    echo "// Generated from contract/openapi.json (sha256 $digest) by scripts/.internal/api-types.sh; never edit."
     cat "$TMP/schema.d.ts"
 } >"$TMP/openapi.d.ts"
 
 if [ "${1:-}" = "--check" ]; then
     stale=()
-    if ! diff -q "$TMP/Myapp.Server.json" "$CONTRACT" >/dev/null 2>&1; then stale+=("Myapp.Server/openapi.json"); fi
+    if ! diff -q "$TMP/Myapp.Server.json" "$CONTRACT" >/dev/null 2>&1; then stale+=("contract/openapi.json"); fi
     if ! diff -q "$TMP/openapi.d.ts" "$TARGET" >/dev/null 2>&1; then stale+=("Myapp.Web/src/api/openapi.d.ts"); fi
     if [ ${#stale[@]} -gt 0 ]; then
         echo "${stale[*]} out of date with the server's API — run: just api-types" >&2

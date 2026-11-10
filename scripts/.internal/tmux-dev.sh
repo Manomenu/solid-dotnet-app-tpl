@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # `just tmux-dev start [--restart]` / `just tmux-dev stop`: the local stack in one tmux session.
 #   left:  a shell in the repository
-#   right: server (+ database) / web
+#   right: the server under dotnet watch (+ the database of compose.yaml) / the web app under pnpm dev, with hot reload
 # The session is reused when it exists; --restart kills it (and everything running in it) first; stop kills it and stops there.
 # In a tmux pane the client is switched, not nested; any other terminal attaches where it was called.
 # TMUX_DEV_NO_ATTACH=1 builds the session and stops there (used to inspect the layout).
@@ -98,8 +98,8 @@ tmux select-pane -t "$shell" -T "shell"
 tmux select-pane -t "$server" -T "server: (6300)"
 tmux select-pane -t "$web" -T "web: (3300)"
 
-run "$server" "just db up && just server"
-run "$web" "just web"
+run "$server" "./scripts/.internal/db.sh up && ./scripts/.internal/server.sh"
+run "$web" "cd Myapp.Web && { [ -d node_modules ] || pnpm install; } && pnpm dev"
 
 tmux select-pane -t "$shell"
 attach

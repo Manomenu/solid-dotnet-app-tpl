@@ -23,7 +23,7 @@ internal static partial class HealthEndpoints
         {
             DatabaseDoesNotAnswer(loggerFactory.CreateLogger("Myapp.Server.Health"), error);
             return TypedResults.Problem(
-                detail: "The database does not answer: start it with `just db up`, or fix ConnectionStrings:Default.",
+                detail: "The database does not answer: start it with `just tmux-dev start` (or scripts/.internal/db.sh up), or fix ConnectionStrings:Default.",
                 statusCode: StatusCodes.Status503ServiceUnavailable
             );
         }

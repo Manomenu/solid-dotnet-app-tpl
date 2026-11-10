@@ -1,8 +1,6 @@
-# `just tmux-dev <recipe>` — the local stack in one tmux session: a shell, the server with its database, and the web app.
+# `just tmux-dev <recipe>` — the local stack in one tmux session: a shell, the server under dotnet watch with its database, and the web app under pnpm dev.
 
 set shell := ["bash", "-euo", "pipefail", "-c"]
-# Recipes run from the repo root, like the ones in the main justfile.
-set working-directory := ".."
 
 [private]
 default:

@@ -3,7 +3,8 @@
 #   check.sh --quick   the repository guards (Myapp.Gate tests), with build, csharpier, eslint, tsc and shellcheck only for what changed;
 #                      no database, no vitest
 #   check.sh           build, csharpier and every test (server against the real database, guards, vitest) over the whole repository, plus tsc,
-#                      eslint, prettier, knip, API contract and types up to date, acceptance criteria guarded, compose, shellcheck and gitleaks
+#                      eslint, prettier, knip, API contract and types up to date and the contract's version right for what changed since master
+#                      (api-diff.sh, oasdiff), acceptance criteria guarded, compose, shellcheck and gitleaks
 # What changed is what differs from where this branch left master, committed or not, plus new untracked files. With no .NET
 # file changed, quick builds only Myapp.Gate; tsc runs only if web code changed. The tests that prove acceptance criteria
 # run only in the full gate.
@@ -146,6 +147,15 @@ web_knip() { cd "$ROOT/Myapp.Web" && pnpm exec knip; }
 
 api_types() { "$ROOT/scripts/.internal/api-types.sh" --check; }
 
+# Why: a new repository has no master yet, and a contract with nothing to compare against is right by definition
+api_version() {
+    if ! git -C "$ROOT" rev-parse --verify -q master >/dev/null && ! git -C "$ROOT" rev-parse --verify -q origin/master >/dev/null; then
+        echo "no master yet: nothing to compare the contract with"
+        return 0
+    fi
+    "$ROOT/scripts/.internal/api-diff.sh"
+}
+
 acceptance_criteria() { "$ROOT/Myapp.Gate/scripts/criteria.sh"; }
 
 compose_files() {
@@ -163,7 +173,7 @@ secrets_in_git() {
 }
 
 export ROOT
-export -f build_server format_server local_database test_server shell_scripts secrets_in_git web_typecheck web_eslint web_vitest web_prettier web_knip api_types acceptance_criteria compose_files
+export -f build_server format_server local_database test_server shell_scripts secrets_in_git web_typecheck web_eslint web_vitest web_prettier web_knip api_types api_version acceptance_criteria compose_files
 export -f changed_files dotnet_changed build_changed format_changed test_guards web_changed_files typecheck_changed eslint_changed shell_changed
 if [ "$QUICK" -eq 1 ]; then
     declare_step build "build what changed (compiler, analyzers, banned APIs)" 300
@@ -185,12 +195,14 @@ else
     declare_step prettier "format Myapp.Web (prettier --check)" 120
     declare_step knip "dead code Myapp.Web (knip)" 180
     declare_step apitypes "API contract and types up to date (api-types.sh --check)" 300
+    declare_step apiversion "API contract's version right for what changed since master (api-diff.sh, oasdiff)" 60
     declare_step criteria "acceptance criteria guarded (criteria.sh)" 60
     declare_step shellcheck "shell scripts (shellcheck)" 120
     declare_step gitleaks "secrets in git (gitleaks)" 300
     docker compose version >/dev/null 2>&1 || SKIPPED[compose]="docker compose not installed"
     command -v shellcheck >/dev/null 2>&1 || SKIPPED[shellcheck]="shellcheck not installed"
     command -v gitleaks >/dev/null 2>&1 || SKIPPED[gitleaks]="gitleaks not installed"
+    command -v oasdiff >/dev/null 2>&1 || SKIPPED[apiversion]="oasdiff not installed"
     if ! command -v python3 >/dev/null 2>&1; then
         SKIPPED[criteria]="python3 not installed"
     else
@@ -222,6 +234,8 @@ else
         if [ -z "${CI:-}" ]; then run_step postgres local_database; fi
         run_step test test_server
         if [ -z "${SKIPPED[apitypes]+x}" ]; then run_step apitypes api_types; fi
+        # Why: api-diff.sh compares the document the step above has just proven current
+        if [ -z "${SKIPPED[apiversion]+x}" ]; then run_step apiversion api_version; fi
     ) &
 fi
 PIDS+=($!)

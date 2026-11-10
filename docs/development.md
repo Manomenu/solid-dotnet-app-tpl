@@ -19,6 +19,7 @@ just e2e                  # browser tests (own server, own database, own ports; 
 just logs                 # why did it fail? last warnings/errors of the newest server log (see below)
 just api-types            # regenerate contract/openapi.json and Myapp.Web/src/api/openapi.d.ts after changing a record the API
                           # exposes; then raise the contract's version in contract/package.json
+just slow-tests           # the 10 slowest .NET tests (-n 25 for more): a report, the gate never measures time
 just mutate               # Stryker.NET (MTP runner, preview) on the server code changed since master; needs a master with commits
 just pack-template        # the dotnet new template as a NuGet package in .artifacts/nupkg
 just check-quick          # the repository guards, and build, csharpier, eslint, tsc, shellcheck for what changed only: seconds

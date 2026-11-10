@@ -58,6 +58,12 @@ check:
 check-quick:
     @./Myapp.Gate/scripts/check.sh --quick
 
+# Which .NET tests take the longest: runs them all once and lists the slowest (-n 25 for more); a report, never a check
+[group('maintenance')]
+[positional-arguments]
+slow-tests *args:
+    @./scripts/.internal/slow-tests.sh "$@"
+
 # Format the code: CSharpier for C#, Prettier for the web app
 [group('maintenance')]
 fmt:

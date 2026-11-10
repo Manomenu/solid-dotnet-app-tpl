@@ -7,17 +7,15 @@ using Npgsql;
 
 namespace Myapp.Server.Tests.Health;
 
-public sealed class HealthEndpointsTests(TestDatabase database) : IDisposable
+public sealed class HealthEndpointsTests(TestDatabase database, ClassServer server) : IClassFixture<ClassServer>
 {
-    private readonly TestApp app = new();
-
-    public void Dispose() => app.Dispose();
+    private TestApp App => server.App;
 
     [Fact]
     public async Task Health_is_ok_when_the_database_answers()
     {
         _ = database.Pool;
-        using var client = app.CreateClient();
+        using var client = App.CreateClient();
 
         var response = await client.GetAsync("/api/health", TestContext.Current.CancellationToken);
 
@@ -30,7 +28,7 @@ public sealed class HealthEndpointsTests(TestDatabase database) : IDisposable
         _ = database.Pool;
         using var logs = new CapturedLogs();
         var unreachable = new NpgsqlConnectionStringBuilder(TestDatabase.ConnectionString) { Port = 1 }.ConnectionString;
-        using var broken = app.WithWebHostBuilder(builder =>
+        using var broken = App.WithWebHostBuilder(builder =>
             builder.ConfigureServices(services => services.AddSingleton(Pool.Create(unreachable)).AddSingleton<ILoggerProvider>(logs))
         );
         using var client = broken.CreateClient();

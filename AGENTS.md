@@ -29,6 +29,8 @@ this file is the one to edit. Setup: [docs/development.md](docs/development.md).
 - Mutation tests (`just mutate`) run only when a person asks for them: an agent neither runs nor proposes them on its own.
 - Correction or a new rule? Make the mistake impossible or loud first: a type → a lint → a test → a hook. Add a sentence here only for what none of these can check.
 - A guard's message states the fix. Never weaken a guard to make a change pass: fix the change.
+- A closed set of string values in a record the API sends (`contract/openapi.json`) (a kind, a reason, the name of an event) is an enum in the contract,
+  never a plain string, so a consumer generates it with the types and learns of a new value from the contract, not from a copy.
 
 ## Specs
 

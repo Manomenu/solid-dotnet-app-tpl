@@ -38,6 +38,9 @@ What it cannot see:
 - Set ids with `vdoc.py ids`, never by hand: a dropped id is never reused, an id is never renumbered.
 - A criterion no automated check can prove is a wrong criterion: ask the owner, never keep it unguarded.
 - A criterion gets the lightest check that can fail for it: a plain test before a server test, a server test before a browser test; browser tests cover what only a browser can.
+- A criterion that promises something for every member of a set that grows (every event, role, page, row) is guarded by structure,
+  not by examples: a type derived from the set's source, so a new member is a compile error until it is handled, or a test that
+  walks every member, from the source or the rendered structure. A test that names the members it checks lets the next one through.
 - Before merging a spec'd feature, run `/suwagent:visual-guardrails`: `criteria.sh` sees that an id is named, not that the test would fail.
 
 ## Review

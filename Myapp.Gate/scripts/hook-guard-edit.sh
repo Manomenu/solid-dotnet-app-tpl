@@ -6,6 +6,13 @@ path="$(printf '%s' "$input" | grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"
 path="$(printf '%s' "$path" | tr '\134' '/')"
 [ -n "$path" ] || exit 0
 
+project="${CLAUDE_PROJECT_DIR:-$(cd "$(dirname "$0")/../.." && pwd)}"
+project="$(printf '%s' "$project" | tr '\134' '/')"
+case "$path" in
+    "$project"/*) ;;
+    *) exit 0 ;;
+esac
+
 if [ "${ALLOW_GATE_EDIT:-}" != "1" ]; then
     case "$path" in
         */Myapp.Gate/layers.json) ;;

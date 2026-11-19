@@ -5,7 +5,7 @@ namespace Myapp.Gate.Repository;
 
 public sealed class HookGuardEditTests
 {
-    private static (int ExitCode, string Errors) Run(string path, bool allowGateEdit = false)
+    private static (int ExitCode, string Errors) Run(string path, bool allowGateEdit = false, string? project = null)
     {
         var gitBash = @"C:\Program Files\Git\bin\bash.exe";
         var start = new ProcessStartInfo(File.Exists(gitBash) ? gitBash : "bash")
@@ -16,6 +16,11 @@ public sealed class HookGuardEditTests
         };
         start.ArgumentList.Add("Myapp.Gate/scripts/hook-guard-edit.sh");
         start.Environment.Remove("ALLOW_GATE_EDIT");
+        start.Environment.Remove("CLAUDE_PROJECT_DIR");
+        if (project is not null)
+        {
+            start.Environment["CLAUDE_PROJECT_DIR"] = project;
+        }
         if (allowGateEdit)
         {
             start.Environment["ALLOW_GATE_EDIT"] = "1";
@@ -72,11 +77,11 @@ public sealed class HookGuardEditTests
             Git(repository, "init", "-q");
             Git(repository, "add", "-A");
 
-            var (exitCode, errors) = Run(tracked);
+            var (exitCode, errors) = Run(tracked, project: repository);
 
             Assert.Equal(2, exitCode);
             Assert.Contains("ALLOW_GATE_EDIT=1 claude", errors, StringComparison.Ordinal);
-            Assert.Equal(0, Run(Path.Combine(folder, "New.cs")).ExitCode);
+            Assert.Equal(0, Run(Path.Combine(folder, "New.cs"), project: repository).ExitCode);
         }
         finally
         {
@@ -118,4 +123,11 @@ public sealed class HookGuardEditTests
     [InlineData("Myapp.Gate/layers.json")]
     [InlineData("AGENTS.md")]
     public void Everything_else_stays_editable(string path) => Assert.Equal(0, Run(path).ExitCode);
+
+    [Theory]
+    [InlineData("/elsewhere/other-repo/Web/eslint.config.js")]
+    [InlineData("/elsewhere/other-repo/Web/tsconfig.json")]
+    [InlineData("/elsewhere/other-repo/.claude/settings.json")]
+    [InlineData("/elsewhere/other-repo/Web/pnpm-lock.yaml")]
+    public void Files_of_another_project_are_not_this_projects_gate(string path) => Assert.Equal(0, Run(path).ExitCode);
 }

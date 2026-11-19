@@ -29,6 +29,8 @@ this file is the one to edit. Setup: [docs/development.md](docs/development.md).
 - Mutation tests (`just mutate`) run only when a person asks for them: an agent neither runs nor proposes them on its own.
 - Correction or a new rule? Make the mistake impossible or loud first: a type → a lint → a test → a hook. Add a sentence here only for what none of these can check.
 - A guard's message states the fix. Never weaken a guard to make a change pass: fix the change.
+- A closed set of string values in a record the API sends (`contract/openapi.json`) (a kind, a reason, the name of an event) is an enum in the contract,
+  never a plain string, so a consumer generates it with the types and learns of a new value from the contract, not from a copy.
 
 ## Specs
 
@@ -38,6 +40,9 @@ What it cannot see:
 - Set ids with `vdoc.py ids`, never by hand: a dropped id is never reused, an id is never renumbered.
 - A criterion no automated check can prove is a wrong criterion: ask the owner, never keep it unguarded.
 - A criterion gets the lightest check that can fail for it: a plain test before a server test, a server test before a browser test; browser tests cover what only a browser can.
+- A criterion that promises something for every member of a set that grows (every event, role, page, row) is guarded by structure,
+  not by examples: a type derived from the set's source, so a new member is a compile error until it is handled, or a test that
+  walks every member, from the source or the rendered structure. A test that names the members it checks lets the next one through.
 - A spec written before its feature is built is a draft in `docs/draft/spec/`, which the gate does not read; it moves to `docs/visual/spec/` when its feature is built, together with the tests that guard its criteria.
 - Before merging a spec'd feature, run `/suwagent:visual-guardrails`: `criteria.sh` sees that an id is named, not that the test would fail.
 

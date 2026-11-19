@@ -1,19 +1,24 @@
 #!/usr/bin/env bash
-# Does this change break the API contract, and does its version say so? Compares contract/openapi.json of the working
-# tree with the one on a base ref (default: master, or origin/master when master is not a local branch). Consumers in
-# other repositories pin a version of the contract, so a changed document needs a new version in contract/package.json:
-# a higher one for a compatible change, a higher major for a breaking change (a removed endpoint or field, a narrowed
-# type, a new required parameter). The full gate runs it, so a consumer learns of a break here, before any of them does.
-#
-#   api-diff.sh [base-ref]   exit 1 on a change the version does not account for, 2 when the base ref is missing or a
-#                            document cannot be read, 3 when oasdiff is not installed, 0 otherwise (also when the base has
-#                            no contract yet)
-#
-# Uses oasdiff (https://github.com/oasdiff/oasdiff): `oasdiff breaking base revision --fail-on ERR`. Run
-# api-types.sh first when the server changed, so that the working tree's document is current.
 set -euo pipefail
+usage() {
+    cat <<'USAGE'
+Does this change break the API contract, and does its version say so? Compares contract/openapi.json of the working
+tree with the one on a base ref (default: master, or origin/master when master is not a local branch). Consumers in
+other repositories pin a version of the contract, so a changed document needs a new version in contract/package.json:
+a higher one for a compatible change, a higher major for a breaking change (a removed endpoint or field, a narrowed
+type, a new required parameter). The full gate runs it, so a consumer learns of a break here, before any of them does.
+
+  api-diff.sh [base-ref]   exit 1 on a change the version does not account for, 2 when the base ref is missing or a
+                           document cannot be read, 3 when oasdiff is not installed, 0 otherwise (also when the base has
+                           no contract yet)
+
+Uses oasdiff (https://github.com/oasdiff/oasdiff): `oasdiff breaking base revision --fail-on ERR`. Run
+api-types.sh first when the server changed, so that the working tree's document is current. It runs oasdiff once
+without --fail-on first: with it, a document that cannot be read would exit like a breaking change.
+USAGE
+}
 if [ "${1:-}" = "--help" ]; then
-    sed -n '2,/^[^#]/{/^#/s/^# \{0,1\}//p}' "$0"
+    usage
     exit 0
 fi
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
@@ -46,8 +51,8 @@ if git -C "$ROOT" diff --quiet --no-index "$TMP/base.json" "$ROOT/$CONTRACT" 2>/
     exit 0
 fi
 
-# Why: with --fail-on, a document that cannot be read exits like a breaking change; a run without it tells them apart
-if ! oasdiff breaking "$TMP/base.json" "$ROOT/$CONTRACT" >"$TMP/load.log" 2>&1; then
+both_documents_load() { oasdiff breaking "$TMP/base.json" "$ROOT/$CONTRACT" >"$TMP/load.log" 2>&1; }
+if ! both_documents_load; then
     cat "$TMP/load.log" >&2
     echo "api-diff.sh: oasdiff could not compare the documents (see above); is $CONTRACT valid JSON? Run: just api-types" >&2
     exit 2
@@ -55,11 +60,10 @@ fi
 version_of() { python3 -c 'import json,sys; print(json.load(sys.stdin)["version"])'; }
 now="$(version_of <"$ROOT/$PACKAGE")"
 was="$(git -C "$ROOT" show "$base:$PACKAGE" 2>/dev/null | version_of 2>/dev/null || true)"
-# Why: sort -V orders 0.10.0 after 0.9.0, which a plain comparison of strings gets wrong
-higher() { [ "$1" != "$2" ] && [ "$(printf '%s\n%s\n' "$1" "$2" | sort -V | tail -n 1)" = "$1" ]; }
+version_is_higher() { [ "$1" != "$2" ] && [ "$(printf '%s\n%s\n' "$1" "$2" | sort -V | tail -n 1)" = "$1" ]; }
 
 if oasdiff breaking "$TMP/base.json" "$ROOT/$CONTRACT" --fail-on ERR; then
-    if [ -n "$was" ] && ! higher "$now" "$was"; then
+    if [ -n "$was" ] && ! version_is_higher "$now" "$was"; then
         echo "api-diff.sh: the API contract changed since $base, but $PACKAGE still says $now. Raise its minor version (a compatible change), so a consumer can pin the new one." >&2
         exit 1
     fi

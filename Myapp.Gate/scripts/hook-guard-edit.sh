@@ -1,9 +1,4 @@
 #!/usr/bin/env bash
-# Claude Code PreToolUse hook for Edit|Write (.claude/settings.json): refuses to change what must never be edited
-# by hand — a migration script that already exists (grate refuses to start on a changed one) and generated files
-# (lockfiles, the OpenAPI output) — and what an agent must not change on its own: the gate, the hooks and the lint
-# configs, unless the owner started the session with ALLOW_GATE_EDIT=1. Exit 2 blocks the call and the message on
-# stderr goes back to the agent.
 set -euo pipefail
 
 input="$(cat)"
@@ -13,7 +8,6 @@ path="$(printf '%s' "$path" | tr '\134' '/')"
 
 if [ "${ALLOW_GATE_EDIT:-}" != "1" ]; then
     case "$path" in
-        # Why: which layer may use which changes with every new feature; it is data, and its diff is one readable line.
         */Myapp.Gate/layers.json) ;;
         */Myapp.Gate/* | */.claude/settings.json | */.github/workflows/* | */.editorconfig | */eslint.config.js | */BannedSymbols.txt | \
             */Directory.Build.props | */tsconfig*.json)
@@ -22,8 +16,6 @@ if [ "${ALLOW_GATE_EDIT:-}" != "1" ]; then
             exit 2
             ;;
         */Myapp.Server.Tests/Characterization/*)
-            # Why: recording behaviour for the first time is the agent's job, including fixing its own fresh file;
-            # a recording git already tracks is the owner's
             git -C "$(dirname "$path")" ls-files --error-unmatch -- "$path" >/dev/null 2>&1 || exit 0
             echo "Blocked: $path records behaviour as it is today (a characterization test); an agent does not change a recording on its own, it changes the code until the recording passes again." >&2
             echo "Do not work around it: ask the user to start a session with ALLOW_GATE_EDIT=1 claude and give them the exact change to make there (the file, what to change, why)." >&2

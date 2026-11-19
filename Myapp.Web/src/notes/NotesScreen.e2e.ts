@@ -1,4 +1,3 @@
-// A user adds a note and sees it in the list, through the same /api path the container stack uses.
 import { expect, test } from "@playwright/test";
 
 test("a note added on the Notes screen appears in the list", async ({ page }) => {

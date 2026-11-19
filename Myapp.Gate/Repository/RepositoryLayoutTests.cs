@@ -59,7 +59,6 @@ public sealed partial class RepositoryLayoutTests
     [Fact]
     public void Every_shell_script_is_executable_in_git()
     {
-        // Why: the index, not the file system — a checkout on Windows or with core.fileMode=false has no exec bit to read.
         var git = new ProcessStartInfo("git", "ls-files --stage -- *.sh")
         {
             WorkingDirectory = RepositoryFiles.Root,

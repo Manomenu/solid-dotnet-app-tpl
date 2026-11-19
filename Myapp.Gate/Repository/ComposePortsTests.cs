@@ -2,7 +2,6 @@ using System.Text.RegularExpressions;
 
 namespace Myapp.Gate.Repository;
 
-// Why: the server's /suwagcms/* has no key, and a port published on every interface puts what runs here on the laptop's network.
 public sealed partial class ComposePortsTests
 {
     [GeneratedRegex(@"^(\s*)ports:\s*$")]

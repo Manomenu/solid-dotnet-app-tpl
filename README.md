@@ -27,6 +27,12 @@ cd Invoices && bash Myapp.Gate/scripts/check.sh
   living specs and the git repository on `master` with the hooks enabled, and removes the template notes
   (this block included). Without it, run `dotnet msbuild scripts/.internal/init-project.proj` yourself. The
   post action goes through MSBuild so that on Windows `bash` is Git's, not WSL's; install Git for Windows.
+  It runs once, in the new project only (it refuses to run where `.template.config/` exists), and deletes itself.
+  `dotnet new` writes every file without its executable bit, so it also marks the scripts and the pre-commit hook
+  executable in the index (`git add --chmod=+x`), where Windows keeps the mode too.
+- The template uses no templating directives inside files (no `#if` or `//#if`): it renames through `sourceName` and
+  shifts ports through the symbols of `.template.config/template.json`, so the generated project has no comment to strip.
+  A file that needs a directive later puts it on the allowed list of AGENTS.md, "No comments", and into its guard.
 - `dotnet new uninstall <path>` removes the template. To share it as a file instead of a folder:
   `just pack-template`, then `dotnet new install .artifacts/nupkg/Solid.DotnetApp.Template.1.0.0.nupkg`.
 
@@ -65,7 +71,7 @@ web app with types generated from the server's OpenAPI document, and a Notes fea
 ## What the gate guarantees
 
 `bash Myapp.Gate/scripts/check.sh` (`--quick` while working, within a 20-second budget: the repository guards, and build, csharpier, eslint, tsc and shellcheck only for what changed since the branch left `master`) fails on: any compiler or analyzer warning, banned
-APIs, a layer used against its order, a folder or project off the lists the guards read, dead types and packages, vague names, stray comments, `dynamic`, unpinned
+APIs, a layer used against its order, a folder or project off the lists the guards read, dead types and packages, vague names, any comment but a tool directive, `dynamic`, browser storage, unpinned
 images, a stale API contract or generated types, an acceptance criterion without a guardrail, an unresolvable compose file. The full list, each with its fix:
 [docs/architecture.md, "What the gate forbids"](docs/architecture.md#what-the-gate-forbids).
 Browser tests run separately (`scripts/.internal/e2e.sh`), and `just tmux-dev start` is the one way to run the stack.
@@ -90,7 +96,10 @@ why; its acceptance criteria are the contract:
 2. **Outside the spec, a criterion lives only as a guardrail** that names its id: a test, a lint rule,
    a build rule. Not as a checklist or a QA note. A criterion that no automated check can prove is
    reworded into plain description or dropped from the spec (the agent asks the owner which).
-3. **The full gate checks the link both ways** (`check.sh`, not `--quick`, so an agent can stop and ask
+3. **A spec written ahead of its feature is a draft** in `docs/draft/spec/`: the gate reads only `docs/visual/spec/`,
+   where every criterion without a guardrail fails it. The draft moves there when its feature is built, together
+   with its tests.
+4. **The full gate checks the link both ways** (`check.sh`, not `--quick`, so an agent can stop and ask
    about a criterion mid-work):
 
 | The gate fails when | What to do |

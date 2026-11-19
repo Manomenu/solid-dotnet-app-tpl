@@ -1,10 +1,14 @@
 #!/usr/bin/env bash
-# Smoke test of a running stack: smoke.sh <base-url>, e.g. smoke.sh http://127.0.0.1:8190
-# Read-only requests through the web's nginx, the way traffic arrives: the page answers, and the server behind it
-# answers with its database. Prints what failed and what to look at; exit code is non-zero on any failure.
 set -euo pipefail
+usage() {
+    cat <<'USAGE'
+Smoke test of a running stack: smoke.sh <base-url>, e.g. smoke.sh http://127.0.0.1:8190
+Read-only requests through the web's nginx, the way traffic arrives: the page answers, and the server behind it
+answers with its database. Prints what failed and what to look at; exit code is non-zero on any failure.
+USAGE
+}
 if [ "${1:-}" = "--help" ]; then
-    sed -n '2,/^[^#]/{/^#/s/^# \{0,1\}//p}' "$0"
+    usage
     exit 0
 fi
 

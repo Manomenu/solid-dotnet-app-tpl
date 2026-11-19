@@ -1,20 +1,24 @@
 #!/usr/bin/env bash
-# The server's OpenAPI document and the web app's TypeScript types generated from it. The C# records
-# the endpoints return are the single source of truth; neither output is ever edited by hand.
-#
-#   api-types.sh           regenerate contract/openapi.json and Myapp.Web/src/api/openapi.d.ts
-#   api-types.sh --check   fail if either committed file is out of date (the gate runs this)
-#
-# contract/openapi.json is the contract on the boundary, with its version in contract/package.json: committed, so that api-diff.sh can compare
-# it with the main branch and a consumer in another repository can take it from a backend commit. The
-# first line of openapi.d.ts names the sha256 of the document it was generated from: a consumer can tell
-# which contract its types come from without a package registry.
-#
-# The document is written by the build (Microsoft.Extensions.ApiDescription.Server), which starts
-# the app only up to the point where its routes are known — no database needed.
 set -euo pipefail
+usage() {
+    cat <<'USAGE'
+The server's OpenAPI document and the web app's TypeScript types generated from it. The C# records
+the endpoints return are the single source of truth; neither output is ever edited by hand.
+
+  api-types.sh           regenerate contract/openapi.json and Myapp.Web/src/api/openapi.d.ts
+  api-types.sh --check   fail if either committed file is out of date (the gate runs this)
+
+contract/openapi.json is the contract on the boundary, with its version in contract/package.json: committed, so that api-diff.sh can compare
+it with the main branch and a consumer in another repository can take it from a backend commit. The
+first line of openapi.d.ts names the sha256 of the document it was generated from: a consumer can tell
+which contract its types come from without a package registry.
+
+The document is written by the build (Microsoft.Extensions.ApiDescription.Server), which starts
+the app only up to the point where its routes are known — no database needed.
+USAGE
+}
 if [ "${1:-}" = "--help" ]; then
-    sed -n '2,/^[^#]/{/^#/s/^# \{0,1\}//p}' "$0"
+    usage
     exit 0
 fi
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
@@ -24,9 +28,8 @@ TARGET="$ROOT/Myapp.Web/src/api/openapi.d.ts"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
-# The generating target is skipped while its cache in obj/ is newer than the binary; the
-# document has to be written into this run's directory every time.
-rm -f "$ROOT/Myapp.Server/obj/Myapp.Server.OpenApiFiles.cache"
+force_the_document_to_be_written_again() { rm -f "$ROOT/Myapp.Server/obj/Myapp.Server.OpenApiFiles.cache"; }
+force_the_document_to_be_written_again
 dotnet build "$ROOT/Myapp.Server" --nologo -v quiet \
     -p:OpenApiGenerateDocumentsOnBuild=true -p:OpenApiDocumentsDirectory="$TMP" >"$TMP/build.log" ||
     { cat "$TMP/build.log" >&2; exit 1; }

@@ -1,13 +1,17 @@
 #!/usr/bin/env bash
-# Which .NET tests take the longest? Builds, runs every test project once with an xunit TRX report and lists the slowest
-# tests. A report, not a check: it never fails for time, and the gate never runs it. A test far slower than its neighbours
-# usually waits for something (a timeout, a server started per test) and passes anyway; look at those first.
-#   slow-tests.sh        the 10 slowest tests, with how long each took
-#   slow-tests.sh -n 25  the 25 slowest
-# Exit 1 when a test fails (the list still comes first). Needs python3; starts the test database like check.sh.
 set -euo pipefail
+usage() {
+    cat <<'USAGE'
+Which .NET tests take the longest? Builds, runs every test project once with an xunit TRX report and lists the slowest
+tests. A report, not a check: it never fails for time, and the gate never runs it. A test far slower than its neighbours
+usually waits for something (a timeout, a server started per test) and passes anyway; look at those first.
+  slow-tests.sh        the 10 slowest tests, with how long each took
+  slow-tests.sh -n 25  the 25 slowest
+Exit 1 when a test fails (the list still comes first). Needs python3; starts the test database like check.sh.
+USAGE
+}
 if [ "${1:-}" = "--help" ]; then
-    sed -n '2,/^[^#]/{/^#/s/^# \{0,1\}//p}' "$0"
+    usage
     exit 0
 fi
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"

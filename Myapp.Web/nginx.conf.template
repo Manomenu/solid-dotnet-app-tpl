@@ -5,16 +5,12 @@ server {
     root /usr/share/nginx/html;
     index index.html;
 
-    # Liveness of the container itself, independent of the API.
     location = /healthz {
         access_log off;
         add_header content-type text/plain always;
         return 200 "ok\n";
     }
 
-    # The browser only ever sees one origin, as behind the vite proxy in development. The upstream goes through a
-    # variable so nginx looks the name up again (every 10 s): a recreated server container gets a new address.
-    # With a variable and no URI in proxy_pass the request goes on unchanged, /api prefix included.
     location /api/ {
         resolver ${NGINX_LOCAL_RESOLVERS} valid=10s;
         set $api_upstream ${API_UPSTREAM};

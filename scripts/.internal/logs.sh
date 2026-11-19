@@ -1,14 +1,18 @@
 #!/usr/bin/env bash
-# Why did it fail? One command, short output, from the server's JSON log lines (no jq needed).
-#   logs.sh                 the last warnings and errors of the newest log in .artifacts/logs/
-#   logs.sh --all           every level
-#   logs.sh --trace <id>    every line of one request: the traceId of an error response (32 hex digits or the W3C form)
-#   logs.sh --compose       read the compose server (docker compose logs) instead of a file
-#   logs.sh -n 50           the last 50 lines (default 20)
-#   logs.sh --file <path>   a specific log file
-# One line each: time level category traceId=... message, and for an exception its type and first line.
-# The logs are written by the server of `just tmux-dev start` (server.sh, .artifacts/logs/server.jsonl) and e2e.sh (.artifacts/logs/e2e-server.jsonl).
 set -euo pipefail
+usage() {
+    cat <<'USAGE'
+Why did it fail? One command, short output, from the server's JSON log lines (no jq needed).
+  logs.sh                 the last warnings and errors of the newest log in .artifacts/logs/
+  logs.sh --all           every level
+  logs.sh --trace <id>    every line of one request: the traceId of an error response (32 hex digits or the W3C form)
+  logs.sh --compose       read the compose server (docker compose logs) instead of a file
+  logs.sh -n 50           the last 50 lines (default 20)
+  logs.sh --file <path>   a specific log file
+One line each: time level category traceId=... message, and for an exception its type and first line.
+The logs are written by the server of `just tmux-dev start` (server.sh, .artifacts/logs/server.jsonl) and e2e.sh (.artifacts/logs/e2e-server.jsonl).
+USAGE
+}
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 
 all=0
@@ -31,6 +35,10 @@ while [ $# -gt 0 ]; do
         --file)
             file="${2:?--file needs a path}"
             shift
+            ;;
+        --help)
+            usage
+            exit 0
             ;;
         *)
             echo "usage: logs.sh [--all] [--trace <id>] [--compose] [-n N] [--file <path>]" >&2

@@ -1,24 +1,30 @@
 #!/usr/bin/env bash
-# The quality gate. CI runs exactly this script; humans run `just check`, hooks run `--quick`.
-#   check.sh --quick   the repository guards (Myapp.Gate tests), with build, csharpier, eslint, tsc and shellcheck only for what changed;
-#                      no database, no vitest
-#   check.sh           build, csharpier and every test (server against the real database, guards, vitest) over the whole repository, plus tsc,
-#                      eslint, prettier, knip, API contract and types up to date and the contract's version right for what changed since master
-#                      (api-diff.sh, oasdiff), acceptance criteria guarded, compose, shellcheck and gitleaks
-# What changed is what differs from where this branch left master, committed or not, plus new untracked files. With no .NET
-# file changed, quick builds only Myapp.Gate; tsc runs only if web code changed. The tests that prove acceptance criteria
-# run only in the full gate.
-# The quick gate has a time budget, CHECK_QUICK_LIMIT seconds (default 20): the Stop hook runs it after every turn of an
-# agent, and a gate that takes minutes gets switched off. Above the budget it fails and says so: move the slow step to the
-# full gate or make it faster; raise the budget only on a machine that is slow across the board.
-# Acceptance criteria are not in --quick: the Stop hook runs it after every turn, and a criterion written into
-# a spec before its guardrail (or one the owner must first decide on) would block the agent from stopping to ask.
-# Quiet: a green gate prints one line. Otherwise it lists only the failed and skipped steps (passed ones are counted),
-# after the tail of each failed log: whoever reads it, often an agent's context, pays only for what needs fixing.
-# A step that cannot run
-# (a tool is missing) is SKIP, never PASS; with CI set a SKIP fails the gate, locally the report ends with
-# "NOT VERIFIED: <steps>". Exit code is non-zero on any failure.
 set -euo pipefail
+usage() {
+    cat <<'USAGE'
+usage: check.sh [--quick] | --help
+The quality gate. CI runs exactly this script; humans run `just check`, hooks run `--quick`.
+  check.sh --quick   the repository guards (Myapp.Gate tests), with build, csharpier, eslint, tsc and shellcheck only for what changed;
+                     no database, no vitest
+  check.sh           build, csharpier and every test (server against the real database, guards, vitest) over the whole repository, plus tsc,
+                     eslint, prettier, knip, API contract and types up to date and the contract's version right for what changed since master
+                     (api-diff.sh, oasdiff), acceptance criteria guarded, compose, shellcheck and gitleaks
+What changed is what differs from where this branch left master, committed or not, plus new untracked files. With no .NET
+file changed, quick builds only Myapp.Gate; tsc runs only if web code changed. The tests that prove acceptance criteria
+run only in the full gate.
+The quick gate has a time budget, CHECK_QUICK_LIMIT seconds (default 20): the Stop hook runs it after every turn of an
+agent, and a gate that takes minutes gets switched off. Above the budget it fails and says so: move the slow step to the
+full gate or make it faster; raise the budget only on a machine that is slow across the board.
+Every step has a hard ceiling (CHECK_STEP_LIMIT seconds overrides them all); a step above it is killed and fails as
+"hung or too slow"; without `timeout` on the machine there is no ceiling. A failed step does not stop the others.
+Acceptance criteria are not in --quick: the Stop hook runs it after every turn, and a criterion written into
+a spec before its guardrail (or one the owner must first decide on) would block the agent from stopping to ask.
+Quiet: a green gate prints one line. Otherwise it lists only the failed and skipped steps (passed ones are counted),
+after the tail of each failed log: whoever reads it, often an agent's context, pays only for what needs fixing.
+A step that cannot run (a tool is missing) is SKIP, never PASS; with CI set a SKIP fails the gate, locally the report ends with
+"NOT VERIFIED: <steps>". Exit code is non-zero on any failure.
+USAGE
+}
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 # shellcheck source=scripts/.internal/checkout-env.sh
 source "$ROOT/scripts/.internal/checkout-env.sh"
@@ -27,8 +33,12 @@ QUICK=0
 case "${1:-}" in
     "") ;;
     --quick) QUICK=1 ;;
+    --help)
+        usage
+        exit 0
+        ;;
     *)
-        echo "usage: check.sh [--quick]" >&2
+        usage >&2
         exit 2
         ;;
 esac
@@ -50,10 +60,6 @@ esac
 
 declare_step() { ORDER+=("$1"); NAME["$1"]="$2"; LIMIT["$1"]="$3"; }
 
-# run_step KEY FUNCTION — output goes to a log, the result is "status seconds". Always returns 0:
-# a failed step is reported at the end and does not stop the group it runs in. Every step has a hard
-# ceiling (LIMIT[key] seconds, CHECK_STEP_LIMIT overrides all of them); a step that exceeds it is killed and fails
-# as "hung or too slow". Without `timeout` on the machine there is no ceiling.
 run_step() {
     local key="$1" function="$2" start status=0
     start=$SECONDS
@@ -76,11 +82,9 @@ local_database() { "$ROOT/scripts/.internal/db.sh" up >/dev/null; }
 
 test_server() { (cd "$ROOT" && dotnet test --solution Myapp.slnx --no-build --no-progress); }
 
-# Why: a quick check must cost what the change costs, not what the repository has grown to.
 changed_files() {
     cd "$ROOT"
     local base
-    # Why: in a new repository master or even HEAD may not exist yet; with no commit everything tracked is new
     base="$(git merge-base HEAD master 2>/dev/null || git rev-parse --verify -q HEAD || true)"
     {
         if [ -n "$base" ]; then git diff --name-only --diff-filter=d "$base"; else git ls-files --cached; fi
@@ -147,7 +151,6 @@ web_knip() { cd "$ROOT/Myapp.Web" && pnpm exec knip; }
 
 api_types() { "$ROOT/scripts/.internal/api-types.sh" --check; }
 
-# Why: a new repository has no master yet, and a contract with nothing to compare against is right by definition
 api_version() {
     if ! git -C "$ROOT" rev-parse --verify -q master >/dev/null && ! git -C "$ROOT" rev-parse --verify -q origin/master >/dev/null; then
         echo "no master yet: nothing to compare the contract with"
@@ -208,8 +211,8 @@ else
     else
         fetched=0
         "$ROOT/Myapp.Gate/scripts/criteria.sh" --fetch >/dev/null 2>&1 || fetched=$?
-        # Why: only a missing download is a SKIP; a checksum mismatch runs the step, which fails and says why
-        if [ "$fetched" -eq 3 ]; then SKIPPED[criteria]="the pinned vdoc.py cannot be downloaded (no network?)"; fi
+        criteria_tool_cannot_be_downloaded=3
+        if [ "$fetched" -eq "$criteria_tool_cannot_be_downloaded" ]; then SKIPPED[criteria]="the pinned vdoc.py cannot be downloaded (no network?)"; fi
     fi
 fi
 
@@ -234,7 +237,6 @@ else
         if [ -z "${CI:-}" ]; then run_step postgres local_database; fi
         run_step test test_server
         if [ -z "${SKIPPED[apitypes]+x}" ]; then run_step apitypes api_types; fi
-        # Why: api-diff.sh compares the document the step above has just proven current
         if [ -z "${SKIPPED[apiversion]+x}" ]; then run_step apiversion api_version; fi
     ) &
 fi
@@ -265,7 +267,6 @@ else
 fi
 for pid in "${PIDS[@]}"; do wait "$pid" || true; done
 TOTAL=$((SECONDS - GATE_START))
-# Why: the budget is decided before the summary, so a green run over budget never prints PASS
 OVER_BUDGET=0
 if [ "$QUICK" -eq 1 ] && [ "$TOTAL" -gt "$QUICK_LIMIT" ]; then OVER_BUDGET=1; fi
 

@@ -1,5 +1,4 @@
 {
-    // Each task only calls a script of scripts/.internal: nothing is duplicated here.
     "version": "2.0.0",
     "tasks": [
         {

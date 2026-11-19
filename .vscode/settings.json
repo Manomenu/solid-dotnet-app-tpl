@@ -1,7 +1,4 @@
 {
-    // VS Code glue only: which formatter owns which language, where tools look, what the explorer hides or folds.
-    // No style rules here (indent, line width, quotes, line endings): they live in .editorconfig, .csharpierrc.json
-    // and Myapp.Web/.prettierrc.json, so Rider and VS Code agree; VsCodeSettingsTests checks it.
     "editor.formatOnSave": true,
     "[csharp]": { "editor.defaultFormatter": "csharpier.csharpier-vscode" },
     "[typescript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },

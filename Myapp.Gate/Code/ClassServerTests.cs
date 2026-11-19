@@ -2,7 +2,6 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Myapp.Gate.Code;
 
-// Why: xunit makes a test class anew for every test, so a server started in a field starts once per test, which in a sibling project made its server tests five times slower (2026-11-10).
 public sealed class ClassServerTests
 {
     [Fact]

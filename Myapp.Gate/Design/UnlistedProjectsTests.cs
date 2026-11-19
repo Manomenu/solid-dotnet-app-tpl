@@ -1,6 +1,5 @@
 namespace Myapp.Gate.Design;
 
-// Why: a guard over a list passes in silence for whatever is left off the list, so what the list leaves out has to fail by itself
 public sealed class UnlistedProjectsTests
 {
     private static IEnumerable<string> ProjectsWithProductionCode() =>

@@ -1,4 +1,3 @@
-# Build context is the repo root: docker build -f Myapp.Web/Dockerfile -t myapp-web:local .
 FROM docker.io/library/node:24.11-alpine3.22 AS builder
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 WORKDIR /app

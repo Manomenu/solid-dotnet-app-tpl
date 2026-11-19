@@ -1,22 +1,26 @@
 #!/usr/bin/env bash
-# `just tmux-dev start [--restart]` / `just tmux-dev stop`: the local stack in one tmux session.
-#   left:  a shell in the repository
-#   right: the server under dotnet watch (+ the database of compose.yaml) / the web app under pnpm dev, with hot reload
-# The session is reused when it exists; --restart kills it (and everything running in it) first; stop kills it and stops there.
-# In a tmux pane the client is switched, not nested; any other terminal attaches where it was called.
-# TMUX_DEV_NO_ATTACH=1 builds the session and stops there (used to inspect the layout).
 set -euo pipefail
+usage() {
+    cat <<'USAGE'
+usage: just tmux-dev start [--restart] | just tmux-dev stop
+The local stack in one tmux session:
+  left:  a shell in the repository
+  right: the server under dotnet watch (+ the database of compose.yaml) / the web app under pnpm dev, with hot reload
+The session is reused when it exists; --restart kills it (and everything running in it) first; stop kills it and stops there.
+In a tmux pane the client is switched, not nested; any other terminal attaches where it was called.
+TMUX_DEV_NO_ATTACH=1 builds the session and stops there (used to inspect the layout).
+USAGE
+}
 if [ "${1:-}" = "--help" ]; then
-    sed -n '2,/^[^#]/{/^#/s/^# \{0,1\}//p}' "$0"
+    usage
     exit 0
 fi
 
-# Lowercase: the template replaces myapp with the lowercased project name.
 SESSION=myapp-dev
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
-usage() {
-    echo "usage: just tmux-dev start [--restart] | just tmux-dev stop" >&2
+refuse() {
+    usage >&2
     exit 2
 }
 
@@ -26,7 +30,7 @@ case "${1:-} ${2:-}" in
     "start ") ;;
     "start --restart") restart=1 ;;
     "stop ") stop=1 ;;
-    *) usage ;;
+    *) refuse ;;
 esac
 
 if ! command -v tmux >/dev/null 2>&1; then
@@ -34,9 +38,7 @@ if ! command -v tmux >/dev/null 2>&1; then
     exit 1
 fi
 
-# Why: TMUX alone proves nothing: an editor started from a tmux pane hands it down to its embedded terminals, and
-# switch-client there would move the client of that other terminal instead of opening the session here.
-in_tmux_pane() {
+this_terminal_is_a_tmux_pane() {
     [[ -n "${TMUX:-}" ]] || return 1
     local panes here
     panes="$(tmux list-panes -a -F '#{pane_tty}')"
@@ -48,7 +50,7 @@ attach() {
     if [[ "${TMUX_DEV_NO_ATTACH:-}" == "1" ]]; then
         return
     fi
-    if in_tmux_pane; then
+    if this_terminal_is_a_tmux_pane; then
         tmux switch-client -t "$SESSION"
     else
         env -u TMUX tmux attach-session -t "$SESSION"
@@ -56,7 +58,7 @@ attach() {
 }
 
 inside_session() {
-    in_tmux_pane && [[ "$(tmux display-message -p '#S')" == "$SESSION" ]]
+    this_terminal_is_a_tmux_pane && [[ "$(tmux display-message -p '#S')" == "$SESSION" ]]
 }
 
 running() {
@@ -86,8 +88,7 @@ if running; then
     exit 0
 fi
 
-# Types a command into a pane's shell, so the pane survives the command's exit.
-run() { tmux send-keys -t "$1" "$2" Enter; }
+type_into_pane_shell() { tmux send-keys -t "$1" "$2" Enter; }
 
 shell=$(tmux new-session -d -s "$SESSION" -c "$REPO" -x 220 -y 50 -P -F '#{pane_id}')
 server=$(tmux split-window -h -t "$shell" -c "$REPO" -P -F '#{pane_id}')
@@ -98,8 +99,8 @@ tmux select-pane -t "$shell" -T "shell"
 tmux select-pane -t "$server" -T "server: (6300)"
 tmux select-pane -t "$web" -T "web: (3300)"
 
-run "$server" "./scripts/.internal/db.sh up && ./scripts/.internal/server.sh"
-run "$web" "cd Myapp.Web && { [ -d node_modules ] || pnpm install; } && pnpm dev"
+type_into_pane_shell "$server" "./scripts/.internal/db.sh up && ./scripts/.internal/server.sh"
+type_into_pane_shell "$web" "cd Myapp.Web && { [ -d node_modules ] || pnpm install; } && pnpm dev"
 
 tmux select-pane -t "$shell"
 attach

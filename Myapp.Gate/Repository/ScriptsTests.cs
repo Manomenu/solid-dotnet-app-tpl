@@ -6,9 +6,6 @@ public sealed class ScriptsTests
 {
     private static readonly string[] NotForCalling = ["checkout-env.sh", "hook-guard-edit.sh", "hook-stop.sh", "init-project.sh"];
 
-    // Why: its --help goes to the pinned vdoc.py, so the word never stands in the script itself
-    private const string AnswersThroughItsTool = "criteria.sh";
-
     public static TheoryData<string> Scripts()
     {
         var data = new TheoryData<string>();
@@ -30,10 +27,8 @@ public sealed class ScriptsTests
     {
         var text = RepositoryFiles.Read(script);
         Assert.True(
-            Path.GetFileName(script) == AnswersThroughItsTool
-                || text.Contains("--help", StringComparison.Ordinal)
-                || text.Contains("usage:", StringComparison.Ordinal),
-            $"{script} would run for real on --help: AGENTS.md sends agents to --help instead of describing the commands; print the header comment on --help as e2e.sh does"
+            text.Contains("--help", StringComparison.Ordinal) || text.Contains("usage:", StringComparison.Ordinal),
+            $"{script} would run for real on --help: AGENTS.md sends agents to --help instead of describing the commands; print a usage() text on --help as e2e.sh does"
         );
 
         var gitBash = @"C:\Program Files\Git\bin\bash.exe";

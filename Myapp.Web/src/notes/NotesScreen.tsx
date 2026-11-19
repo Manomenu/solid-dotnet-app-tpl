@@ -12,14 +12,12 @@ function messageOf(error: unknown): string {
     return error instanceof Error ? error.message : String(error);
 }
 
-/** The Notes screen: the list, and a field to add one. The template's example feature; delete it when it is in the way. */
 export function NotesScreen() {
     const [notes, setNotes] = useState<Note[]>([]);
     const [text, setText] = useState("");
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        // StrictMode runs effects twice in development: abort the first request, ignore its result.
         const controller = new AbortController();
         fetchNotes(controller.signal)
             .then(setNotes)

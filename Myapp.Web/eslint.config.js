@@ -1,9 +1,41 @@
-// typescript-eslint's strict, type-checked presets: rules that read the TypeScript types, not just the syntax.
 import js from "@eslint/js";
 import { defineConfig } from "eslint/config";
 import boundaries from "eslint-plugin-boundaries";
 import reactHooks from "eslint-plugin-react-hooks";
 import tseslint from "typescript-eslint";
+
+const TOOL_DIRECTIVES = [/^ @ts-expect-error \S/, /^ eslint-disable(-next-line)? [\w@/-]+/, /^ @vitest-environment [\w-]+$/];
+const CRITERION_MARKER = /^ AC-[a-z0-9]+(-[a-z0-9]+)*-[0-9]+$/;
+const BROWSER_STORAGE = ["localStorage", "sessionStorage", "indexedDB"];
+const BROWSER_STORAGE_FIX =
+    "Keep the state on the server (an action) or in the address; browser storage is allowed only in one named file, added here as the exception when the owner asks for it.";
+
+export const noComments = {
+    meta: {
+        type: "problem",
+        schema: [],
+        messages: {
+            comment:
+                'Delete the comment; rename or split the code so it explains itself; put lasting knowledge in a test, the spec or AGENTS.md (the only comments allowed are the tool directives listed in AGENTS.md, "No comments").',
+        },
+    },
+    create(context) {
+        const readsCriterionMarkers = context.filename.endsWith("eslint.config.js");
+        return {
+            Program() {
+                for (const comment of context.sourceCode.getAllComments()) {
+                    const allowed =
+                        comment.type === "Shebang" ||
+                        TOOL_DIRECTIVES.some((directive) => directive.test(comment.value)) ||
+                        (readsCriterionMarkers && CRITERION_MARKER.test(comment.value));
+                    if (!allowed) {
+                        context.report({ loc: comment.loc, messageId: "comment" });
+                    }
+                }
+            },
+        };
+    },
+};
 
 export default defineConfig(
     { ignores: ["dist", "src/api/openapi.d.ts"] },
@@ -16,31 +48,22 @@ export default defineConfig(
             parserOptions: { project: ["./tsconfig.app.json", "./tsconfig.node.json"], tsconfigRootDir: import.meta.dirname },
         },
         rules: {
-            // Reason: template literals with numbers are how the UI builds labels and paths.
             "@typescript-eslint/restrict-template-expressions": ["error", { allowNumber: true }],
-            // Reason: `onClick={() => setOpen(false)}` is the idiomatic React handler; braces add nothing.
             "@typescript-eslint/no-confusing-void-expression": ["error", { ignoreArrowShorthand: true }],
-            // Reason: `const { a: _, ...rest } = obj` drops a key on purpose.
             "@typescript-eslint/no-unused-vars": ["error", { ignoreRestSiblings: true }],
         },
     },
-    // Import contracts: every folder of src/ is a feature, and features are independent by default: a feature
-    // may import only itself, api/ and design/ (the shared design system). design/ imports no feature. When one
-    // feature really composes another, that edge is added below as its own policy, with a comment saying why.
     {
         files: ["src/**/*.{ts,tsx}"],
-        // Browser tests drive the page from outside.
         ignores: ["src/**/*.e2e.ts"],
         plugins: { boundaries },
         settings: {
             "import/resolver": { typescript: { project: "./tsconfig.app.json" }, node: { extensions: [".ts", ".tsx"] } },
             "boundaries/elements": [
-                // Order matters: the first matching pattern wins, so api/ is not a feature.
                 { type: "api", pattern: "src/api" },
                 { type: "design", pattern: "src/design" },
                 { type: "feature", pattern: "src/*", capture: ["name"] },
             ],
-            // The entry points at the root of src/ (main.tsx, App.tsx) put the page together.
             "boundaries/files": [{ category: "entry", pattern: "src/*.{ts,tsx}" }],
         },
         rules: {
@@ -68,7 +91,22 @@ export default defineConfig(
         },
     },
     {
-        files: ["eslint.config.js"],
+        files: ["src/**/*.{ts,tsx}"],
+        rules: {
+            "no-restricted-globals": ["error", ...BROWSER_STORAGE.map((name) => ({ name, message: BROWSER_STORAGE_FIX }))],
+            "no-restricted-properties": [
+                "error",
+                ...BROWSER_STORAGE.map((property) => ({ object: "window", property, message: BROWSER_STORAGE_FIX })),
+            ],
+        },
+    },
+    {
+        files: ["**/*.{ts,tsx,js,mjs,cjs}"],
+        plugins: { local: { rules: { "no-comments": noComments } } },
+        rules: { "local/no-comments": "error" },
+    },
+    {
+        files: ["eslint.config.js", "eslint.config.test.js"],
         extends: [tseslint.configs.disableTypeChecked],
     },
 );

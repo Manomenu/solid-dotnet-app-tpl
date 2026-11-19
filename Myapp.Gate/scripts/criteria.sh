@@ -1,12 +1,17 @@
 #!/usr/bin/env bash
-# Which guardrails keep each acceptance criterion of the specs true? Runs `vdoc.py criteria` of the suwagent plugin,
-# pinned by commit and SHA-256, so the answer is the same on every machine and in CI. This project's kinds of
-# guardrail (name, path globs, how the id is written) are in criteria.json.
-#   criteria.sh                    every criterion: id, kind, file:line; exit 1, with the fix, on a problem
-#   criteria.sh AC-<feature>-<n>   one criterion
-#   criteria.sh --fetch            only download the pinned tool into the cache (exit 3: it cannot be downloaded)
-#   criteria.sh --update           move the pin to the plugin's newest master (`just criteria-update`)
 set -euo pipefail
+usage() {
+    cat <<'USAGE'
+Which guardrails keep each acceptance criterion of the specs true? Runs `vdoc.py criteria` of the suwagent plugin,
+pinned by commit and SHA-256, so the answer is the same on every machine and in CI. This project's kinds of
+guardrail (name, path globs, how the id is written) are in criteria.json.
+  criteria.sh                    every criterion: id, kind, file:line; exit 1, with the fix, on a problem
+  criteria.sh AC-<feature>-<n>   one criterion
+  criteria.sh --fetch            only download the pinned tool into the cache (exit 3: it cannot be downloaded)
+  criteria.sh --update           move the pin to the plugin's newest master (`just criteria-update`)
+  criteria.sh --help             this text; every other argument goes to vdoc.py criteria
+USAGE
+}
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 SELF="$ROOT/Myapp.Gate/scripts/criteria.sh"
 REPO="Manomenu/suwalski-agent-plugin"
@@ -33,6 +38,9 @@ fetch() {
 }
 
 case "${1:-}" in
+    --help)
+        usage
+        ;;
     --fetch)
         fetch
         ;;

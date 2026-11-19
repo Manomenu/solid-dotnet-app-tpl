@@ -1,13 +1,11 @@
 namespace Myapp.Gate.Repository;
 
-// Why: a script nobody calls is code nobody runs, so it rots unseen; a recipe a person runs is the call that keeps it alive.
 public sealed class ScriptsCalledTests
 {
     private static bool IsScript(string path) =>
         path.EndsWith(".sh", StringComparison.Ordinal)
         && (path.StartsWith("scripts/", StringComparison.Ordinal) || path.StartsWith("Myapp.Gate/scripts/", StringComparison.Ordinal));
 
-    // Why: the places that run something; a doc naming a script or a test running it to check it calls nothing for real.
     private static bool Calls(string path) =>
         path.EndsWith(".sh", StringComparison.Ordinal)
         || path.EndsWith(".just", StringComparison.Ordinal)

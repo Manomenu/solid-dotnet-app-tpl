@@ -38,18 +38,27 @@ setting is an options class of the feature that reads it, validated with `Valida
 
 ## Worktrees
 
-A linked git worktree gets its own test database (`myapp_test_<dir>`), derived from its
-directory name by `checkout-env.sh`; its databases are left behind, not dropped.
+A linked git worktree gets its own test and e2e databases (`myapp_test_<suffix>`, `myapp_e2e_<suffix>`) and its own e2e
+port pair (20000-29999), so checkouts that run the gate or the browser tests at the same time do not collide. `checkout-env.sh`
+(sourced by the scripts that need it) derives the suffix from the directory name (lower-case, at most 30 characters, plus a hash of
+the whole name, because worktrees of one repository share a long prefix). The main checkout and CI keep the plain names and ports
+(`myapp_test`, `myapp_e2e`, 6301/3301); a value already in the environment wins. A worktree's databases are left behind, not dropped.
 
 ## Claude Code hooks
 
 `.claude/settings.json` runs `Myapp.Gate/scripts/check.sh --quick` when Claude stops, and blocks
 the stop while it fails (the loop is cut after one retry). The quick gate has a budget of 20
 seconds and fails above it; `CHECK_QUICK_LIMIT=<seconds>` raises it on a machine that is slow
-across the board. It costs what the change costs: the repository guards, plus build, csharpier, eslint, tsc
+across the board. When the working tree is exactly as it was at the last green quick gate (same HEAD, same
+changes, same untracked files), the hook does not run it again; HEAD counts, because a change committed in the same turn
+leaves `git status` clean. It costs what the change costs: the repository guards, plus build, csharpier, eslint, tsc
 and shellcheck only for what differs from where the branch left `master` (committed or not, and new files).
 No database and no vitest; the tests that prove acceptance criteria run only in the full gate. Edits to migrations that already
-exist, to lockfiles and to other generated files are refused with a message saying what to run.
+exist, to lockfiles and to other generated files are refused with a message saying what to run. A characterization recording
+is the agent's to write the first time, fixes included; one git already tracks is the owner's.
+
+`.githooks/pre-commit` runs gitleaks on what is being committed: the full gate and CI run it too, but a secret found after the
+push is already on GitHub and in every clone.
 
 ## Personal agent rules
 

@@ -25,24 +25,19 @@ public sealed class EscapeHatchTests
     }
 
     [Fact]
-    public void A_null_forgiving_operator_says_why_on_its_line_or_the_line_above()
+    public void Nothing_uses_the_null_forgiving_operator()
     {
         var found = SourceFile
             .All.SelectMany(file =>
                 file.Root.DescendantNodes()
                     .Where(node => node.IsKind(SyntaxKind.SuppressNullableWarningExpression))
-                    .Select(node => (file, line: file.LineOf(node)))
-                    .Where(item =>
-                        !item.file.LineText(item.line).Contains("// Why:", StringComparison.Ordinal)
-                        && !item.file.LineText(item.line - 1).Contains("// Why:", StringComparison.Ordinal)
-                    )
-                    .Select(item => $"{item.file.Path}:{item.line + 1}")
+                    .Select(node => $"{file.Path}:{file.LineOf(node) + 1}")
             )
             .ToList();
 
         Assert.True(
             found.Count == 0,
-            $"remove the `!`: check for null or fix the type; if the code really knows better, write `// Why: <reason>` on that line or the line above: {string.Join(", ", found)}"
+            $"remove the `!`: check for null and say what happens then, or fix the type so it cannot be null: {string.Join(", ", found)}"
         );
     }
 }

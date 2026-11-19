@@ -1,4 +1,3 @@
-# Build context is the repo root: docker build -f Myapp.Server/Dockerfile -t myapp-server:local .
 FROM mcr.microsoft.com/dotnet/sdk:10.0.400-alpine3.23 AS build
 WORKDIR /src
 COPY .editorconfig global.json nuget.config Directory.Build.props Directory.Build.rsp Directory.Packages.props BannedSymbols.txt ./

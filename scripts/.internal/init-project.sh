@@ -1,8 +1,4 @@
 #!/usr/bin/env bash
-# Run once by `dotnet new solid-dotnet` (its post action, which needs your consent: --allow-scripts yes, through init-project.proj) in the
-# new project, never in the template itself. It regenerates what the template leaves out because it depends on the
-# project's name (lockfiles), removes the template's notes, creates the git repository on `master` with the hooks
-# enabled when the folder is not in one yet, says what it did, and deletes itself.
 set -euo pipefail
 SELF="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
 cd "$(dirname "$SELF")/../.."
@@ -32,19 +28,15 @@ done_steps+=("formatted the C# files (the new name changes using order and line 
 if command -v pnpm >/dev/null 2>&1; then
     (cd "$web" && pnpm install --silent && pnpm exec prettier --write --log-level warn .)
     done_steps+=("regenerated the pnpm lockfile in ${web#./} and formatted its files")
-    # Why: the OpenAPI document carries the project's name, so the committed contract and the digest in the
-    # generated types belong to the template's name until they are made again here
     bash scripts/.internal/api-types.sh >/dev/null
-    done_steps+=("regenerated the API contract (openapi.json) and the web types from it (api-types.sh)")
+    done_steps+=("regenerated the API contract (openapi.json), which carries the project's name, and the web types from it (api-types.sh)")
 else
     done_steps+=("SKIPPED pnpm install and api-types.sh in ${web#./}: pnpm is not installed (corepack enable); run both before the gate")
 fi
 
-# Why: the template keeps docs/visual/ out of generated projects (its own pages would be noise), but the folder
-# of the living specs is where criteria.sh and the agents look
 mkdir -p docs/visual/spec
 touch docs/visual/spec/.gitkeep
-done_steps+=("created docs/visual/spec/ for the living specs")
+done_steps+=("created docs/visual/spec/ for the living specs (the template leaves its own docs/visual/ out)")
 
 if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     done_steps+=("left git alone: this folder is already inside a repository")
@@ -57,11 +49,9 @@ fi
 rm -- "$SELF" "${SELF%.sh}.proj"
 done_steps+=("deleted scripts/.internal/init-project.sh and init-project.proj")
 
-# Why: dotnet new writes every file without its executable bit; git skips a hook that is not executable, and the
-# index carries the mode on Windows too, where chmod alone does not reach it
-executables=(scripts/.internal/*.sh Myapp.Gate/scripts/*.sh .githooks/pre-commit)
-chmod +x "${executables[@]}"
-git add --chmod=+x -- "${executables[@]}"
+executables_dotnet_new_wrote_without_their_bit=(scripts/.internal/*.sh Myapp.Gate/scripts/*.sh .githooks/pre-commit)
+chmod +x "${executables_dotnet_new_wrote_without_their_bit[@]}"
+git add --chmod=+x -- "${executables_dotnet_new_wrote_without_their_bit[@]}"
 done_steps+=("made the scripts and the pre-commit hook executable and staged them so (git add --chmod=+x)")
 
 echo "Project ready. What init-project.sh did:"

@@ -1,6 +1,3 @@
-# Entry point for humans: `just` lists every recipe, grouped. Logic longer than a line or
-# two lives in scripts/.internal/, which is also what CI and agents call directly.
-
 set shell := ["bash", "-euo", "pipefail", "-c"]
 
 # The local stack in one tmux session, the one way to run it — `just tmux-dev start [--restart]|stop` (tmux-dev.just)

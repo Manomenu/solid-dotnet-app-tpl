@@ -1,9 +1,4 @@
 {
-    // Only tools this repo uses. C# Dev Kit brings the C# extension (Roslyn: navigation, analyzers) and the .NET
-    // runtime; CSharpier formats C#, Prettier the web app, ESLint and Tailwind CSS IntelliSense check its code,
-    // Playwright runs the browser tests, ShellCheck shows what the gate's shellcheck step fails on, EditorConfig
-    // applies .editorconfig to the files no formatter owns, YAML and Containers cover compose.yaml, the workflow
-    // and the Dockerfiles, Just the justfile.
     "recommendations": [
         "ms-dotnettools.csdevkit",
         "csharpier.csharpier-vscode",

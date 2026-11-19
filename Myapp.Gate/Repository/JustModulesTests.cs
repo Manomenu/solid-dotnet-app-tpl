@@ -2,7 +2,6 @@ using System.Text.RegularExpressions;
 
 namespace Myapp.Gate.Repository;
 
-// Why: a module of the whole repository sits beside the justfile and a tool's in the tool's folder; anywhere else nobody finds it.
 public sealed partial class JustModulesTests
 {
     [GeneratedRegex(@"^mod\s+([\w-]+)\s*$", RegexOptions.Multiline)]

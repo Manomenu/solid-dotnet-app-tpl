@@ -27,6 +27,7 @@ public sealed partial class TemplateTests
     private static readonly string[] MustBeExcluded =
     [
         "**/.git/**",
+        "**/.git",
         "**/bin/**",
         "**/obj/**",
         "**/node_modules/**",

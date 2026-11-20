@@ -1,9 +1,5 @@
+import { Alert, Button, Input, Label, Page } from "@maniumek/suwfrontkit";
 import { useEffect, useState } from "react";
-
-import { Alert } from "@/design/alert";
-import { Button } from "@/design/button";
-import { Input } from "@/design/input";
-import { Label } from "@/design/label";
 
 import { createNote, fetchNotes, type Note } from "./api";
 import { problemWith } from "./notes";
@@ -47,31 +43,32 @@ export function NotesScreen() {
     }
 
     return (
-        <main className="mx-auto flex max-w-xl flex-col gap-4 p-4">
-            <h1 className="text-2xl font-semibold">Notes</h1>
-            <div className="flex items-end gap-2">
-                <div className="flex flex-1 flex-col gap-2">
-                    <Label htmlFor="new-note">New note</Label>
-                    <Input
-                        id="new-note"
-                        value={text}
-                        onChange={(event) => {
-                            setText(event.currentTarget.value);
-                        }}
-                    />
+        <main className="p-8">
+            <Page title="Notes" width="reading">
+                <div className="flex items-end gap-2">
+                    <div className="flex flex-1 flex-col gap-2">
+                        <Label htmlFor="new-note">New note</Label>
+                        <Input
+                            id="new-note"
+                            value={text}
+                            onChange={(event) => {
+                                setText(event.currentTarget.value);
+                            }}
+                        />
+                    </div>
+                    <Button onClick={add}>Add note</Button>
                 </div>
-                <Button onClick={add}>Add note</Button>
-            </div>
-            {error !== null && <Alert variant="destructive">{error}</Alert>}
-            {notes.length === 0 ? (
-                <p className="text-muted-foreground">No notes yet.</p>
-            ) : (
-                <ul className="list-disc pl-6">
-                    {notes.map((note) => (
-                        <li key={note.id}>{note.text}</li>
-                    ))}
-                </ul>
-            )}
+                {error !== null && <Alert variant="destructive">{error}</Alert>}
+                {notes.length === 0 ? (
+                    <p className="text-muted-foreground">No notes yet.</p>
+                ) : (
+                    <ul className="list-disc pl-6">
+                        {notes.map((note) => (
+                            <li key={note.id}>{note.text}</li>
+                        ))}
+                    </ul>
+                )}
+            </Page>
         </main>
     );
 }

@@ -4,7 +4,7 @@ namespace Myapp.Gate.Design;
 
 internal static class LayersFile
 {
-    public const string Path = "Myapp.Gate/layers.json";
+    public const string Path = "layers.json";
 
     private static readonly Lazy<JsonDocument> Document = new(() => JsonDocument.Parse(RepositoryFiles.Read(Path)));
 

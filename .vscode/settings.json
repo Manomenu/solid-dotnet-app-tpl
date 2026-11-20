@@ -8,7 +8,8 @@
     "[css]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
     "eslint.workingDirectories": ["Myapp.Web"],
     "prettier.prettierPath": "Myapp.Web/node_modules/prettier",
-    "tailwindCSS.classFunctions": ["cn", "cva"],
+    "tailwindCSS.classFunctions": ["cn"],
+    "yaml.schemas": { "./Myapp.Web/node_modules/@maniumek/suwgate/schema/suwgate.schema.json": "suwgate.yml" },
     "dotnet.defaultSolution": "Myapp.slnx",
     "dotnet.backgroundAnalysis.analyzerDiagnosticsScope": "fullSolution",
     "dotnet.backgroundAnalysis.compilerDiagnosticsScope": "fullSolution",
@@ -26,11 +27,11 @@
     "explorer.fileNesting.enabled": true,
     "explorer.fileNesting.expand": false,
     "explorer.fileNesting.patterns": {
-        "README.md": "AGENTS.md, CLAUDE.md, TODO.md, justfile, .editorconfig, .gitignore, .gitattributes, .dockerignore, compose.yaml, .env.example",
+        "README.md": "AGENTS.md, CLAUDE.md, TODO.md, suwgate.yml, layers.json, justfile, tmux-dev.just, .editorconfig, .gitignore, .gitattributes, .dockerignore, compose.yaml, .env.example",
         "Myapp.slnx": "global.json, nuget.config, BannedSymbols.txt, Directory.Build.props, Directory.Build.rsp, Directory.Packages.props, .csharpierrc.json",
         "*.csproj": "packages.lock.json, stryker-config.json",
         "appsettings.json": "appsettings.*.json",
-        "package.json": "pnpm*, .npm*, eslint*, .eslint*, prettier*, .prettier*, knip.json, tsconfig*.json, vite.config.ts, index.html, components.json",
+        "package.json": "pnpm*, .npm*, eslint*, .eslint*, prettier*, .prettier*, knip.config.ts, tsconfig*.json, vite.config.ts, index.html",
         "*.ts": "${capture}.js, ${capture}.*.ts",
         "*.tsx": "${capture}.ts, ${capture}.*.ts, ${capture}.*.tsx"
     }

@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
+if [ "${1:-}" = "--help" ]; then
+    cat <<'USAGE'
+The template's post action (dotnet new, through init-project.proj): run once in a project created from the template, never in the
+template itself. It removes the template notes, regenerates the lockfiles, the API contract and the web types, formats the code,
+creates docs/visual/spec/, the git repository on master with the hooks enabled, and deletes itself.
+USAGE
+    exit 0
+fi
 SELF="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
 cd "$(dirname "$SELF")/../.."
 
@@ -49,11 +57,11 @@ fi
 rm -- "$SELF" "${SELF%.sh}.proj"
 done_steps+=("deleted scripts/.internal/init-project.sh and init-project.proj")
 
-executables_dotnet_new_wrote_without_their_bit=(scripts/.internal/*.sh Myapp.Gate/scripts/*.sh .githooks/pre-commit)
+executables_dotnet_new_wrote_without_their_bit=(scripts/.internal/*.sh .githooks/pre-commit)
 chmod +x "${executables_dotnet_new_wrote_without_their_bit[@]}"
 git add --chmod=+x -- "${executables_dotnet_new_wrote_without_their_bit[@]}"
 done_steps+=("made the scripts and the pre-commit hook executable and staged them so (git add --chmod=+x)")
 
 echo "Project ready. What init-project.sh did:"
 printf '  - %s\n' "${done_steps[@]}"
-echo "Next: bash Myapp.Gate/scripts/check.sh, then commit (the first commit is yours)."
+echo "Next: just check, then commit (the first commit is yours)."

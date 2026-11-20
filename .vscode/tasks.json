@@ -4,7 +4,7 @@
         {
             "label": "check --quick",
             "type": "shell",
-            "command": "bash Myapp.Gate/scripts/check.sh --quick",
+            "command": "Myapp.Web/node_modules/.bin/suwgate check --quick",
             "group": { "kind": "test", "isDefault": true },
             "presentation": { "reveal": "always", "panel": "dedicated" },
             "problemMatcher": []
@@ -12,7 +12,7 @@
         {
             "label": "check (full gate)",
             "type": "shell",
-            "command": "bash Myapp.Gate/scripts/check.sh",
+            "command": "Myapp.Web/node_modules/.bin/suwgate check",
             "group": "test",
             "presentation": { "reveal": "always", "panel": "dedicated" },
             "problemMatcher": []
@@ -28,7 +28,7 @@
         {
             "label": "logs",
             "type": "shell",
-            "command": "bash scripts/.internal/logs.sh",
+            "command": "Myapp.Web/node_modules/.bin/suwgate dev logs",
             "presentation": { "reveal": "always", "panel": "shared" },
             "problemMatcher": []
         }

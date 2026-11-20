@@ -1,8 +1,0 @@
-{
-    "plugins": ["prettier-plugin-tailwindcss"],
-    "tailwindStylesheet": "./src/index.css",
-    "printWidth": 140,
-    "tabWidth": 4,
-    "trailingComma": "all",
-    "overrides": [{ "files": ["*.yaml", "*.yml"], "options": { "tabWidth": 2 } }]
-}

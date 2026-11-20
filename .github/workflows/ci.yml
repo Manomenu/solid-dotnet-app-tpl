@@ -10,59 +10,18 @@ permissions:
 
 env:
   CI: "1"
-  NODE_VERSION: 24.11.0
+  NODE_VERSION: 24.22.1
 
 jobs:
-  test:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 20
-    services:
-      postgres:
-        image: postgres:17.11
-        env:
-          POSTGRES_USER: myapp
-          POSTGRES_PASSWORD: myapp
-          POSTGRES_DB: myapp
-        ports:
-          - 5533:5432
-        options: >-
-          --health-cmd "pg_isready -U myapp -d myapp"
-          --health-interval 5s
-          --health-timeout 3s
-          --health-retries 20
-    steps:
-      - name: actions/checkout v7.0.1
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-        with:
-          fetch-depth: 0
-      - name: actions/setup-dotnet v6.0.0
-        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
-        with:
-          global-json-file: global.json
-      - name: actions/setup-node v7.1.0
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-      - name: Enable pnpm
-        run: corepack enable
-      - name: Install gitleaks, shellcheck and oasdiff (pinned, checksum verified, in the runner's temp folder because the repository guards count every untracked file), so the gate never skips them
-        working-directory: ${{ runner.temp }}
-        run: |
-          set -euo pipefail
-          curl -sSfL -o gitleaks.tar.gz https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz
-          echo "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb  gitleaks.tar.gz" | sha256sum --check
-          tar -xzf gitleaks.tar.gz gitleaks
-          sudo install gitleaks /usr/local/bin/gitleaks
-          curl -sSfL -o shellcheck.tar.xz https://github.com/koalaman/shellcheck/releases/download/v0.11.0/shellcheck-v0.11.0.linux.x86_64.tar.xz
-          echo "8c3be12b05d5c177a04c29e3c78ce89ac86f1595681cab149b65b97c4e227198  shellcheck.tar.xz" | sha256sum --check
-          tar -xJf shellcheck.tar.xz
-          sudo install shellcheck-v0.11.0/shellcheck /usr/local/bin/shellcheck
-          curl -sSfL -o oasdiff.tar.gz https://github.com/oasdiff/oasdiff/releases/download/v1.35.0/oasdiff_1.35.0_linux_amd64.tar.gz
-          echo "a8023002fcb2eaa7f5758148a9303cb63d33b939886df312268bc0fc7b939140  oasdiff.tar.gz" | sha256sum --check
-          tar -xzf oasdiff.tar.gz oasdiff
-          sudo install oasdiff /usr/local/bin/oasdiff
-      - name: The gate
-        run: bash Myapp.Gate/scripts/check.sh
+  gate:
+    permissions:
+      contents: read
+    uses: Manomenu/suwgate/.github/workflows/gate.yml@87eacea03529e252682f8d3813bfb5cea0b1369a
+    with:
+      working-directory: Myapp.Web
+      dotnet: true
+      oasdiff: true
+      command: docker compose --profile db up -d --wait db && Myapp.Web/node_modules/.bin/suwgate check --verbose
 
   e2e:
     runs-on: ubuntu-24.04
@@ -84,6 +43,8 @@ jobs:
     steps:
       - name: actions/checkout v7.0.1
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
       - name: actions/setup-dotnet v6.0.0
         uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
         with:
@@ -100,7 +61,7 @@ jobs:
           pnpm exec playwright install --with-deps chromium
       - name: Browser tests
         run: bash scripts/.internal/e2e.sh
-      - name: Keep the report (actions/upload-artifact v7.0.2)
+      - name: Keep the traces and screenshots (actions/upload-artifact v7.0.2)
         if: failure()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
@@ -109,16 +70,24 @@ jobs:
           if-no-files-found: ignore
 
   build:
-    needs: [test, e2e]
+    needs: [gate, e2e]
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - name: actions/checkout v7.0.1
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: actions/setup-node v7.1.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Install suwgate for its smoke test
+        run: corepack enable && cd Myapp.Web && pnpm install --frozen-lockfile
       - name: Build both images, start the stack and smoke-test it (nothing is published, the registry is project-specific)
         run: |
           docker compose --profile db up -d --build --wait
-          bash scripts/.internal/smoke.sh http://127.0.0.1:8190
+          Myapp.Web/node_modules/.bin/suwgate dev smoke
       - name: Logs on failure
         if: failure()
         run: docker compose --profile db logs

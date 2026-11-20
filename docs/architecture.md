@@ -9,7 +9,7 @@ lines: a new top-level folder needs its line here, a deleted one loses it.
 - `Myapp.Server/` — the HTTP API (ASP.NET Core minimal APIs, Dapper with hand-written SQL) on NuGet `Suwbackkit.Server` and `Suwbackkit.Postgres`. One folder and namespace per feature: `Api/` wires the routes, `Notes/` is the example feature.
 - `Myapp.Server/Database/Migrations/up/` — numbered SQL migrations, applied at start-up by `Suwbackkit.Postgres` (grate) and never edited afterwards.
 - `Myapp.Server.Tests/` — xUnit v3 tests against a real PostgreSQL. Mirrors the server's folders; `Characterization/` holds behaviour recorded before changing legacy code.
-- `Myapp.Gate/` — the xUnit project that calls the .NET guards of NuGet `Suwgate.Architecture` and `Suwgate.Database` (`ArchitectureTests`), and the template's own `TemplateTests`; `suwgate check --quick` runs it.
+- `Myapp.Gate/` — the xUnit project that calls the .NET guards of NuGet `Suwgate.Architecture` and `Suwgate.Database` (`GuardTests`), and the template's own `TemplateTests`; `suwgate check --quick` runs it.
 - `Myapp.Web/` — the web app (React 19, Tailwind 4, Vite, TypeScript strict, pnpm), styled by `@maniumek/suwfrontkit`. A folder per feature under `src/` (`notes/` is the example); `src/api/` the HTTP client and the generated `openapi.d.ts`. Its packages include the gate, `@maniumek/suwgate`.
 - `compose.yaml` — the whole stack on a laptop from the same Dockerfiles: db (profile `db`), server, web; everything configured from `.env` (`.env.example`) with ASP.NET names (`Section__Key`); only web publishes a port (8190).
 - `Myapp.Server/Dockerfile`, `Myapp.Web/Dockerfile` — the two images (pinned bases, locked restore, build context is the repo root); the web image is nginx serving the build and proxying `/api` to the server.
@@ -44,8 +44,9 @@ is its own:
 - `suwgate.yml`: the profiles, where the web app lives, the steps it skips and the exceptions, each with its reason, the edit hook's
   extra files, and the names and ports of the local stack (`suwgate dev`). The ports are written out because the template shifts them.
 - `layers.json`: the order of the server's layers and which project may reference which; the app's own design.
-- `Myapp.Gate/`: one call of `Guards.Verify` per .NET guard of `Suwgate.Architecture` and `Suwgate.Database`, with this app's arguments
-  (its assemblies, layers file, solution, migrations folder, test fixture). It stays a project of its own, apart from
+- `Myapp.Gate/`: one test that runs every .NET guard of `Suwgate.Architecture` and `Suwgate.Database` (`SuwgateGuards.VerifyAll`), given
+  only what suwgate cannot find itself: the server's assembly, the gate's own and the type that maps the endpoints; `dotnet-test` fails when
+  a guard did not run. It stays a project of its own, apart from
   `Myapp.Server.Tests`, because `suwgate check --quick` runs every test of a project that uses those packages: here that is a few
   seconds without a database, while the server tests need PostgreSQL and start the server.
 - `Directory.Build.props` and `.editorconfig`: the build defaults, the banned APIs and the analyzer rules come from `Suwgate.Architecture`

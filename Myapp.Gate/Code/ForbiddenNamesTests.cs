@@ -65,30 +65,6 @@ public sealed partial class ForbiddenNamesTests
         Assert.Equal(expected, ForbiddenIn(name, Segments));
 
     [Fact]
-    public void No_folder_or_project_is_named_by_a_forbidden_word()
-    {
-        var paths = RepositoryFiles.Paths();
-        var names = paths
-            .SelectMany(path => path.Split('/')[..^1])
-            .Concat(
-                paths
-                    .Where(path => path.EndsWith(".csproj", StringComparison.Ordinal))
-                    .Select(path => Path.GetFileNameWithoutExtension(path))
-            )
-            .SelectMany(name => name.Split('.'))
-            .Distinct();
-
-        var found = names
-            .Select(name => (name, word: ForbiddenIn(name, Segments)))
-            .Where(item => item.word is not null)
-            .Select(item => $"{item.name} ({item.word})")
-            .Order()
-            .ToList();
-
-        Assert.True(found.Count == 0, $"{Fix}: {string.Join(", ", found)}");
-    }
-
-    [Fact]
     public void No_namespace_segment_is_a_forbidden_word()
     {
         var found = SolutionTypes

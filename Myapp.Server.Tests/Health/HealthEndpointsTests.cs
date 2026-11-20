@@ -38,7 +38,7 @@ public sealed class HealthEndpointsTests(TestDatabase database, ClassServer serv
         var traceId = JsonDocument.Parse(body).RootElement.GetProperty("traceId").GetString();
 
         Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
-        Assert.Contains("db.sh up", body, StringComparison.Ordinal);
+        Assert.Contains("just db up", body, StringComparison.Ordinal);
         Assert.Matches("^[0-9a-f]{32}$", traceId);
         Assert.Contains(logs.Entries, entry => entry.Level == LogLevel.Warning && entry.TraceId == traceId);
     }

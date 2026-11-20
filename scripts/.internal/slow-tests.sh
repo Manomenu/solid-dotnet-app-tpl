@@ -7,7 +7,7 @@ tests. A report, not a check: it never fails for time, and the gate never runs i
 usually waits for something (a timeout, a server started per test) and passes anyway; look at those first.
   slow-tests.sh        the 10 slowest tests, with how long each took
   slow-tests.sh -n 25  the 25 slowest
-Exit 1 when a test fails (the list still comes first). Needs python3; starts the test database like check.sh.
+Exit 1 when a test fails (the list still comes first). Needs python3; starts the test database like the gate.
 USAGE
 }
 if [ "${1:-}" = "--help" ]; then
@@ -19,13 +19,13 @@ COUNT=10
 if [ "${1:-}" = "-n" ]; then
     COUNT="${2:?slow-tests.sh: -n needs a number, e.g. -n 25}"
 fi
-# shellcheck source=scripts/.internal/checkout-env.sh
-source "$ROOT/scripts/.internal/checkout-env.sh"
+SUWGATE="$ROOT/Myapp.Web/node_modules/.bin/suwgate"
+eval "$("$SUWGATE" dev checkout-env)"
 RESULTS="$ROOT/.artifacts/slow-tests"
 rm -rf "$RESULTS"
 mkdir -p "$RESULTS"
 
-"$ROOT/scripts/.internal/db.sh" up >/dev/null
+"$SUWGATE" dev db up >/dev/null
 dotnet build "$ROOT/Myapp.slnx" --nologo -v q >/dev/null
 status=0
 dotnet test --solution "$ROOT/Myapp.slnx" --no-build --no-progress --report-xunit-trx --results-directory "$RESULTS" >"$RESULTS/run.log" 2>&1 || status=$?

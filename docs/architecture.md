@@ -2,84 +2,83 @@
 
 ## The map
 
-One line per top-level path (at most 300 characters each). `RepositoryLayoutTests` reads these
+One line per top-level path (at most 300 characters each). suwgate's `repository-layout` guard reads these
 lines: a new top-level folder needs its line here, a deleted one loses it.
 
 - `Myapp.slnx` — the .NET solution: the server and its tests.
 - `Myapp.Server/` — the HTTP API (ASP.NET Core minimal APIs, Npgsql, Dapper with hand-written SQL). One folder and namespace per feature: `Api/` wires the routes, `Notes/` is the example feature, `Health/` checks the database, `Database/` is the pool and the grate migrations.
 - `Myapp.Server/Database/Migrations/up/` — numbered SQL migrations, applied at start-up by grate and never edited afterwards.
 - `Myapp.Server.Tests/` — xUnit v3 tests against a real PostgreSQL. Mirrors the server's folders; `Characterization/` holds behaviour recorded before changing legacy code.
-- `Myapp.Gate/` — the quality machinery: the gate script, the repository guards, the criteria check, the Claude Code hooks. See "The gate" below.
-- `Myapp.Web/` — the web app (React 19, shadcn/ui, Tailwind 4, Vite, TypeScript strict, pnpm). A folder per feature under `src/` (`notes/` is the example); `src/design/` is the shared design system (shadcn components, `cn`); `src/api/` the HTTP client and the generated `openapi.d.ts`.
+- `Myapp.Gate/` — the .NET architecture guards (xUnit): layers, project references, interfaces, names, escape hatches, unused types. NuGet `Suwgate.Architecture` replaces them once it is published (TODO.md).
+- `Myapp.Web/` — the web app (React 19, Tailwind 4, Vite, TypeScript strict, pnpm), styled by `@maniumek/suwfrontkit`. A folder per feature under `src/` (`notes/` is the example); `src/api/` the HTTP client and the generated `openapi.d.ts`. Its packages include the gate, `@maniumek/suwgate`.
 - `compose.yaml` — the whole stack on a laptop from the same Dockerfiles: db (profile `db`), server, web; everything configured from `.env` (`.env.example`) with ASP.NET names (`Section__Key`); only web publishes a port (8190).
 - `Myapp.Server/Dockerfile`, `Myapp.Web/Dockerfile` — the two images (pinned bases, locked restore, build context is the repo root); the web image is nginx serving the build and proxying `/api` to the server.
 - `.dockerignore` — keeps `node_modules`, `bin`, `obj` and `.env` out of the build context.
-- `.github/` — `workflows/ci.yml`: the gate (`test`), the browser tests (`e2e`), and the images built and smoke-tested (`build`); nothing is published, the registry is project-specific.
-- `.vscode/` — the editor's glue, shared: recommended extensions, formatter per language, file nesting, debug launch, tasks that call `scripts/.internal`. No style rules (they live in `.editorconfig` and the formatters' configs, so Rider agrees).
-- `.githooks/` — `pre-commit` runs gitleaks on what is being committed; `just sync` enables it.
+- `.github/` — `workflows/ci.yml`: the gate (suwgate's reusable gate workflow), the browser tests (`e2e`), and the images built and smoke-tested (`build`); nothing is published, the registry is project-specific.
+- `.vscode/` — the editor's glue, shared: recommended extensions, formatter per language, the schema of `suwgate.yml`, file nesting, debug launch, tasks that run the gate. No style rules (they live in `.editorconfig` and the formatters' configs, so Rider agrees).
+- `.githooks/` — `pre-commit` runs `suwgate hook pre-commit`: gitleaks on what is being committed, then the quick gate; `just sync` enables it.
 <!-- template:start -->
 - `.template.config/` — the `dotnet new` template definition (see the README); not copied into generated projects.
 - `pack/` — packs the template as a NuGet package (`just pack-template`); not copied into generated projects.
 - `scripts/.internal/init-project.proj` and `init-project.sh` — the template's post action; they run once in a new project and delete themselves.
 <!-- template:end -->
 - `docs/` — documentation for people working on the repo: this map, `development.md`, the specs in `visual/spec/` (their acceptance criteria live as guardrails, see AGENTS.md), decisions above one feature in `adr/`.
-- `scripts/` — `scripts/.internal/` holds the everyday tools the gate and `just` run: `db.sh`, `server.sh`, `tmux-dev.sh`, `checkout-env.sh`, `api-types.sh`, `api-diff.sh`, `contracts.sh`, `e2e.sh`, `smoke.sh`, `logs.sh`; the gate refuses one that nothing calls (`ScriptsCalledTests`).
-- `.claude/` — the committed Claude Code settings: a Stop hook that runs the quick gate, a PreToolUse hook that protects migrations, generated files, and the gate with the lint configs (`ALLOW_GATE_EDIT=1 claude` lifts the last).
+- `scripts/` — `scripts/.internal/` holds the tools of this app that `just` runs: `api-types.sh`, `e2e.sh`, `slow-tests.sh`; the local stack is `suwgate dev`. The gate refuses a script that nothing calls.
+- `.claude/` — the committed Claude Code settings: `suwgate hook stop` runs the quick gate when Claude stops, `suwgate hook guard-edit` protects migrations, generated files, and the gate with the lint configs (`ALLOW_GATE_EDIT=1 claude` lifts the last).
 - `.config/` — `dotnet-tools.json`: the pinned CSharpier.
 - `contract/` — the API contract (`openapi.json`) and its version (`package.json`), generated and committed for consumers.
-- `tmux-dev.just` — the `justfile` module of the local stack; a tool's own module is `<folder>/mod.just` (`JustModulesTests`).
+- `tmux-dev.just` — the `justfile` module of the local stack; a tool's own module is `<folder>/mod.just`.
 
-Files at the root: `Directory.Build.props` (strict compiler and analyzers), `Directory.Build.rsp`
-(no idle MSBuild workers), `Directory.Packages.props` (every package version, once),
-`BannedSymbols.txt` (APIs the build refuses, each with what to use instead), `.editorconfig`
+Files at the root: `suwgate.yml` (the gate), `layers.json` (the server's layers and which project may reference which),
+`Directory.Build.props` (strict compiler and analyzers), `Directory.Build.rsp` (no idle MSBuild workers), `Directory.Packages.props`
+(every package version, once), `BannedSymbols.txt` (APIs the build refuses, each with what to use instead), `.editorconfig`
 (every disabled rule has its reason in the table below), `global.json`, `nuget.config`, `.gitattributes`, `.gitignore`.
 
 ## The gate
 
-Quality machinery lives apart from what it checks, for two reasons: a guard tests the whole repository, not one
-project, and an agent that cannot pass a guard must not be able to change it.
+The gate is suwgate (npm `@maniumek/suwgate`, [its README](https://github.com/Manomenu/suwgate)): `suwgate check` runs the steps
+of the profiles `suwgate.yml` names (web, dotnet, database) and its repository guards. This repository keeps only the wiring and what
+is its own:
 
-- Belongs in the gate: anything that decides whether a change passes. A tool for everyday work stays in `scripts/`,
-  even when the gate calls it.
-- A hook refuses an agent's edit of the whole folder, so a new guard is protected from its first line. The owner lifts
-  it for one session with `ALLOW_GATE_EDIT=1 claude`.
-- Data that changes with every feature is the exception: `layers.json` stays editable, because its diff is one
-  readable line and a protected file would stop every feature at the owner's door.
-- Guards are grouped by what they check: design, code, the repository, tools. Scripts sit apart from tests.
-- Some configs stay at the repository root because the tools look for them there; the hook protects them all the same.
+- `suwgate.yml`: the profiles, where the web app lives, the steps it skips and the exceptions, each with its reason, the edit hook's
+  extra files, and the names and ports of the local stack (`suwgate dev`). The ports are written out because the template shifts them.
+- `layers.json`: the order of the server's layers and which project may reference which; the app's own design.
+- `Myapp.Gate/`: the .NET guards that suwgate does not ship as a package yet (TODO.md).
+- The tool configs of the web app (`eslint.config.js`, `tsconfig*.json`, `prettier.config.js`, `knip.config.ts`,
+  `e2e/playwright.config.ts`) extend suwgate's presets and keep only the app's paths, features and entry points.
+
+An agent that cannot pass a guard must not be able to change it: the edit hook refuses `suwgate.yml`, `layers.json`, `Myapp.Gate/`,
+the hooks, the workflows and the lint, type and build configs. The owner lifts it for one session with `ALLOW_GATE_EDIT=1 claude`.
 
 ## What the gate forbids
 
-Each line is a build rule or a test; its message says the fix. Rules live as low as they can: types and analyzers first.
+Each line is a build rule, a test or a guard; its message says the fix. Rules live as low as they can: types and analyzers first.
+suwgate's guards and steps are listed with their reasons in its README; the ones this app relies on:
 
-- Web (`check.sh`): tsc strict, eslint (typescript-eslint strict + import boundaries: a feature uses `api` and `design`, `design` uses no feature; no `localStorage`, `sessionStorage` or `indexedDB`: state lives on the server or in the address), vitest, prettier (with Tailwind class order), knip (dead code), `openapi.d.ts` equal to the server's OpenAPI document.
+- Web: tsc strict, eslint (typescript-eslint strict, feature boundaries, no browser storage, no comments), vitest, prettier (with Tailwind class order), knip, `openapi.d.ts` and `contract/openapi.json` equal to what the server generates, the contract's version right for what changed (oasdiff).
 - Template (`TemplateTests`, template repo only): the placeholder is spelled `Myapp` or `myapp` only, base ports are whole numbers, port symbols are consistent, nothing that must not be copied is missing from the exclusions.
-- Logs (`HealthEndpointsTests`, `LogsScriptTests`): an error response carries the `traceId` that its log lines carry; `logs.sh` reads them back.
-- Editor (`VsCodeSettingsTests`): `.vscode/settings.json` has no style keys; recommended extension ids are well formed.
-- Images (`ImagePinsTests`): every `FROM` and `image:` carries a version, never `latest`.
-- Containers (`check.sh`): `docker compose config` resolves with and without the `db` profile; `smoke.sh` (run by CI after the stack starts) checks `/healthz` and `/api/health` of the running stack; every compose port is on 127.0.0.1 (`ComposePortsTests`).
-- Build: analyzers `latest-all`, warnings are errors, unused private members (IDE0051, IDE0052, CA1823), no `#pragma warning disable` (`NoPragmaTests`).
+- Logs (`HealthEndpointsTests`): an error response carries the `traceId` that its log lines carry; `just logs --trace` reads them back.
+- Repository (suwgate guards): required files, AGENTS.md short and `CLAUDE.md` exactly `@AGENTS.md`, every path the docs name exists, every top-level folder in the map above, no vague folder or project names (Common, Utils, Services, Components…), every script called and answering `--help`, just modules, pinned images, compose ports on 127.0.0.1, no style keys in `.vscode/settings.json`, the hooks wired.
+- Build: analyzers `latest-all`, warnings are errors, unused private members (IDE0051, IDE0052, CA1823); no `#pragma warning disable`, `@ts-ignore` or `eslint-disable` (`no-in-place-switches`).
 - Banned APIs (`BannedSymbols.txt`): `DateTime.Now`/`UtcNow`, blocking on tasks, `Thread.Sleep`, `Console`, `Activator`, reflection discovery, `Type.GetType(string)`, Newtonsoft.
+- Packages (`banned-nuget-packages`, `unused-nuget-versions`, `banned-npm-packages`): no MediatR, AutoMapper, Mapster, Scrutor, mocking libraries, FluentAssertions, Newtonsoft.Json or Entity Framework; every versioned package is referenced.
+- Settings (`appsettings-bound`, `connection-host`): every section of appsettings is read by an options class; connection strings name `127.0.0.1`.
+- Migrations (`migrations-unchanged`, `MigrationFilesTests`): a script master has is never changed; names are `NNNN_snake_case.sql`.
 - Layers (`ContractsTests`): a layer uses only the layers below it, every namespace has a layer, every `*Endpoints` class is mapped from `Api`, one per namespace.
-- Unlisted folders and projects (`Every_server_namespace_has_a_layer`, `UnlistedProjectsTests`): a guard over a list covers nothing left off it, so a folder or project off the list fails until it is added; shell scripts are guarded by `git ls-files`, not by a list of folders.
+- Unlisted projects (`Every_server_namespace_has_a_layer`, `UnlistedProjectsTests`): a guard over a list covers nothing left off it, so a namespace or project off the list fails until it is added.
 - Project graph (`ProjectReferencesTests`): which project may reference which and see whose internals.
-- Names (`NamingTests`): unique type names, one top-level type per file named like the file.
-- Forbidden names (`ForbiddenNamesTests`): no folder (web `src/` included), project, namespace or type named Common, Helpers, Utils, Manager, Shared, Core, Domain, Services, Models, Components, Hooks, Ui and the like; no `*Repository`, `*Service`, `*UnitOfWork` types.
-- Packages (`PackagesTests`): no MediatR, AutoMapper, Mapster, Scrutor, mocking libraries, FluentAssertions, Newtonsoft.Json or Entity Framework; every versioned package is referenced.
+- Names (`NamingTests`, `ForbiddenNamesTests`): unique type names, one top-level type per file named like the file; no namespace or type named with a vague word, no `*Repository`, `*Service`, `*UnitOfWork` types.
 - Interfaces (`InterfacesTests`): an interface has at least two implementations.
 - Deleting (`SubtractTests`): nothing `[Obsolete]`, no unused non-public type.
 - Escape hatches (`EscapeHatchTests`): no `dynamic`, no null-forgiving `!`.
-- Comments: none in any code or config file, only the tool directives AGENTS.md lists ("No comments"). C# `CommentsTests` (Roslyn); TypeScript and JavaScript the local eslint rule `no-comments` (examples in `Myapp.Web/eslint.config.test.js`, `WebCommentsTests` keeps it on); shell, YAML, Dockerfiles, ignore files, `.editorconfig`, nginx and justfiles `HashCommentsTests`; MSBuild, XML and `index.html` `XmlCommentsTests`; JSON `JsonCommentsTests`; SQL `SqlCommentsTests`; CSS `CssCommentsTests` (the last five in `Myapp.Gate/Comments/`).
-- Settings (`AppSettingsTests`): every section of appsettings is bound by an options class.
-- Acceptance criteria (`check.sh` without `--quick` runs `criteria.sh`: the suwagent plugin's `vdoc.py criteria`, pinned, with the kinds of `criteria.json`; `CriteriaKindsTests` keeps each kind in README and AGENTS.md): each spec in `docs/visual/spec/` has an acceptance section with one unique `AC-<feature>-<n>` per criterion, each is named by a guardrail of a known kind, every id a guardrail names is in a spec, no id stands where the gate checks nothing.
-- Docs (`AgentsFileTests`, `RepositoryLayoutTests`): AGENTS.md at most 100 lines, no tree drawings, no capitals shouting; CLAUDE.md is `@AGENTS.md`; every top-level folder is in the map above.
-- The gate itself (`check.sh`): a ceiling per step, the quick gate fails above its budget (20 s by default) and checks only what changed.
+- Comments (`comments-*` guards and suwgate's eslint rule `no-comments`): none in any code or config file, only the tool directives AGENTS.md lists ("No comments").
+- Acceptance criteria (the `criteria` step, full gate only): each spec in `docs/visual/spec/` has an acceptance section with one unique `AC-<feature>-<n>` per criterion, each is named by a guardrail of a known kind, every id a guardrail names is in a spec, no id stands where the gate checks nothing.
 
 ## Disabled analyzer and lint rules, and why
 
 Directory.Build.props turns on every analyzer (`AnalysisLevel` latest-all) and makes each warning an error; formatting is
 CSharpier's (140 columns), so everything in `.editorconfig` past the basics is lint. A rule that does not fit is switched off
-there, one line each, never with `#pragma`, and gets its row here.
+there, one line each, never with `#pragma`, and gets its row here. The web's lint rules come from suwgate's preset, with its reasons.
 
 | Rule | Where | Why |
 | --- | --- | --- |
@@ -92,45 +91,40 @@ there, one line each, never with `#pragma`, and gets its row here.
 | CA1707, CA1515, CA2100, CA1054 | tests and the gate | test names are sentences (`Health_answers_ok`); xUnit needs public classes; SQL built in a test is its own, never input |
 | CA2234 | tests and the gate | a relative path string reads better than `new Uri(...)` in a request |
 | RS0030 | generated code under obj | xUnit's generated entry point blocks on the task once; it is not ours to change |
-| `restrict-template-expressions` allows numbers | web | template literals with numbers are how the UI builds labels and paths |
-| `no-confusing-void-expression` ignores arrow shorthand | web | `onClick={() => setOpen(false)}` is the idiomatic React handler; braces add nothing |
-| `no-unused-vars` ignores rest siblings | web | `const { a: _, ...rest } = obj` drops a key on purpose |
 
-The web's import contracts (`boundaries` in `eslint.config.js`): every folder of `src/` is a feature, independent by default;
-a feature imports only itself, `api` and `design`, and `design` imports no feature. The element patterns are matched in order and
-the first wins, which is why `api` and `design` come before the catch-all feature pattern. The entry files at the root of `src/`
-(`main.tsx`, `App.tsx`) put the page together and may import any feature. Browser tests drive the page from outside and are left out.
-When one feature really composes another, that edge is its own policy, and its reason a row in this section.
+The web's import boundaries (`app()` of `@maniumek/suwgate/eslint` in `eslint.config.js`): every folder of `src/` is a feature or a
+shared folder, named there; a feature imports only itself and the shared folders (`api`), a shared folder only itself. The entry files at
+the root of `src/` (`main.tsx`, `App.tsx`) put the page together and may import any feature. When one feature really composes another,
+that edge is its own policy, and its reason a row in this section.
 
-Browser storage (`no-restricted-globals`, `no-restricted-properties` in `eslint.config.js`): state lives on the server, behind an
-action, or in the address, so a reload, a link and a second tab show the same thing. When the owner asks for one remembered
-preference, its one file is added there as the only exception.
+Browser storage: state lives on the server, behind an action, or in the address, so a reload, a link and a second tab show the
+same thing. When the owner asks for one remembered preference, its one file goes into `storage` of `app()` as the only exception.
 
 ## Why some settings are as they are
 
 - NuGet: `nuget.config` clears every source but nuget.org: with a second source (a company feed) central package management raises
   NU1507, and warnings as errors turn it into a failed build.
-- Build workers: `Directory.Build.rsp` (`-nodeReuse:false`) and the MSBuild variables `checkout-env.sh` exports leave no MSBuild workers or build
+- Build workers: `Directory.Build.rsp` (`-nodeReuse:false`) and the MSBuild variables `suwgate dev checkout-env` exports leave no MSBuild workers or build
   server running after a build: parallel builds of several checkouts (agents in worktrees) otherwise pile up dozens of idle nodes, gigabytes of memory.
 - Line endings: `.gitattributes` keeps LF everywhere whatever the OS (as `.editorconfig`), never normalises binaries, and marks the lockfiles and the
   generated API files as generated, so GitHub collapses them in diffs.
-- TypeScript: `tsconfig.json` only points at the two projects so the editor knows which settings a file gets: `tsconfig.app.json` is the browser
-  app, `tsconfig.node.json` the code that runs in Node (the Vite config, the Playwright tests). The app leaves out exactly the `*.e2e.ts`
-  files the Node project checks, and the Node project sets `"exclude": []` because it would otherwise inherit that exclusion.
-  The app's `types` already loads Vite's client types, so no file needs a `/// <reference>` line.
+- TypeScript: `tsconfig.json` is the browser app (suwgate's browser preset), `tsconfig.node.json` the code that runs in Node (the Vite
+  and knip configs, the Playwright tests; its node preset). The app leaves out exactly the `*.e2e.ts` files the Node project checks.
+  The browser preset's `types` already loads Vite's client types, so no file needs a `/// <reference>` line.
 - pnpm: `pnpm-workspace.yaml` holds pnpm 11's settings (it reads them there, not from `package.json`): esbuild (via Vite) needs its
   postinstall for its platform binary, and approving it keeps installs non-interactive; `unrs-resolver` (from eslint-plugin-boundaries)
-  gets its prebuilt binary as an optional package, so its fallback build is not needed.
+  gets its prebuilt binary as an optional package, so its fallback build is not needed. `minimumReleaseAgeExclude` lets a new release
+  of the two shared kits, `@maniumek/suwgate` and `@maniumek/suwfrontkit`, in on its first day; every other package waits pnpm's day.
 - The web image's nginx serves `/healthz` for the container's own liveness, independent of the API. `/api` is proxied through a
   variable so nginx looks the server's name up again every 10 s (a recreated server container gets a new address); with a variable and
   no URI in `proxy_pass` the request goes on unchanged, `/api` prefix included. The browser sees one origin, as behind the Vite proxy.
   Both images are built with the repository root as context: `docker build -f Myapp.Server/Dockerfile .`.
 - In `compose.yaml` every value comes from the environment (`.env`, see `.env.example`) with a default, so a bare
   `docker compose --profile db up` works; leave the `db` profile out and point `ConnectionStrings__Default` at an external PostgreSQL.
-  Every port is on the loopback (the database password is a development one), which `ComposePortsTests` keeps. The database's
-  healthcheck asks over TCP, so the socket-only server a fresh volume first starts never counts as ready, and `db.sh up` waits for it with `--wait`.
-- CI pins every action by its commit; the step's name carries the version the commit is. The gate's tools are installed in the
-  runner's temp folder, because the repository guards count every untracked file as part of the repository.
+  Every port is on the loopback (the database password is a development one), which suwgate's `compose-ports` guard keeps. The database's
+  healthcheck asks over TCP, so the socket-only server a fresh volume first starts never counts as ready, and `suwgate dev db up` waits for it with `--wait`.
+- CI pins every action, and suwgate's reusable gate workflow, by its commit; a step's name carries the version the commit is. The
+  reusable workflow has no database service, so the gate job starts the database of `compose.yaml` in its command before the gate.
 - VS Code recommends only the extensions of the tools this repository uses: C# Dev Kit, CSharpier, Prettier, ESLint, Tailwind CSS
   IntelliSense, Playwright, ShellCheck, EditorConfig, YAML, Containers and Just.
 
@@ -145,20 +139,8 @@ Server and gate:
   the tests about five times slower. Each test still works on data of its own.
 - The deletion guard (`SubtractTests`) treats `ServerApp` as an entry point, because the top-level `Program` that starts it has a generated `Main` the
   architecture reader does not see; it ignores the obsolete constructors the compiler makes for a type with required members.
-- The guard that every shell script is executable (`Every_shell_script_is_executable_in_git`) reads the git index, not the file system: a checkout on Windows or with
-  `core.fileMode=false` has no exec bit to read.
-- A script nobody calls is code nobody runs, so it rots unseen (`ScriptsCalledTests`); a recipe a person runs is the call that keeps
-  it alive, while a doc naming a script or a test running it calls nothing for real.
-- The quick gate costs what the change costs, not what the repository has grown to. In a new repository `master` or even `HEAD`
-  may not exist yet: then everything tracked is new, and a contract with nothing to compare against is right by definition. Only a
-  `vdoc.py` that cannot be downloaded is a SKIP; a checksum mismatch runs the criteria step, which fails and says why. The budget is
-  decided before the summary, so a green run over budget never prints PASS.
-- The contract's version check (`api-diff.sh`) runs after `api-types.sh --check` has proven the document current. It compares versions with `sort -V`, which
-  orders 0.10.0 after 0.9.0, where a plain comparison of strings gets it wrong.
 - The browser-test run (`e2e.sh`) drops and creates its database in two commands, because `CREATE DATABASE` cannot run inside the one transaction a single
   `-c` would be.
-- The local stack (`tmux-dev.sh`) does not trust `TMUX` alone: an editor started from a tmux pane hands it down to its embedded terminals, and
-  `switch-client` there would move another terminal's client. The session name is the lower-case project name.
 
 Web:
 
@@ -167,12 +149,12 @@ Web:
   response turns into (the server's ProblemDetails `detail` when it sent one).
 - The API base (`VITE_API_BASE`) is unset in every real setup: the Vite dev proxy and nginx both serve the API at `/api`, one origin for the browser.
   `API_PROXY_TARGET` points the e2e run's Vite at its own server.
+- The look (Catppuccin Mocha, dark only, Inter) and the components (Button, Input, Label, Alert, Page…) come from `@maniumek/suwfrontkit`,
+  pinned to an exact version: a change of the look is a pull request here, through this app's own tests. Desktop only, 16:9 and 21:9.
 - Under React's StrictMode an effect runs twice in development, so a screen aborts the first request and ignores its result.
 - The Notes screen is the template's example feature: delete it when it is in the way.
 - Browser tests start their own server and web app on their own ports and an empty database (`e2e.sh`), so what runs by hand and its
-  data stay untouched. They run on one worker, because tests that create data in one database would see each other's in parallel.
-  On CI a failure is retried once, only to tell a steady failure from a flaky one in the report: a test that passes on the retry
-  still fails the run.
+  data stay untouched.
 
 ## How code is split
 
@@ -197,7 +179,7 @@ in the top order and has an order of its own inside. Steps, each with the test t
 
 1. Move the feature folders of the existing area under `Myapp.Server/<Area>/` (a move only, in a
    change of its own); namespaces follow the folders (IDE0130 fails the build otherwise).
-2. In `Myapp.Gate/layers.json` put the area on one level of `serverLayers` (`"Orders | Billing"`) and add an
+2. In `layers.json` put the area on one level of `serverLayers` (`"Orders | Billing"`) and add an
    `Areas` dictionary: area name to the order of its features, same `a | b` syntax. Extend
    `Every_server_namespace_has_a_layer` to look one segment deeper for names in `Areas`
    and `EdgesOf` to take a prefix.

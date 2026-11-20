@@ -8,8 +8,8 @@ this file is the one to edit. Setup: [docs/development.md](docs/development.md).
 - For people: a recipe in `justfile`, in a module of the whole repository beside it (`tmux-dev.just`), or in a tool's folder as `<folder>/mod.just`, with a one-line description; `just` lists them. `just tmux-dev start` is the one way to run the stack.
 - For agents: a script in `scripts/.internal/`; each answers `--help`. A recipe only calls the script. The gate is
   `suwgate` (`Myapp.Web/node_modules/.bin/suwgate`), configured in `suwgate.yml`; `suwgate dev` runs the local stack.
-- `suwgate check --quick` while working, `suwgate check` before calling a change done. `e2e.sh` is not in the
-  gate: run it after changing anything a user clicks.
+- `suwgate check --quick` while working, `suwgate check` before calling a change done; the full gate also runs the browser
+  tests, against a fresh database of their own.
 
 ## Git
 
@@ -72,7 +72,7 @@ Docs say what and why, not where: a line that must change when the code moves do
 No comments in project files: agents mostly use comments to excuse bad code and comments rot, so names, small functions, types and tests say what a comment would; if code is unclear without a comment, fix the code.
 
 - Covered: every code and config file (C#, TypeScript, JavaScript, shell, YAML, Dockerfiles, ignore files, `.editorconfig`, MSBuild and XML files, `index.html`, JSON, SQL, CSS, justfiles), `///` docs, JSDoc, commented-out code and task markers included. Not covered: Markdown, `docs/` and data strings (UI texts, messages).
-- Not scanned: lockfiles, `node_modules`, `dist`, `bin`, `obj`, `.artifacts`, `docs/`; the generated `openapi.d.ts` is an exception in `suwgate.yml`.
+- Not scanned: lockfiles, `node_modules`, `dist`, `bin`, `obj`, `.artifacts`, `docs/`; suwgate's comment guards leave out the generated `openapi.d.ts`, which the `api-contract` step checks.
 - Allowed, because a tool reads them (suwgate's comment guards hold the same list, nothing is judged by eye):
   - every comment in `.env.example`; in a justfile, the one line directly above a recipe or `mod` that `just --list` shows;
   - a shebang `#!` on the first line; `# shellcheck <directive>=…` in shell scripts; `# syntax=…` on the first line of a Dockerfile;

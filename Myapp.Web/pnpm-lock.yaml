@@ -28,8 +28,8 @@ importers:
         specifier: ^10.0.1
         version: 10.0.1(eslint@10.15.0(jiti@2.7.0)(supports-color@10.2.2))
       '@maniumek/suwgate':
-        specifier: 0.1.1
-        version: 0.1.1(@eslint/js@10.0.1(eslint@10.15.0(jiti@2.7.0)(supports-color@10.2.2)))(eslint-import-resolver-typescript@4.4.5(eslint@10.15.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2))(eslint-plugin-boundaries@7.4.4(@typescript-eslint/parser@8.73.0(eslint@10.15.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@5.9.3))(eslint-import-resolver-typescript@4.4.5(eslint@10.15.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2))(eslint@10.15.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2))(eslint@10.15.0(jiti@2.7.0)(supports-color@10.2.2))(typescript-eslint@8.73.0(eslint@10.15.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@5.9.3))
+        specifier: 0.2.0
+        version: 0.2.0(@eslint/js@10.0.1(eslint@10.15.0(jiti@2.7.0)(supports-color@10.2.2)))(eslint-import-resolver-typescript@4.4.5(eslint@10.15.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2))(eslint-plugin-boundaries@7.4.4(@typescript-eslint/parser@8.73.0(eslint@10.15.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@5.9.3))(eslint-import-resolver-typescript@4.4.5(eslint@10.15.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2))(eslint@10.15.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2))(eslint@10.15.0(jiti@2.7.0)(supports-color@10.2.2))(typescript-eslint@8.73.0(eslint@10.15.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@5.9.3))
       '@playwright/test':
         specifier: ^1.63.0
         version: 1.64.1
@@ -475,8 +475,8 @@ packages:
       '@xyflow/react':
         optional: true
 
-  '@maniumek/suwgate@0.1.1':
-    resolution: {integrity: sha512-/dZ+mRzczyuHEI1gYT1fErk+QlZNH7hjIAgqfo0Ib7gtgslFkBR/7HCqvB81kxouPaxxm0ofsC70ZfuVlEepMg==}
+  '@maniumek/suwgate@0.2.0':
+    resolution: {integrity: sha512-cLvCW+k/R4JbxLaGD3TCOzXrngJzKq+ksuKnAYQRNRG6W0lcTPps5bz1RVeg4L2w/Cirr6sRaYddwte6a2QeeA==}
     engines: {node: '>=24'}
     hasBin: true
     peerDependencies:
@@ -3367,7 +3367,7 @@ snapshots:
       - '@types/react'
       - '@types/react-dom'
 
-  '@maniumek/suwgate@0.1.1(@eslint/js@10.0.1(eslint@10.15.0(jiti@2.7.0)(supports-color@10.2.2)))(eslint-import-resolver-typescript@4.4.5(eslint@10.15.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2))(eslint-plugin-boundaries@7.4.4(@typescript-eslint/parser@8.73.0(eslint@10.15.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@5.9.3))(eslint-import-resolver-typescript@4.4.5(eslint@10.15.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2))(eslint@10.15.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2))(eslint@10.15.0(jiti@2.7.0)(supports-color@10.2.2))(typescript-eslint@8.73.0(eslint@10.15.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@5.9.3))':
+  '@maniumek/suwgate@0.2.0(@eslint/js@10.0.1(eslint@10.15.0(jiti@2.7.0)(supports-color@10.2.2)))(eslint-import-resolver-typescript@4.4.5(eslint@10.15.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2))(eslint-plugin-boundaries@7.4.4(@typescript-eslint/parser@8.73.0(eslint@10.15.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@5.9.3))(eslint-import-resolver-typescript@4.4.5(eslint@10.15.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2))(eslint@10.15.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2))(eslint@10.15.0(jiti@2.7.0)(supports-color@10.2.2))(typescript-eslint@8.73.0(eslint@10.15.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@5.9.3))':
     dependencies:
       ajv: 8.20.0
       yaml: 2.9.1

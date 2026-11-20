@@ -14,7 +14,7 @@ lines: a new top-level folder needs its line here, a deleted one loses it.
 - `compose.yaml` — the whole stack on a laptop from the same Dockerfiles: db (profile `db`), server, web; everything configured from `.env` (`.env.example`) with ASP.NET names (`Section__Key`); only web publishes a port (8190).
 - `Myapp.Server/Dockerfile`, `Myapp.Web/Dockerfile` — the two images (pinned bases, locked restore, build context is the repo root); the web image is nginx serving the build and proxying `/api` to the server.
 - `.dockerignore` — keeps `node_modules`, `bin`, `obj` and `.env` out of the build context.
-- `.github/` — `workflows/ci.yml`: the gate (suwgate's reusable gate workflow), the browser tests (`e2e`), and the images built and smoke-tested (`build`); nothing is published, the registry is project-specific.
+- `.github/` — `workflows/ci.yml`: the gate (suwgate's reusable gate workflow, the browser tests and the database included), and the images built and smoke-tested (`build`); nothing is published, the registry is project-specific.
 - `.vscode/` — the editor's glue, shared: recommended extensions, formatter per language, the schema of `suwgate.yml`, file nesting, debug launch, tasks that run the gate. No style rules (they live in `.editorconfig` and the formatters' configs, so Rider agrees).
 - `.githooks/` — `pre-commit` runs `suwgate hook pre-commit`: gitleaks on what is being committed, then the quick gate; `just sync` enables it.
 <!-- template:start -->
@@ -23,7 +23,7 @@ lines: a new top-level folder needs its line here, a deleted one loses it.
 - `scripts/.internal/init-project.proj` and `init-project.sh` — the template's post action; they run once in a new project and delete themselves.
 <!-- template:end -->
 - `docs/` — documentation for people working on the repo: this map, `development.md`, the specs in `visual/spec/` (their acceptance criteria live as guardrails, see AGENTS.md), decisions above one feature in `adr/`.
-- `scripts/` — `scripts/.internal/` holds the tools of this app that `just` runs: `api-types.sh`, `e2e.sh`, `slow-tests.sh`; the local stack is `suwgate dev`. The gate refuses a script that nothing calls.
+- `scripts/` — `scripts/.internal/` holds the tools of this app that `just` runs: `api-types.sh`, `slow-tests.sh`; the local stack is `suwgate dev`. The gate refuses a script that nothing calls.
 - `.claude/` — the committed Claude Code settings: `suwgate hook stop` runs the quick gate when Claude stops, `suwgate hook guard-edit` protects migrations, generated files, and the gate with the lint configs (`ALLOW_GATE_EDIT=1 claude` lifts the last).
 - `.config/` — `dotnet-tools.json`: the pinned CSharpier.
 - `contract/` — the API contract (`openapi.json`) and its version (`package.json`), generated and committed for consumers.
@@ -139,8 +139,6 @@ Server and gate:
   the tests about five times slower. Each test still works on data of its own.
 - The deletion guard (architecture/no-unused-types) gets `ServerApp` as an entry point, because the top-level `Program` that starts it has a
   generated `Main` the architecture reader does not see.
-- The browser-test run (`e2e.sh`) drops and creates its database in two commands, because `CREATE DATABASE` cannot run inside the one transaction a single
-  `-c` would be.
 
 Web:
 
@@ -153,7 +151,7 @@ Web:
   pinned to an exact version: a change of the look is a pull request here, through this app's own tests. Desktop only, 16:9 and 21:9.
 - Under React's StrictMode an effect runs twice in development, so a screen aborts the first request and ignores its result.
 - The Notes screen is the template's example feature: delete it when it is in the way.
-- Browser tests start their own server and web app on their own ports and an empty database (`e2e.sh`), so what runs by hand and its
+- Browser tests start their own server and web app on their own ports and an empty database (the gate's `e2e` step), so what runs by hand and its
   data stay untouched.
 
 ## How code is split

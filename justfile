@@ -30,12 +30,7 @@ smoke *args:
 api-types:
     @./scripts/.internal/api-types.sh
 
-# Browser tests (Playwright) against a real server and an empty database of their own; not part of `just check`
-[group('maintenance')]
-e2e *args:
-    @./scripts/.internal/e2e.sh {{ args }}
-
-# The whole gate: build with analyzers, csharpier, every test, the web checks, the API contract and its version, acceptance criteria, shellcheck, gitleaks (the same CI runs)
+# The whole gate: build with analyzers, csharpier, every test, the browser tests against an empty database, the web checks, the API contract and its version, acceptance criteria, shellcheck, gitleaks (the same CI runs)
 [group('maintenance')]
 check:
     @{{ suwgate }} check

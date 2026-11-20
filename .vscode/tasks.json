@@ -18,14 +18,6 @@
             "problemMatcher": []
         },
         {
-            "label": "e2e",
-            "type": "shell",
-            "command": "bash scripts/.internal/e2e.sh",
-            "group": "test",
-            "presentation": { "reveal": "always", "panel": "dedicated" },
-            "problemMatcher": []
-        },
-        {
             "label": "logs",
             "type": "shell",
             "command": "Myapp.Web/node_modules/.bin/suwgate dev logs",

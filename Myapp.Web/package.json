@@ -9,7 +9,7 @@
         "build": "tsc --noEmit && vite build"
     },
     "dependencies": {
-        "@maniumek/suwfrontkit": "0.1.0",
+        "@maniumek/suwfrontkit": "0.2.0",
         "@tailwindcss/vite": "^4.3.3",
         "react": "^19.3.0",
         "react-dom": "^19.3.0",
@@ -17,7 +17,7 @@
     },
     "devDependencies": {
         "@eslint/js": "^10.0.1",
-        "@maniumek/suwgate": "0.1.0",
+        "@maniumek/suwgate": "0.1.1",
         "@playwright/test": "^1.63.0",
         "@types/node": "^26.6.4",
         "@types/react": "^19.3.0",

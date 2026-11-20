@@ -11,7 +11,7 @@ public sealed class NoteEndpointsTests(TestDatabase database, ClassServer server
     [Fact]
     public async Task A_created_note_is_listed()
     {
-        _ = database.Pool;
+        database.SkipWhenUnavailable();
         var cancellation = TestContext.Current.CancellationToken;
         var text = $"note {Guid.NewGuid():N}";
         using var client = App.CreateClient();
@@ -29,7 +29,7 @@ public sealed class NoteEndpointsTests(TestDatabase database, ClassServer server
     [InlineData("   ")]
     public async Task A_blank_note_is_refused_with_what_to_send_instead(string text)
     {
-        _ = database.Pool;
+        database.SkipWhenUnavailable();
         using var client = App.CreateClient();
 
         var response = await client.PostAsJsonAsync("/api/notes", new { text }, TestContext.Current.CancellationToken);

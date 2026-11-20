@@ -412,7 +412,7 @@
             "**/*.tsbuildinfo",
             "pack/**",
             "docs/visual/**",
-            "Myapp.Gate/Repository/TemplateTests.cs"
+            "Myapp.Gate/TemplateTests.cs"
           ]
         }
       ]

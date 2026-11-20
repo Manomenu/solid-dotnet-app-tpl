@@ -24,7 +24,8 @@ just api-types            # regenerate contract/openapi.json and Myapp.Web/src/a
 just slow-tests           # the 10 slowest .NET tests (-n 25 for more): a report, the gate never measures time
 just mutate               # Stryker.NET (MTP runner, preview) on the server code changed since master; needs a master with commits
 just pack-template        # the dotnet new template as a NuGet package in .artifacts/nupkg
-just check-quick          # suwgate check --quick: the repository guards, and build, csharpier, eslint, tsc, shellcheck for what changed only
+just check-quick          # suwgate check --quick: the repository guards, and for what changed only build, csharpier, the .NET guards
+                          # (Myapp.Gate), eslint, tsc, shellcheck
 just check                # suwgate check: the whole gate, every test, the whole repository (the same CI runs)
 just fmt                  # csharpier and prettier
 ```
@@ -52,8 +53,8 @@ the whole name, because worktrees of one repository share a long prefix). The ma
 `.claude/settings.json` runs `suwgate hook stop` when Claude stops: the quick gate, which blocks the stop while it fails (the loop is
 cut after one retry), skipped when nothing changed since it last passed. The quick gate has a budget of 20 seconds and fails above it;
 `SUWGATE_QUICK_LIMIT=<seconds>` raises it on a machine that is slow across the board. It costs what the change costs: the repository
-guards, plus build, csharpier, eslint, tsc and shellcheck only for what differs from where the branch left `master` (committed or not,
-and new files). No database and no tests; the tests and the acceptance criteria run in the full gate.
+guards, plus build, csharpier, the .NET guards of `Myapp.Gate`, eslint, tsc and shellcheck only for what differs from where the branch
+left `master` (committed or not, and new files). No database and no other tests; they and the acceptance criteria run in the full gate.
 
 `suwgate hook guard-edit` refuses an agent's edit of the gate and of generated files with a message saying what to run, and of a
 migration that already exists. A characterization recording is the agent's to write the first time, fixes included; one git already
@@ -77,7 +78,8 @@ on Windows `localhost` tries IPv6 first and every new connection waits seconds.
 
 ## Logs
 
-The server writes JSON log lines (the built-in console JSON formatter, `Logging:Console` in `appsettings.json`).
+The server writes JSON log lines (the console JSON formatter `Suwbackkit.Server` sets up; `Logging` in `appsettings.json` or the
+environment overrides it, such as `Logging__Console__FormatterName=simple`).
 The server of `just tmux-dev start` (`suwgate dev server`) also writes them to .artifacts/logs/server.jsonl, `e2e.sh` to .artifacts/logs/e2e-server.jsonl;
 the container stack is read with `--compose`. `just logs` prints the last warnings and errors of the newest log, one
 line each; `just logs --trace <traceId>` shows every line of one request, with the `traceId` any error response

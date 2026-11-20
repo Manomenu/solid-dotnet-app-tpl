@@ -1,32 +1,23 @@
-using System.Diagnostics;
-using System.Reflection;
-using Myapp.Server.Database;
-using Myapp.Server.Health;
 using Myapp.Server.Notes;
+using Suwbackkit.Postgres;
+using Suwbackkit.Server;
 
 namespace Myapp.Server.Api;
 
 internal static class ServerApp
 {
-    private static bool WritingOpenApiDocument => Assembly.GetEntryAssembly()?.GetName().Name == "GetDocument.Insider";
-
     public static WebApplication Build(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
-        builder.Services.AddDatabase(builder.Configuration, migrateOnStart: !WritingOpenApiDocument);
+        builder.AddServerDefaults();
+        builder.Services.AddDatabase(builder.Configuration, migrateOnStart: !ServerDefaults.WritingOpenApiDocument);
         builder.Services.AddSingleton<NoteStore>();
-        builder.Services.AddProblemDetails(options =>
-            options.CustomizeProblemDetails = context =>
-                context.ProblemDetails.Extensions["traceId"] = Activity.Current?.TraceId.ToString() ?? context.HttpContext.TraceIdentifier
-        );
-        builder.Services.AddOpenApi();
 
         var app = builder.Build();
-        app.UseExceptionHandler();
-        app.UseStatusCodePages();
+        app.MapServerDefaults();
 
         var api = app.MapGroup("/api");
-        api.MapHealth();
+        api.MapHealthStatus();
         api.MapNotes();
         return app;
     }

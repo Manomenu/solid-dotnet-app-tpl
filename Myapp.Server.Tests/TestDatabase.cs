@@ -1,5 +1,5 @@
-using Myapp.Server.Database;
 using Npgsql;
+using Suwbackkit.Postgres;
 
 [assembly: AssemblyFixture(typeof(Myapp.Server.Tests.TestDatabase))]
 
@@ -12,17 +12,12 @@ public sealed class TestDatabase : IAsyncLifetime
         ?? "Host=127.0.0.1;Port=5533;Database=myapp_test;Username=myapp;Password=myapp";
 
     private string? unavailable;
-    private Pool? pool;
 
-    internal Pool Pool
+    public void SkipWhenUnavailable()
     {
-        get
+        if (unavailable is not null)
         {
-            if (unavailable is not null)
-            {
-                Assert.Skip($"PostgreSQL unavailable — start it with just db up ({unavailable})");
-            }
-            return pool ?? throw new InvalidOperationException("the test database is not initialized");
+            Assert.Skip($"PostgreSQL unavailable — start it with just db up ({unavailable})");
         }
     }
 
@@ -30,56 +25,32 @@ public sealed class TestDatabase : IAsyncLifetime
     {
         try
         {
-            await RecreateAsync(ConnectionString);
+            await RecreateAsync();
         }
         catch (Exception error) when (error is NpgsqlException or TimeoutException && Environment.GetEnvironmentVariable("CI") is null)
         {
             unavailable = error.Message;
             return;
         }
-        pool = Pool.Create(ConnectionString, maxSize: 4);
         await Migrator.MigrateAsync(ConnectionString, Migrator.DefaultDirectory);
     }
 
-    public static async Task RecreateAsync(string connectionString)
-    {
-        await DropAsync(connectionString);
-        await using var connection = await OpenAdminAsync(connectionString);
-        await using var create = new NpgsqlCommand(
-            $"CREATE DATABASE \"{new NpgsqlConnectionStringBuilder(connectionString).Database}\"",
-            connection
-        );
-        await create.ExecuteNonQueryAsync();
-    }
+    public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 
-    public static async Task DropAsync(string connectionString)
+    private static async Task RecreateAsync()
     {
-        await using var connection = await OpenAdminAsync(connectionString);
-        await using var drop = new NpgsqlCommand(
-            $"DROP DATABASE IF EXISTS \"{new NpgsqlConnectionStringBuilder(connectionString).Database}\" WITH (FORCE)",
-            connection
-        );
-        await drop.ExecuteNonQueryAsync();
-    }
-
-    private static async Task<NpgsqlConnection> OpenAdminAsync(string connectionString)
-    {
-        var admin = new NpgsqlConnectionStringBuilder(connectionString)
+        var database = new NpgsqlConnectionStringBuilder(ConnectionString).Database;
+        var admin = new NpgsqlConnectionStringBuilder(ConnectionString)
         {
             Database = "postgres",
             Timeout = 3,
             Pooling = false,
         };
-        var connection = new NpgsqlConnection(admin.ConnectionString);
+        await using var connection = new NpgsqlConnection(admin.ConnectionString);
         await connection.OpenAsync();
-        return connection;
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        if (pool is not null)
-        {
-            await pool.DisposeAsync();
-        }
+        await using var drop = new NpgsqlCommand($"DROP DATABASE IF EXISTS \"{database}\" WITH (FORCE)", connection);
+        await drop.ExecuteNonQueryAsync();
+        await using var create = new NpgsqlCommand($"CREATE DATABASE \"{database}\"", connection);
+        await create.ExecuteNonQueryAsync();
     }
 }

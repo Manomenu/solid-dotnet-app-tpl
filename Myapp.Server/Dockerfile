@@ -1,6 +1,6 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0.400-alpine3.23 AS build
 WORKDIR /src
-COPY .editorconfig global.json nuget.config Directory.Build.props Directory.Build.rsp Directory.Packages.props BannedSymbols.txt ./
+COPY .editorconfig global.json nuget.config Directory.Build.props Directory.Build.rsp Directory.Packages.props ./
 COPY Myapp.Server/Myapp.Server.csproj Myapp.Server/packages.lock.json Myapp.Server/
 RUN dotnet restore Myapp.Server/Myapp.Server.csproj --locked-mode
 COPY Myapp.Server/ Myapp.Server/

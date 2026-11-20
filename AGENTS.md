@@ -8,8 +8,9 @@ this file is the one to edit. Setup: [docs/development.md](docs/development.md).
 - For people: a recipe in `justfile`, in a module of the whole repository beside it (`tmux-dev.just`), or in a tool's folder as `<folder>/mod.just`, with a one-line description; `just` lists them. `just tmux-dev start` is the one way to run the stack.
 - For agents: a script in `scripts/.internal/`; each answers `--help`. A recipe only calls the script. The gate is
   `suwgate` (`Myapp.Web/node_modules/.bin/suwgate`), configured in `suwgate.yml`; `suwgate dev` runs the local stack.
-- `suwgate check --quick` while working, `suwgate check` before calling a change done; the full gate also runs the browser
-  tests, against a fresh database of their own.
+- While working, `suwgate check --quick`, and `suwgate step <step> [-- <tool args>]` runs one step (`suwgate step` lists them),
+  e.g. `suwgate step e2e -- --headed` after changing anything a user clicks; `suwgate check` before calling a change done, whose
+  full gate also runs the browser tests, against a fresh database of their own.
 
 ## Git
 

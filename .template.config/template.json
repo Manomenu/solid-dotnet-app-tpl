@@ -430,7 +430,7 @@
       },
       "manualInstructions": [
         {
-          "text": "Run: dotnet msbuild scripts/.internal/init-project.proj"
+          "text": "Run: just init"
         }
       ],
       "continueOnError": false

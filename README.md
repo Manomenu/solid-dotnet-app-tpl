@@ -25,7 +25,7 @@ cd Invoices && just check
 - `--allow-scripts yes` lets the post action run `scripts/.internal/init-project.sh`: it regenerates the
   lockfiles, the API contract (`openapi.json`) and the web types from it, creates `docs/visual/spec/` for the
   living specs and the git repository on `master` with the hooks enabled, and removes the template notes
-  (this block included). Without it, run `dotnet msbuild scripts/.internal/init-project.proj` yourself. The
+  (this block included). Without it, run `just init` yourself (it calls `init-project.proj`). The
   post action goes through MSBuild so that on Windows `bash` is Git's, not WSL's; install Git for Windows.
   It runs once, in the new project only (it refuses to run where `.template.config/` exists), and deletes itself.
   `dotnet new` writes every file without its executable bit, so it also marks the scripts and the pre-commit hook

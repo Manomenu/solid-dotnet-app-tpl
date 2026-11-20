@@ -16,7 +16,6 @@
 just                      # every recipe, grouped
 just tmux-dev start       # the one way to run the stack: PostgreSQL (compose.yaml, localhost:5533), the API on
                           # http://127.0.0.1:6300 (dotnet watch, .env loaded) and the web app on http://localhost:3300 (pnpm dev)
-just e2e                  # browser tests (own server, own database, own ports; not part of the gate)
 just logs                 # why did it fail? last warnings/errors of the newest server log (see below)
 just db up                # the local PostgreSQL alone (also down, reset, psql, logs, status)
 just api-types            # regenerate contract/openapi.json and Myapp.Web/src/api/openapi.d.ts after changing a record the API
@@ -26,7 +25,8 @@ just mutate               # Stryker.NET (MTP runner, preview) on the server code
 just pack-template        # the dotnet new template as a NuGet package in .artifacts/nupkg
 just check-quick          # suwgate check --quick: the repository guards, and for what changed only build, csharpier, the .NET guards
                           # (Myapp.Gate), eslint, tsc, shellcheck
-just check                # suwgate check: the whole gate, every test, the whole repository (the same CI runs)
+just check                # suwgate check: the whole gate, every test (the browser tests with their own server, database
+                          # and ports among them), the whole repository (the same CI runs)
 just fmt                  # csharpier and prettier
 ```
 
@@ -43,10 +43,9 @@ setting is an options class of the feature that reads it, validated with `Valida
 
 A linked git worktree gets its own test and e2e databases (`myapp_test_<suffix>`, `myapp_e2e_<suffix>`) and its own e2e
 port pair (20000-29999), so checkouts that run the browser tests at the same time do not collide. `suwgate dev checkout-env`
-(evaluated by the scripts that need it) derives the suffix from the directory name (lower-case, at most 30 characters, plus a hash of
+(the gate's `dotnet-test` and `e2e` steps and `slow-tests.sh` apply it) derives the suffix from the directory name (lower-case, at most 30 characters, plus a hash of
 the whole name, because worktrees of one repository share a long prefix). The main checkout and CI keep the plain names and ports
 (`myapp_test`, `myapp_e2e`, 6301/3301); a value already in the environment wins. A worktree's databases are left behind, not dropped.
-`suwgate check` does not apply them to its .NET tests yet, so two checkouts that run the full gate at once share `myapp_test`.
 
 ## Claude Code hooks
 
@@ -80,7 +79,7 @@ on Windows `localhost` tries IPv6 first and every new connection waits seconds.
 
 The server writes JSON log lines (the console JSON formatter `Suwbackkit.Server` sets up; `Logging` in `appsettings.json` or the
 environment overrides it, such as `Logging__Console__FormatterName=simple`).
-The server of `just tmux-dev start` (`suwgate dev server`) also writes them to .artifacts/logs/server.jsonl, `e2e.sh` to .artifacts/logs/e2e-server.jsonl;
+The server of `just tmux-dev start` (`suwgate dev server`) also writes them to .artifacts/logs/server.jsonl, the browser tests' server to .artifacts/logs/e2e-server.jsonl;
 the container stack is read with `--compose`. `just logs` prints the last warnings and errors of the newest log, one
 line each; `just logs --trace <traceId>` shows every line of one request, with the `traceId` any error response
 carries. `--all` shows every level, `-n N` the last N lines.

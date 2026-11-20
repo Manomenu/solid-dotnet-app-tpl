@@ -15,9 +15,9 @@
       },
       "Suwgate.Architecture": {
         "type": "Direct",
-        "requested": "[0.1.0, )",
-        "resolved": "0.1.0",
-        "contentHash": "E7WIZled9Vdt4YF0mlE7zLzxNfcjvzsGBBypUkDZAzYQvKmbr4GGMtvo19rKCLmV5d4erZvqe9D4SisGzWZV/g==",
+        "requested": "[0.1.1, )",
+        "resolved": "0.1.1",
+        "contentHash": "Dk+X+uDInLtFdvzQ16/0zm4bgAziW2Xw47divE08pmrC3Cuku+vUZ9Fnv86r6woERBn07LI5GbPJr6fP9MMLBg==",
         "dependencies": {
           "Microsoft.CodeAnalysis.BannedApiAnalyzers": "4.14.0",
           "Microsoft.CodeAnalysis.CSharp": "5.0.0",

@@ -78,7 +78,7 @@ analyzer warning, banned APIs, a layer used against its order, a folder or proje
 packages, vague names, any comment but a tool directive, `dynamic`, browser storage, unpinned images, a stale API contract or
 generated types, an acceptance criterion without a guardrail, an unresolvable compose file. The full list, each with its fix:
 [docs/architecture.md, "What the gate forbids"](docs/architecture.md#what-the-gate-forbids).
-Browser tests run separately (`just e2e`), and `just tmux-dev start` is the one way to run the stack.
+The full gate also runs the browser tests, against their own server, ports and empty database; `just tmux-dev start` is the one way to run the stack.
 
 ## The API contract
 

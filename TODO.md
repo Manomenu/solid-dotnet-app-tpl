@@ -11,7 +11,7 @@ Decided for the template, not built yet; each arrives as its own change when it 
   3. suwbackkit generates the API contract and types that `api-types.sh` does; then a CLI and SDK skeleton (suwagcms and suwageval have twin sets today).
   4. Nested layers in `Suwgate.Architecture`, before the first product area (docs/architecture.md, "Areas").
 - Lookups that went with the deleted scripts come back when suwgate has them: the guardrails of one criterion (`just criteria AC-…`) and the tests that pin another repository's contract (`just contracts`).
-- The README pictures still show the old gate script: edit `docs/visual/board/readme.html` and render them again.
+- The README pictures still show the old gate scripts (a check script, and the browser tests as a run of their own): edit `docs/visual/board/readme.html` and render them again.
 <!-- template:end -->
 
 ## When the first spec's criteria need a strength check

@@ -11,10 +11,10 @@ indent_size = 4
 [*.{yml,yaml,json}]
 indent_size = 2
 
-[*.{csproj,props,targets,slnx}]
+[*.{csproj,props,targets,slnx,config}]
 indent_size = 2
 
-[*.cs]
+[*.{cs,csproj,props,targets}]
 max_line_length = 140
 
 [Myapp.Server.Tests/**.cs]

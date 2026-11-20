@@ -5,6 +5,12 @@ Decided for the template, not built yet; each arrives as its own change when it 
 
 - A CI step that publishes the images: the registry is project-specific (`.github/workflows/ci.yml` builds and smoke-tests them, nothing more).
 - TanStack Router with typed routes arrives with the second screen: a link to a missing route or a wrong param becomes a compile error.
+- The shared kits, in this order (the plan agreed with the owner on 2026-11-20):
+  1. suwgate (public, GitHub Manomenu/suwgate): `suwgate check` from npm `@maniumek/suwgate` replaces the check script and the repository guards, configured in `suwgate.yml`; the .NET guards come from NuGet `Suwgate.Architecture` and `Suwgate.Database`; CI calls suwgate's reusable workflows.
+  2. suwfrontkit (npm `@maniumek/suwfrontkit`): the web's look and components, and later its typed API client, replace the copies in the web project.
+  3. A backend inventory across the template and the apps decides what goes to suwbackkit and to `Suwgate.Testing` (a PostgreSQL Testcontainers fixture, characterization and e2e helpers).
+  4. suwbackkit (NuGet): first the server defaults (logging, health checks, ProblemDetails, OpenAPI, Npgsql with Dapper and grate), then a CLI and SDK skeleton (suwagcms and suwageval have twin sets today), and the AI procedure engine only when a second app needs it next to alfusion.
+- The dev scripts (db, logs, smoke, tmux-dev) stay here; they move into `suwgate dev` only if they start to drift between repos.
 <!-- template:end -->
 
 ## When the first spec's criteria need a strength check

@@ -46,7 +46,8 @@ setting is an options class of the feature that reads it, validated with `Valida
 A linked git worktree gets its own test and e2e databases (`myapp_test_<suffix>`, `myapp_e2e_<suffix>`) and its own e2e
 port pair (20000-29999), so checkouts that run the browser tests at the same time do not collide. `suwgate dev checkout-env`
 (the gate's `dotnet-test` and `e2e` steps and `slow-tests.sh` apply it) derives the suffix from the directory name (lower-case, at most 30 characters, plus a hash of
-the whole name, because worktrees of one repository share a long prefix). The main checkout and CI keep the plain names and ports
+the repository and the whole name, because worktrees of one repository share a long prefix and worktrees of two repositories
+can share a name). The main checkout and CI keep the plain names and ports
 (`myapp_test`, `myapp_e2e`, 6301/3301); a value already in the environment wins. A worktree's databases are left behind, not dropped.
 
 ## Claude Code hooks

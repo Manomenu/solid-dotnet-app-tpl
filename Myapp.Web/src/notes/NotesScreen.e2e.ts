@@ -1,5 +1,11 @@
 import { expect, test } from "@playwright/test";
 
+test("the browser tab names the screen and the app", async ({ page }) => {
+    await page.goto("/notes");
+
+    await expect(page).toHaveTitle("Notes · myapp");
+});
+
 test("a note submitted with Enter appears in the list, the field empties, and the list shows it after a reload", async ({ page }) => {
     const text = `note ${Date.now()}`;
     await page.goto("/notes");

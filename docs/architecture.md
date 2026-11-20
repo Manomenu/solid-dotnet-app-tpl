@@ -20,7 +20,7 @@ lines: a new top-level folder needs its line here, a deleted one loses it.
 <!-- template:start -->
 - `.template.config/` — the `dotnet new` template definition (see the README); not copied into generated projects.
 - `pack/` — packs the template as a NuGet package (`just pack-template`); not copied into generated projects.
-- `scripts/.internal/init-project.proj` and `init-project.sh` — the template's post action (`just init` without `--allow-scripts yes`); they run once in a new project and delete themselves and the recipe.
+- `scripts/.internal/init-project.proj` and `init-project.sh` — the template's post action (`just init` without `--allow-scripts yes`); they run once in a new project and delete themselves, their recipe and `just pack-template`.
 <!-- template:end -->
 - `docs/` — documentation for people working on the repo: this map, `development.md`, the specs in `visual/spec/` (their acceptance criteria live as guardrails, see AGENTS.md), decisions above one feature in `adr/`.
 - `scripts/` — `scripts/.internal/` holds the tools of this app that `just` runs: `api-types.sh`, `slow-tests.sh`; the local stack is `suwgate dev`. The gate refuses a script that nothing calls.

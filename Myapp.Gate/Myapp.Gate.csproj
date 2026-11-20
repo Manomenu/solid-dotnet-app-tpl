@@ -6,8 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="TngTech.ArchUnitNET.xUnitV3" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+    <PackageReference Update="Suwgate.Architecture" IncludeAssets="all" />
+    <PackageReference Include="Suwgate.Database" />
     <PackageReference Include="xunit.v3" />
   </ItemGroup>
 
@@ -16,9 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Using Include="Myapp.Gate.Design" />
-    <Using Include="Myapp.Gate.Code" />
-    <Using Include="Myapp.Gate.Repository" />
     <Using Include="Xunit" />
   </ItemGroup>
 </Project>

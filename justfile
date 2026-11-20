@@ -40,7 +40,7 @@ e2e *args:
 check:
     @{{ suwgate }} check
 
-# The quick gate: the repository guards, and build, csharpier, eslint, tsc, shellcheck for what changed (what the Claude Code Stop hook runs)
+# The quick gate: the repository guards, and build, csharpier, the .NET guards, eslint, tsc, shellcheck for what changed (what the Claude Code Stop hook runs)
 [group('maintenance')]
 check-quick:
     @{{ suwgate }} check --quick

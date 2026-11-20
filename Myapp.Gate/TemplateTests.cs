@@ -1,10 +1,13 @@
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using Suwgate.Architecture.Sources;
 
-namespace Myapp.Gate.Repository;
+namespace Myapp.Gate;
 
 public sealed partial class TemplateTests
 {
+    private static readonly RepositoryFiles Repository = RepositoryFiles.Find();
+
     private static readonly string[] TextExtensions =
     [
         ".cs",
@@ -36,7 +39,7 @@ public sealed partial class TemplateTests
         "CLAUDE.local.md",
         "pack/**",
         "docs/visual/**",
-        "Myapp.Gate/Repository/TemplateTests.cs",
+        "Myapp.Gate/TemplateTests.cs",
         "**/packages.lock.json",
         "**/pnpm-lock.yaml",
     ];
@@ -44,7 +47,7 @@ public sealed partial class TemplateTests
     [GeneratedRegex("myapp", RegexOptions.IgnoreCase)]
     private static partial Regex Name();
 
-    private static JsonElement Template() => JsonDocument.Parse(RepositoryFiles.Read(".template.config/template.json")).RootElement;
+    private static JsonElement Template() => JsonDocument.Parse(Repository.Read(".template.config/template.json")).RootElement;
 
     private static IEnumerable<(string Symbol, string Base, string[] Values)> PortSymbols() =>
         Template()
@@ -65,14 +68,13 @@ public sealed partial class TemplateTests
             );
 
     private static IEnumerable<(string Path, string Text)> TextFiles() =>
-        RepositoryFiles
-            .Paths()
-            .Where(path => TextExtensions.Contains(Path.GetExtension(path)))
+        Repository
+            .Paths.Where(path => TextExtensions.Contains(Path.GetExtension(path)))
             .Where(path =>
                 !path.EndsWith("packages.lock.json", StringComparison.Ordinal)
                 && !path.StartsWith(".template.config/", StringComparison.Ordinal)
             )
-            .Select(path => (path, RepositoryFiles.Read(path)));
+            .Select(path => (path, Repository.Read(path)));
 
     private static bool Shifted(string basePort, string[] values) =>
         values.Length == 10

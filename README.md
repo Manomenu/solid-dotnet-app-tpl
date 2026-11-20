@@ -65,7 +65,7 @@ They are not copied into generated projects. Everything below this block is the 
 
 # Myapp
 
-An ASP.NET Core minimal-API server (Npgsql, Dapper, hand-written SQL, grate migrations), a React 19 + Tailwind web app styled by
+An ASP.NET Core minimal-API server (Dapper, hand-written SQL, grate migrations) on [suwbackkit](https://github.com/Manomenu/suwbackkit), a React 19 + Tailwind web app styled by
 [suwfrontkit](https://github.com/Manomenu/suwfrontkit) with types generated from the server's OpenAPI document, and a Notes feature
 as the pattern end to end.
 
@@ -73,7 +73,7 @@ as the pattern end to end.
 
 The gate is [suwgate](https://github.com/Manomenu/suwgate), configured in `suwgate.yml`: `just check` (`suwgate check`) before
 calling a change done, the same CI runs; `just check-quick` while working, within a 20-second budget: the repository guards, and
-build, csharpier, eslint, tsc and shellcheck only for what changed since the branch left `master`. It fails on: any compiler or
+build, csharpier, the .NET guards, eslint, tsc and shellcheck only for what changed since the branch left `master`. It fails on: any compiler or
 analyzer warning, banned APIs, a layer used against its order, a folder or project off the lists the guards read, dead types and
 packages, vague names, any comment but a tool directive, `dynamic`, browser storage, unpinned images, a stale API contract or
 generated types, an acceptance criterion without a guardrail, an unresolvable compose file. The full list, each with its fix:
@@ -116,7 +116,7 @@ why; its acceptance criteria are the contract:
 Where each kind of guardrail lives and how it names the id comes with the profiles of `suwgate.yml` (the table is in
 suwgate's README): `[Trait("criterion", "AC-notes-1")]` on an xUnit test, the id at the start of a Vitest or Playwright title
 (`it("AC-notes-1: a blank note is refused", …)`), `// AC-notes-1` above a rule of `eslint.config.js` or an option of a tsconfig,
-`# AC-notes-1` above a rule of `.editorconfig`, the id in the message of a `BannedSymbols.txt` line, `<!-- AC-notes-1 -->` above a
+`# AC-notes-1` above a rule of `.editorconfig`, the id in the message of a banned-API line of the app's own, `<!-- AC-notes-1 -->` above a
 property of `Directory.Build.props`. A kind of its own goes into a criteria.json at the root, with its row in a table here.
 
 **How it runs.** The `criteria` step runs `vdoc.py criteria` of the

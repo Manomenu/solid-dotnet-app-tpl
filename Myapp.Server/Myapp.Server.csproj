@@ -5,11 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Suwbackkit.Server" />
+    <PackageReference Include="Suwbackkit.Postgres" />
     <PackageReference Include="Dapper" />
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
     <PackageReference Include="Microsoft.Extensions.ApiDescription.Server" PrivateAssets="all" />
-    <PackageReference Include="Npgsql" />
-    <PackageReference Include="grate.postgresql" />
   </ItemGroup>
 
   <ItemGroup>

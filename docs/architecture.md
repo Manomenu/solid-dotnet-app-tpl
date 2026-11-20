@@ -6,10 +6,10 @@ One line per top-level path (at most 300 characters each). suwgate's `repository
 lines: a new top-level folder needs its line here, a deleted one loses it.
 
 - `Myapp.slnx` — the .NET solution: the server and its tests.
-- `Myapp.Server/` — the HTTP API (ASP.NET Core minimal APIs, Npgsql, Dapper with hand-written SQL). One folder and namespace per feature: `Api/` wires the routes, `Notes/` is the example feature, `Health/` checks the database, `Database/` is the pool and the grate migrations.
-- `Myapp.Server/Database/Migrations/up/` — numbered SQL migrations, applied at start-up by grate and never edited afterwards.
+- `Myapp.Server/` — the HTTP API (ASP.NET Core minimal APIs, Dapper with hand-written SQL) on NuGet `Suwbackkit.Server` and `Suwbackkit.Postgres`. One folder and namespace per feature: `Api/` wires the routes, `Notes/` is the example feature.
+- `Myapp.Server/Database/Migrations/up/` — numbered SQL migrations, applied at start-up by `Suwbackkit.Postgres` (grate) and never edited afterwards.
 - `Myapp.Server.Tests/` — xUnit v3 tests against a real PostgreSQL. Mirrors the server's folders; `Characterization/` holds behaviour recorded before changing legacy code.
-- `Myapp.Gate/` — the .NET architecture guards (xUnit): layers, project references, interfaces, names, escape hatches, unused types. NuGet `Suwgate.Architecture` replaces them once it is published (TODO.md).
+- `Myapp.Gate/` — the xUnit project that calls the .NET guards of NuGet `Suwgate.Architecture` and `Suwgate.Database` (`ArchitectureTests`), and the template's own `TemplateTests`; `suwgate check --quick` runs it.
 - `Myapp.Web/` — the web app (React 19, Tailwind 4, Vite, TypeScript strict, pnpm), styled by `@maniumek/suwfrontkit`. A folder per feature under `src/` (`notes/` is the example); `src/api/` the HTTP client and the generated `openapi.d.ts`. Its packages include the gate, `@maniumek/suwgate`.
 - `compose.yaml` — the whole stack on a laptop from the same Dockerfiles: db (profile `db`), server, web; everything configured from `.env` (`.env.example`) with ASP.NET names (`Section__Key`); only web publishes a port (8190).
 - `Myapp.Server/Dockerfile`, `Myapp.Web/Dockerfile` — the two images (pinned bases, locked restore, build context is the repo root); the web image is nginx serving the build and proxying `/api` to the server.
@@ -30,9 +30,10 @@ lines: a new top-level folder needs its line here, a deleted one loses it.
 - `tmux-dev.just` — the `justfile` module of the local stack; a tool's own module is `<folder>/mod.just`.
 
 Files at the root: `suwgate.yml` (the gate), `layers.json` (the server's layers and which project may reference which),
-`Directory.Build.props` (strict compiler and analyzers), `Directory.Build.rsp` (no idle MSBuild workers), `Directory.Packages.props`
-(every package version, once), `BannedSymbols.txt` (APIs the build refuses, each with what to use instead), `.editorconfig`
-(every disabled rule has its reason in the table below), `global.json`, `nuget.config`, `.gitattributes`, `.gitignore`.
+`Directory.Build.props` (the target framework, the settings NuGet reads before any package, and `Suwgate.Architecture`, which brings
+the strict compiler, the analyzers and the banned APIs), `Directory.Build.rsp` (no idle MSBuild workers), `Directory.Packages.props`
+(every package version, once), `.editorconfig` (whitespace and this app's own rule overrides), `global.json`, `nuget.config`,
+`.gitattributes`, `.gitignore`.
 
 ## The gate
 
@@ -43,12 +44,17 @@ is its own:
 - `suwgate.yml`: the profiles, where the web app lives, the steps it skips and the exceptions, each with its reason, the edit hook's
   extra files, and the names and ports of the local stack (`suwgate dev`). The ports are written out because the template shifts them.
 - `layers.json`: the order of the server's layers and which project may reference which; the app's own design.
-- `Myapp.Gate/`: the .NET guards that suwgate does not ship as a package yet (TODO.md).
+- `Myapp.Gate/`: one call of `Guards.Verify` per .NET guard of `Suwgate.Architecture` and `Suwgate.Database`, with this app's arguments
+  (its assemblies, layers file, solution, migrations folder, test fixture). It stays a project of its own, apart from
+  `Myapp.Server.Tests`, because `suwgate check --quick` runs every test of a project that uses those packages: here that is a few
+  seconds without a database, while the server tests need PostgreSQL and start the server.
+- `Directory.Build.props` and `.editorconfig`: the build defaults, the banned APIs and the analyzer rules come from `Suwgate.Architecture`
+  (buildTransitive props and a global analyzer config); the app keeps only what NuGet must read before any package, and its own overrides.
 - The tool configs of the web app (`eslint.config.js`, `tsconfig*.json`, `prettier.config.js`, `knip.config.ts`,
   `e2e/playwright.config.ts`) extend suwgate's presets and keep only the app's paths, features and entry points.
 
 An agent that cannot pass a guard must not be able to change it: the edit hook refuses `suwgate.yml`, `layers.json`, `Myapp.Gate/`,
-the hooks, the workflows and the lint, type and build configs. The owner lifts it for one session with `ALLOW_GATE_EDIT=1 claude`.
+the hooks, the workflows and the lint, type and build configs (suwgate's defaults; `Myapp.Gate/` is this app's line in `settings.hooks.protected`). The owner lifts it for one session with `ALLOW_GATE_EDIT=1 claude`.
 
 ## What the gate forbids
 
@@ -56,41 +62,35 @@ Each line is a build rule, a test or a guard; its message says the fix. Rules li
 suwgate's guards and steps are listed with their reasons in its README; the ones this app relies on:
 
 - Web: tsc strict, eslint (typescript-eslint strict, feature boundaries, no browser storage, no comments), vitest, prettier (with Tailwind class order), knip, `openapi.d.ts` and `contract/openapi.json` equal to what the server generates, the contract's version right for what changed (oasdiff).
-- Template (`TemplateTests`, template repo only): the placeholder is spelled `Myapp` or `myapp` only, base ports are whole numbers, port symbols are consistent, nothing that must not be copied is missing from the exclusions.
-- Logs (`HealthEndpointsTests`): an error response carries the `traceId` that its log lines carry; `just logs --trace` reads them back.
+- Template (`TemplateTests` in `Myapp.Gate`, template repo only): the placeholder is spelled `Myapp` or `myapp` only, base ports are whole numbers, port symbols are consistent, nothing that must not be copied is missing from the exclusions.
+- Logs: an error response carries the `traceId` that its log lines carry (`Suwbackkit.Server`, tested there); `just logs --trace` reads them back.
 - Repository (suwgate guards): required files, AGENTS.md short and `CLAUDE.md` exactly `@AGENTS.md`, every path the docs name exists, every top-level folder in the map above, no vague folder or project names (Common, Utils, Services, Components…), every script called and answering `--help`, just modules, pinned images, compose ports on 127.0.0.1, no style keys in `.vscode/settings.json`, the hooks wired.
-- Build: analyzers `latest-all`, warnings are errors, unused private members (IDE0051, IDE0052, CA1823); no `#pragma warning disable`, `@ts-ignore` or `eslint-disable` (`no-in-place-switches`).
-- Banned APIs (`BannedSymbols.txt`): `DateTime.Now`/`UtcNow`, blocking on tasks, `Thread.Sleep`, `Console`, `Activator`, reflection discovery, `Type.GetType(string)`, Newtonsoft.
+- Build (`Suwgate.Architecture`, and architecture/build-settings checks no project turns it off): analyzers `latest-all`, warnings are errors, unused private members (IDE0051, IDE0052, CA1823); no `#pragma warning disable`, `@ts-ignore` or `eslint-disable` (`no-in-place-switches`).
+- Server tests (architecture/no-fixture-in-field): a test class takes the server from its class fixture, never starts one in a field.
+- Banned APIs (the list `Suwgate.Architecture` ships; a BannedSymbols.txt at the root would add the app's own lines): `DateTime.Now`/`UtcNow`, blocking on tasks, `Thread.Sleep`, `Console`, `Activator`, reflection discovery, `Type.GetType(string)`, Newtonsoft.
 - Packages (`banned-nuget-packages`, `unused-nuget-versions`, `banned-npm-packages`): no MediatR, AutoMapper, Mapster, Scrutor, mocking libraries, FluentAssertions, Newtonsoft.Json or Entity Framework; every versioned package is referenced.
 - Settings (`appsettings-bound`, `connection-host`): every section of appsettings is read by an options class; connection strings name `127.0.0.1`.
-- Migrations (`migrations-unchanged`, `MigrationFilesTests`): a script master has is never changed; names are `NNNN_snake_case.sql`.
-- Layers (`ContractsTests`): a layer uses only the layers below it, every namespace has a layer, every `*Endpoints` class is mapped from `Api`, one per namespace.
-- Unlisted projects (`Every_server_namespace_has_a_layer`, `UnlistedProjectsTests`): a guard over a list covers nothing left off it, so a namespace or project off the list fails until it is added.
-- Project graph (`ProjectReferencesTests`): which project may reference which and see whose internals.
-- Names (`NamingTests`, `ForbiddenNamesTests`): unique type names, one top-level type per file named like the file; no namespace or type named with a vague word, no `*Repository`, `*Service`, `*UnitOfWork` types.
-- Interfaces (`InterfacesTests`): an interface has at least two implementations.
-- Deleting (`SubtractTests`): nothing `[Obsolete]`, no unused non-public type.
-- Escape hatches (`EscapeHatchTests`): no `dynamic`, no null-forgiving `!`.
+- Migrations (`migrations-unchanged`, database/migration-script-names): a script master has is never changed; names are `NNNN_snake_case.sql`.
+- Layers (architecture/layers, architecture/endpoints): a layer uses only the layers below it, every namespace has a layer, every `*Endpoints` class is mapped from `Api`, one per namespace.
+- Unlisted projects (architecture/layers, architecture/every-project-guarded): a guard over a list covers nothing left off it, so a namespace or project off the list fails until it is added.
+- Project graph (architecture/project-references): which project may reference which and see whose internals.
+- Names (architecture/unique-type-names, architecture/one-type-per-file, architecture/forbidden-type-names): unique type names, one top-level type per file named like the file; no namespace or type named with a vague word, no `*Repository`, `*Service`, `*UnitOfWork` types.
+- Interfaces (architecture/interfaces-have-two-implementations): an interface has at least two implementations.
+- Deleting (architecture/nothing-obsolete, architecture/no-unused-types): nothing `[Obsolete]`, no unused non-public type.
+- Escape hatches (architecture/no-escape-hatches): no `dynamic`, no null-forgiving `!`.
 - Comments (`comments-*` guards and suwgate's eslint rule `no-comments`): none in any code or config file, only the tool directives AGENTS.md lists ("No comments").
 - Acceptance criteria (the `criteria` step, full gate only): each spec in `docs/visual/spec/` has an acceptance section with one unique `AC-<feature>-<n>` per criterion, each is named by a guardrail of a known kind, every id a guardrail names is in a spec, no id stands where the gate checks nothing.
 
 ## Disabled analyzer and lint rules, and why
 
-Directory.Build.props turns on every analyzer (`AnalysisLevel` latest-all) and makes each warning an error; formatting is
-CSharpier's (140 columns), so everything in `.editorconfig` past the basics is lint. A rule that does not fit is switched off
-there, one line each, never with `#pragma`, and gets its row here. The web's lint rules come from suwgate's preset, with its reasons.
+`Suwgate.Architecture` turns on every analyzer (`AnalysisLevel` latest-all), makes each warning an error and ships the rules it
+switches off, each with its reason, in its README; formatting is CSharpier's (140 columns). A rule that does not fit this app is
+switched off in `.editorconfig`, one line each, never with `#pragma`, and gets its row here. The web's lint rules come from
+suwgate's preset, with its reasons.
 
 | Rule | Where | Why |
 | --- | --- | --- |
-| IDE0055 | all C# | formatting is CSharpier's job; two formatters would fight |
-| IDE0130 (on, as an error) | all C# | a namespace is its folder path; set on its own so tuning the Style category can never switch it off |
-| CA2007 | all C# | `ConfigureAwait(false)` matters under a synchronization context; ASP.NET Core and the test runner have none |
-| IDE0058 | all C# | builder APIs (`services.AddX()`, `app.MapY()`) return themselves for chaining; discarding each with `_ =` hides the code |
-| IDE0045, IDE0046 | all C# | they rewrite if/else into conditional expressions even when that nests ternaries or buries a throw |
-| CA1032 | all C# | the standard exception constructor set is for exceptions others rethrow; ours are thrown once, with a message |
-| CA1707, CA1515, CA2100, CA1054 | tests and the gate | test names are sentences (`Health_answers_ok`); xUnit needs public classes; SQL built in a test is its own, never input |
-| CA2234 | tests and the gate | a relative path string reads better than `new Uri(...)` in a request |
-| RS0030 | generated code under obj | xUnit's generated entry point blocks on the task once; it is not ours to change |
+| CA2100 | server tests | the test database's name in `CREATE DATABASE` is the test's own, never input |
 
 The web's import boundaries (`app()` of `@maniumek/suwgate/eslint` in `eslint.config.js`): every folder of `src/` is a feature or a
 shared folder, named there; a feature imports only itself and the shared folders (`api`), a shared folder only itself. The entry files at
@@ -137,8 +137,8 @@ Server and gate:
 - The OpenAPI build step starts the app only to read its routes, so start-up up to that point must not need a database.
 - A server-test class starts one server, not one per test: xUnit creates the class anew for every test, and a server per test made
   the tests about five times slower. Each test still works on data of its own.
-- The deletion guard (`SubtractTests`) treats `ServerApp` as an entry point, because the top-level `Program` that starts it has a generated `Main` the
-  architecture reader does not see; it ignores the obsolete constructors the compiler makes for a type with required members.
+- The deletion guard (architecture/no-unused-types) gets `ServerApp` as an entry point, because the top-level `Program` that starts it has a
+  generated `Main` the architecture reader does not see.
 - The browser-test run (`e2e.sh`) drops and creates its database in two commands, because `CREATE DATABASE` cannot run inside the one transaction a single
   `-c` would be.
 
@@ -179,15 +179,13 @@ in the top order and has an order of its own inside. Steps, each with the test t
 
 1. Move the feature folders of the existing area under `Myapp.Server/<Area>/` (a move only, in a
    change of its own); namespaces follow the folders (IDE0130 fails the build otherwise).
-2. In `layers.json` put the area on one level of `serverLayers` (`"Orders | Billing"`) and add an
-   `Areas` dictionary: area name to the order of its features, same `a | b` syntax. Extend
-   `Every_server_namespace_has_a_layer` to look one segment deeper for names in `Areas`
-   and `EdgesOf` to take a prefix.
-   Proof: it fails for a feature folder missing from the area's order.
-3. Areas never use each other: siblings on one level are forbidden edges, which `EdgesOf` yields.
-   Proof: make `Billing` call `Orders` and see the layer test fail.
-4. What both areas need moves down into a shared feature below the areas (notifications
-   between the areas and `Database`), and shared features never use an area (the same edges).
+2. In `layers.json` put the areas on one level of the layers of `Myapp.Server` (`"Orders | Billing"`).
+   Proof: architecture/layers fails for an area missing from the layers.
+3. Areas never use each other: siblings on one level are forbidden edges.
+   Proof: make `Billing` call `Orders` and see architecture/layers fail.
+4. What both areas need moves down into a shared feature below the areas, and shared features never use an area (the same edges).
+   The order of the features inside an area is not checked yet: architecture/layers reads the first namespace segment under
+   the project only, so ask for nested layers in suwgate (`Suwgate.Architecture`) before an area grows an order of its own.
 5. `Api/` stays above all areas and maps each area's routes in a method of its own, so grep finds them.
 6. Web (phase 2): `src/<area>/<feature>/`, an `areaFeature` pattern in the `boundaries` rules of
    `eslint.config.js`, and an explicit policy for any edge between features of one area.

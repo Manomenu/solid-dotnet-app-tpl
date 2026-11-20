@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-test("a note submitted with Enter appears in the list and the field empties", async ({ page }) => {
+test("a note submitted with Enter appears in the list, the field empties, and the list shows it after a reload", async ({ page }) => {
     const text = `note ${Date.now()}`;
     await page.goto("/notes");
 
@@ -9,6 +9,8 @@ test("a note submitted with Enter appears in the list and the field empties", as
 
     await expect(page.getByText(text, { exact: true })).toBeVisible();
     await expect(page.getByLabel("New note")).toHaveValue("");
+    await page.reload();
+    await expect(page.getByText(text, { exact: true })).toBeVisible();
 });
 
 test("a blank note is refused with a sentence under the field", async ({ page }) => {

@@ -1,80 +1,53 @@
 import { Alert, Button, Field, Input, Page } from "@maniumek/suwfrontkit";
-import { useEffect, useState } from "react";
+import { startTransition, Suspense, use, useActionState, useState } from "react";
 
 import { createNote, fetchNotes, type Note } from "./api";
-import { MAX_NOTE_LENGTH, problemWith } from "./notes";
+import { EMPTY_NOTE_FORM, MAX_NOTE_LENGTH, type NoteForm, submitNote } from "./notes";
 
-function messageOf(error: unknown): string {
-    return error instanceof Error ? error.message : String(error);
+function NoteList({ notes }: { notes: Promise<Note[]> }) {
+    const list = use(notes);
+    if (list.length === 0) return <p className="text-muted-foreground">No notes yet.</p>;
+    return (
+        <ul className="list-disc pl-6">
+            {list.map((note) => (
+                <li key={note.id}>{note.text}</li>
+            ))}
+        </ul>
+    );
 }
 
 export function NotesScreen() {
-    const [notes, setNotes] = useState<Note[]>([]);
-    const [text, setText] = useState("");
-    const [mistake, setMistake] = useState<string | null>(null);
-    const [failure, setFailure] = useState<string | null>(null);
-
-    useEffect(() => {
-        const controller = new AbortController();
-        fetchNotes(controller.signal)
-            .then(setNotes)
-            .catch((e: unknown) => {
-                if (!controller.signal.aborted) setFailure(messageOf(e));
+    const [notes, setNotes] = useState(fetchNotes);
+    const [form, add, adding] = useActionState(async (_previous: NoteForm, data: FormData) => {
+        const text = data.get("text");
+        return submitNote(typeof text === "string" ? text : "", async (valid) => {
+            await createNote(valid);
+            startTransition(() => {
+                setNotes(fetchNotes());
             });
-        return () => {
-            controller.abort();
-        };
-    }, []);
-
-    function add() {
-        const problem = problemWith(text);
-        setMistake(problem);
-        if (problem !== null) return;
-        setFailure(null);
-        createNote(text)
-            .then((note) => {
-                setNotes((current) => [note, ...current]);
-                setText("");
-            })
-            .catch((e: unknown) => {
-                setFailure(messageOf(e));
-            });
-    }
+        });
+    }, EMPTY_NOTE_FORM);
 
     return (
-        <main className="p-8">
-            <Page title="Notes" width="reading">
+        <Page title="Notes" width="reading">
+            <form action={add} className="flex flex-col gap-4">
                 <Field
                     prefix="notes"
                     name="new-note"
                     label="New note"
                     hint={`At most ${MAX_NOTE_LENGTH} characters.`}
-                    errors={mistake === null ? [] : [mistake]}
+                    errors={form.mistake === null ? [] : [form.mistake]}
                 >
-                    {(field) => (
-                        <Input
-                            {...field}
-                            value={text}
-                            onChange={(event) => {
-                                setText(event.currentTarget.value);
-                            }}
-                        />
-                    )}
+                    {(field) => <Input {...field} name="text" defaultValue={form.text} />}
                 </Field>
-                <Button className="self-start" onClick={add}>
+                <Button type="submit" className="self-start" disabled={adding}>
                     Add note
                 </Button>
-                {failure !== null && <Alert variant="destructive">{failure}</Alert>}
-                {notes.length === 0 ? (
-                    <p className="text-muted-foreground">No notes yet.</p>
-                ) : (
-                    <ul className="list-disc pl-6">
-                        {notes.map((note) => (
-                            <li key={note.id}>{note.text}</li>
-                        ))}
-                    </ul>
-                )}
-            </Page>
-        </main>
+                {form.failure !== null && <Alert variant="destructive">{form.failure}</Alert>}
+            </form>
+            <Suspense fallback={<p className="text-muted-foreground">Loading notes…</p>}>
+                <NoteList notes={notes} />
+            </Suspense>
+        </Page>
     );
 }

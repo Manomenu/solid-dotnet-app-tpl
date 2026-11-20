@@ -3,8 +3,8 @@ import type { components } from "../api/openapi";
 
 export type Note = components["schemas"]["Note"];
 
-export function fetchNotes(signal: AbortSignal): Promise<Note[]> {
-    return request<Note[]>("/notes", { signal });
+export function fetchNotes(): Promise<Note[]> {
+    return request<Note[]>("/notes");
 }
 
 export function createNote(text: string): Promise<Note> {

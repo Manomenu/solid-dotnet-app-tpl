@@ -150,7 +150,22 @@ Web:
   `API_PROXY_TARGET` points the e2e run's Vite at its own server.
 - The look (Catppuccin Mocha, dark only, Inter) and the components (Button, Input, Label, Alert, Page…) come from `@maniumek/suwfrontkit`,
   pinned to an exact version: a change of the look is a pull request here, through this app's own tests. Desktop only, 16:9 and 21:9.
-- Under React's StrictMode an effect runs twice in development, so a screen aborts the first request and ignores its result.
+- Routes are wouter's (`<Switch>` of `<Route>`s, an unknown path redirected): small, hooks only, no loaders, which a client-only
+  desktop tool does not need; the derived apps use it too.
+- An error while rendering a screen shows suwfrontkit's `ErrorBoundary` (the error and Try again) in place of that screen, not a blank
+  page. It is keyed by the path, so going to another screen clears it. `createRoot`'s `onCaughtError` and `onUncaughtError` log to the
+  console with the component stack: the one place to plug in an error reporter later.
+- A form sends through a `<form action>` with `useActionState`: Enter submits, the submit button is disabled while the action runs (no
+  double sends), and a refusal (the screen's own check or the server's `detail`) comes back as the action's state, never thrown, so it
+  shows in the form. React empties a form after its action, so the fields are uncontrolled with the state's text as `defaultValue`: a
+  refused text stays, a saved one clears. What an action throws reaches the error boundary.
+- A screen loads its data as a promise kept in state (`useState(fetch…)`, created once when the screen mounts) that a child reads with
+  `use` under `Suspense`; after a change it sets a new promise inside a transition, so the old list stays until the new one arrives.
+  A failed load is the error boundary's, and Try again mounts the screen anew, which loads again. No effect, so no race to abort; under
+  StrictMode development sends the first request twice and uses one. A data library (TanStack Query) comes with the kit's typed client.
+- React Compiler memoizes the components at build time (`babel-plugin-react-compiler`, pinned exactly as its docs advise, in the Vite
+  React plugin's Babel options; with `@vitejs/plugin-react` 6 it moves to `@rolldown/plugin-babel`). New code needs no `useMemo` or
+  `useCallback`; existing ones stay, as React advises.
 - The Notes screen is the template's example feature: delete it when it is in the way.
 - Browser tests start their own server and web app on their own ports and an empty database (the gate's `e2e` step), so what runs by hand and its
   data stay untouched.

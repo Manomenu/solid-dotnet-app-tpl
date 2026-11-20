@@ -2,9 +2,10 @@
 set -euo pipefail
 if [ "${1:-}" = "--help" ]; then
     cat <<'USAGE'
-The template's post action (dotnet new, through init-project.proj): run once in a project created from the template, never in the
-template itself. It removes the template notes, regenerates the lockfiles, the API contract and the web types, formats the code,
-creates docs/visual/spec/, the git repository on master with the hooks enabled, and deletes itself.
+The template's post action (dotnet new, through init-project.proj; just init without --allow-scripts yes): run once in a project
+created from the template, never in the template itself. It removes the template notes, regenerates the lockfiles, the API contract
+and the web types, formats the code, creates docs/visual/spec/, the git repository on master with the hooks enabled, and deletes
+itself and the just init recipe.
 USAGE
     exit 0
 fi
@@ -55,7 +56,8 @@ else
 fi
 
 rm -- "$SELF" "${SELF%.sh}.proj"
-done_steps+=("deleted scripts/.internal/init-project.sh and init-project.proj")
+sed -i '/^# Finish a project made by dotnet new/,/^$/d' justfile
+done_steps+=("deleted scripts/.internal/init-project.sh, init-project.proj and the just init recipe that calls them")
 
 executables_dotnet_new_wrote_without_their_bit=(scripts/.internal/*.sh .githooks/pre-commit)
 chmod +x "${executables_dotnet_new_wrote_without_their_bit[@]}"

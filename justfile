@@ -65,6 +65,11 @@ mutate:
     dotnet tool restore >/dev/null
     cd Myapp.Server.Tests && dotnet tool run dotnet-stryker
 
+# Finish a project made by dotnet new without --allow-scripts yes: what its post action does (scripts/.internal/init-project.sh), once; it deletes itself and this recipe
+[group('dev')]
+init:
+    dotnet msbuild scripts/.internal/init-project.proj -nologo -v:minimal
+
 # Pack the dotnet new template as a NuGet package into .artifacts/nupkg
 [group('dev')]
 pack-template:

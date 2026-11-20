@@ -27,10 +27,12 @@ just check-quick          # suwgate check --quick: the repository guards, and fo
                           # (Myapp.Gate), eslint, tsc, shellcheck
 just check                # suwgate check: the whole gate, every test (the browser tests with their own server, database
                           # and ports among them), the whole repository (the same CI runs)
+just e2e                  # suwgate step e2e: the browser tests alone, with their own server, database and ports, after changing
+                          # anything a user clicks; arguments go to Playwright (just e2e --headed, just e2e -g notes)
 just fmt                  # csharpier and prettier
 ```
 
-The same without `just`: `Myapp.Web/node_modules/.bin/suwgate check --quick`, `… check`, `… dev db up`. What the gate runs and why
+The same without `just`: `Myapp.Web/node_modules/.bin/suwgate check --quick`, `… check`, `… step e2e -- --headed`, `… dev db up`; `… step` lists the steps. What the gate runs and why
 is in `suwgate.yml` and in suwgate's README; `suwgate check --verbose` lists every step with its time.
 
 ## Settings

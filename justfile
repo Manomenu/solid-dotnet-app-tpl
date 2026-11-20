@@ -40,6 +40,12 @@ check:
 check-quick:
     @{{ suwgate }} check --quick
 
+# The browser tests alone, against their own server and empty database, after changing anything a user clicks (just e2e --headed, just e2e -g notes)
+[group('maintenance')]
+[positional-arguments]
+e2e *args:
+    @{{ suwgate }} step e2e -- "$@"
+
 # Which .NET tests take the longest: runs them all once and lists the slowest (-n 25 for more); a report, never a check
 [group('maintenance')]
 [positional-arguments]

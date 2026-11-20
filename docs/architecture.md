@@ -183,8 +183,9 @@ in the top order and has an order of its own inside. Steps, each with the test t
 3. Areas never use each other: siblings on one level are forbidden edges.
    Proof: make `Billing` call `Orders` and see architecture/layers fail.
 4. What both areas need moves down into a shared feature below the areas, and shared features never use an area (the same edges).
-   The order of the features inside an area is not checked yet: architecture/layers reads the first namespace segment under
-   the project only, so ask for nested layers in suwgate (`Suwgate.Architecture`) before an area grows an order of its own.
+   The order of the features inside an area goes into `areas` of the `Myapp.Server` entry in `layers.json`
+   (`"areas": { "Orders": ["Checkout", "Cart | Payment"] }`, optionally `"subFeatures": true` to keep a feature's sub-namespaces
+   out of the feature and its siblings). Proof: make a feature of the area use one above it and see architecture/layers fail.
 5. `Api/` stays above all areas and maps each area's routes in a method of its own, so grep finds them.
 6. Web (phase 2): `src/<area>/<feature>/`, an `areaFeature` pattern in the `boundaries` rules of
    `eslint.config.js`, and an explicit policy for any edge between features of one area.

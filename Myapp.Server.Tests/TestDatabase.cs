@@ -24,6 +24,7 @@ public sealed class TestDatabase : IAsyncLifetime
 
     public async ValueTask InitializeAsync()
     {
+        LinkedWorktree.RefuseSharedDatabase();
         try
         {
             await TestDatabases.RecreateAsync(ConnectionString);

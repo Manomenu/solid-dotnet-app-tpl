@@ -5,7 +5,7 @@ Decided for the template, not built yet; each arrives as its own change when it 
 
 - A CI step that publishes the images: the registry is project-specific (`.github/workflows/ci.yml` builds and smoke-tests them, nothing more).
 - What is left of the shared kits (adopted: suwgate with `Suwgate.Architecture` and `Suwgate.Database`, suwfrontkit, `Suwbackkit.Server` and `Suwbackkit.Postgres`):
-  1. suwfrontkit's typed API client replaces `src/api/client.ts` when it ships, with TanStack Query in place of the screens' promise kept in state.
+  1. TanStack Query (the kit's `createQueryClient`) in place of the screens' promise kept in state, when a screen needs caching or refetching.
   2. `Suwgate.Testing` (a PostgreSQL fixture, characterization and e2e helpers) replaces `TestDatabase`, `TestApp` and `ClassServer` of `Myapp.Server.Tests`.
   3. suwbackkit generates the API contract and types that `api-types.sh` does; then a CLI and SDK skeleton (suwagcms and suwageval have twin sets today).
 - Lookups that went with the deleted scripts come back when suwgate has them: the guardrails of one criterion (`just criteria AC-…`) and the tests that pin another repository's contract (`just contracts`).

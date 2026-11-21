@@ -1,3 +1,5 @@
+import { codeOf } from "./api";
+
 export const MAX_NOTE_LENGTH = 500;
 
 export function problemWith(text: string): string | null {
@@ -25,6 +27,7 @@ export async function submitNote(text: string, save: (text: string) => Promise<u
         await save(text);
         return EMPTY_NOTE_FORM;
     } catch (error) {
+        if (codeOf(error) === "note.textInvalid") return { text, mistake: messageOf(error), failure: null };
         return { text, mistake: null, failure: messageOf(error) };
     }
 }

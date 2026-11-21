@@ -1,3 +1,4 @@
+import { ApiError } from "@maniumek/suwfrontkit";
 import { describe, expect, it } from "vitest";
 
 import { EMPTY_NOTE_FORM, MAX_NOTE_LENGTH, problemWith, submitNote } from "./notes";
@@ -49,8 +50,16 @@ describe("submitNote", () => {
     });
 
     it("keeps the typed text and the server's sentence when the save fails", async () => {
-        const form = await submitNote("buy milk", () => Promise.reject(new Error("The database is away.")));
+        const form = await submitNote("buy milk", () => Promise.reject(new ApiError(503, { detail: "The database is away." })));
 
         expect(form).toEqual({ text: "buy milk", mistake: null, failure: "The database is away." });
+    });
+
+    it("puts the server's refusal of the text under the field, keeping the text", async () => {
+        const refusal = new ApiError(422, { detail: "Send a non-empty text.", code: "note.textInvalid" });
+
+        const form = await submitNote("buy milk", () => Promise.reject(refusal));
+
+        expect(form).toEqual({ text: "buy milk", mistake: "Send a non-empty text.", failure: null });
     });
 });

@@ -143,10 +143,10 @@ Server and gate:
 
 Web:
 
-- A feature's HTTP calls live with the feature (`<feature>/api.ts`) and take their types from the generated `openapi.d.ts`, never a
-  hand-written copy of a server model; `src/api/client.ts` holds only what they share: the base path, `request`, and the error a
-  response turns into (the server's ProblemDetails `detail` when it sent one).
-- The API base (`VITE_API_BASE`) is unset in every real setup: the Vite dev proxy and nginx both serve the API at `/api`, one origin for the browser.
+- A feature's HTTP calls live with the feature (`<feature>/api.ts`) as `dataOf(api.GET(…))` on suwfrontkit's client, typed by the
+  `paths` of the generated `openapi.d.ts`, never a hand-written copy of a server model; `src/api/client.ts` makes that one client.
+  A failure is suwfrontkit's `ApiError`, a refusal read by its `code` (typed by the contract's enum through `refusalReader`).
+- The client calls the page's own origin: the Vite dev proxy and nginx both serve the API at `/api`, one origin for the browser.
   `API_PROXY_TARGET` points the e2e run's Vite at its own server.
 - The look (Catppuccin Mocha, dark only, Inter) and the components (Button, Input, Label, Alert, Page…) come from `@maniumek/suwfrontkit`,
   pinned to an exact version: a change of the look is a pull request here, through this app's own tests. Desktop only, 16:9 and 21:9.
@@ -162,7 +162,8 @@ Web:
 - A screen loads its data as a promise kept in state (`useState(fetch…)`, created once when the screen mounts) that a child reads with
   `use` under `Suspense`; after a change it sets a new promise inside a transition, so the old list stays until the new one arrives.
   A failed load is the error boundary's, and Try again mounts the screen anew, which loads again. No effect, so no race to abort; under
-  StrictMode development sends the first request twice and uses one. A data library (TanStack Query) comes with the kit's typed client.
+  StrictMode development sends the first request twice and uses one. A data library (TanStack Query, through the kit's
+  `createQueryClient`) comes when a screen needs caching or refetching.
 - React Compiler memoizes the components at build time (`babel-plugin-react-compiler`, pinned exactly as its docs advise, in the Vite
   React plugin's Babel options; with `@vitejs/plugin-react` 6 it moves to `@rolldown/plugin-babel`). New code needs no `useMemo` or
   `useCallback`; existing ones stay, as React advises.

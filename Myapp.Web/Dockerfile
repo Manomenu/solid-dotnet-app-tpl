@@ -4,7 +4,7 @@ WORKDIR /app
 COPY Myapp.Web/package.json Myapp.Web/pnpm-lock.yaml Myapp.Web/pnpm-workspace.yaml ./
 RUN corepack enable && pnpm install --frozen-lockfile
 COPY Myapp.Web/ ./
-RUN pnpm build
+RUN pnpm exec vite build
 
 FROM docker.io/nginxinc/nginx-unprivileged:1.29.3-alpine
 ENV NGINX_ENVSUBST_FILTER="^(API_UPSTREAM|NGINX_LOCAL_RESOLVERS)$"

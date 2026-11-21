@@ -14,7 +14,7 @@ lines: a new top-level folder needs its line here, a deleted one loses it.
 - `compose.yaml` — the whole stack on a laptop from the same Dockerfiles: db (profile `db`), server, web; everything configured from `.env` (`.env.example`) with ASP.NET names (`Section__Key`); only web publishes a port (8190).
 - `Myapp.Server/Dockerfile`, `Myapp.Web/Dockerfile` — the two images (pinned bases, locked restore, build context is the repo root); the web image is nginx serving the build and proxying `/api` to the server.
 - `.dockerignore` — keeps `node_modules`, `bin`, `obj` and `.env` out of the build context.
-- `.github/` — `workflows/ci.yml`: the gate (suwgate's reusable gate workflow, the browser tests and the database included), and the images built and smoke-tested (`build`); nothing is published, the registry is project-specific.
+- `.github/` — `workflows/ci.yml`: one call of suwgate's reusable gate workflow: the gate (the browser tests and the database included) and the images built and smoke-tested (`smoke: true`); nothing is published, the registry is project-specific.
 - `.vscode/` — the editor's glue, shared: recommended extensions, formatter per language, the schema of `suwgate.yml`, file nesting, debug launch, tasks that run the gate. No style rules (they live in `.editorconfig` and the formatters' configs, so Rider agrees).
 - `.githooks/` — `pre-commit` runs `suwgate hook pre-commit`: gitleaks on what is being committed, then the quick gate; `just sync` enables it.
 <!-- template:start -->

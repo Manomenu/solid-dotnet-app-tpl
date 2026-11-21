@@ -5,48 +5,16 @@ on:
     branches: [master]
   pull_request:
 
-permissions:
-  contents: read
-
-env:
-  CI: "1"
-  NODE_VERSION: 24.22.1
+permissions: {}
 
 jobs:
   gate:
     permissions:
       contents: read
-    uses: Manomenu/suwgate/.github/workflows/gate.yml@5f036425ad6f5ef0dfad55d88e88b320870d0fb8
+      statuses: write
+      pull-requests: read
+    uses: Manomenu/suwgate/.github/workflows/gate.yml@e05e6a8a0387033d0a009db1e4b69b2471568df0
     with:
       working-directory: Myapp.Web
-      dotnet: true
-      oasdiff: true
-      database: true
-      browser-install-command: pnpm exec playwright install --with-deps chromium
-      command: Myapp.Web/node_modules/.bin/suwgate check --verbose
-
-  build:
-    needs: gate
-    runs-on: ubuntu-24.04
-    timeout-minutes: 20
-    steps:
-      - name: actions/checkout v7.0.1
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-        with:
-          persist-credentials: false
-      - name: actions/setup-node v7.1.0
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-      - name: Install suwgate for its smoke test
-        run: corepack enable && cd Myapp.Web && pnpm install --frozen-lockfile
-      - name: Build both images, start the stack and smoke-test it (nothing is published, the registry is project-specific)
-        run: |
-          docker compose --profile db up -d --build --wait
-          Myapp.Web/node_modules/.bin/suwgate dev smoke
-      - name: Logs on failure
-        if: failure()
-        run: docker compose --profile db logs
-      - name: Stop the stack
-        if: always()
-        run: docker compose --profile db down --remove-orphans --volumes
+      browser: chromium
+      smoke: true

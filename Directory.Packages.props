@@ -8,13 +8,14 @@
     <PackageVersion Include="Suwgate.Database" Version="0.3.0" />
   </ItemGroup>
   <ItemGroup Label="server">
-    <PackageVersion Include="Suwbackkit.Server" Version="0.1.0" />
-    <PackageVersion Include="Suwbackkit.Postgres" Version="0.1.0" />
+    <PackageVersion Include="Suwbackkit.Server" Version="0.3.0" />
+    <PackageVersion Include="Suwbackkit.Postgres" Version="0.3.0" />
     <PackageVersion Include="Microsoft.Extensions.ApiDescription.Server" Version="10.0.12" />
     <PackageVersion Include="Dapper" Version="2.1.89" />
   </ItemGroup>
   <ItemGroup Label="tests">
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.12" />
+    <PackageVersion Include="Suwbackkit.Testing" Version="0.3.0" />
     <PackageVersion Include="xunit.v3" Version="4.0.2" />
   </ItemGroup>
 </Project>

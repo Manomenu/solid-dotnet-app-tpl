@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http.HttpResults;
+using Suwbackkit.Server;
 
 namespace Myapp.Server.Notes;
 
@@ -10,7 +11,7 @@ internal static class NoteEndpoints
     {
         var notes = routes.MapGroup("/notes");
         notes.MapGet("/", List);
-        notes.MapPost("/", Create);
+        notes.MapPost("/", Create).ProducesRefusal<NoteRefusal>(StatusCodes.Status422UnprocessableEntity);
     }
 
     private static async Task<IReadOnlyList<Note>> List(NoteStore store, CancellationToken cancellationToken) =>
@@ -24,9 +25,11 @@ internal static class NoteEndpoints
     {
         if (string.IsNullOrWhiteSpace(request.Text) || request.Text.Length > MaxTextLength)
         {
-            return TypedResults.Problem(
-                detail: $"Send a JSON body with a non-empty \"text\" of at most {MaxTextLength} characters.",
-                statusCode: StatusCodes.Status422UnprocessableEntity
+            return Refusals.Refuse(
+                StatusCodes.Status422UnprocessableEntity,
+                "The note cannot be saved",
+                NoteRefusal.TextInvalid,
+                $"Send a JSON body with a non-empty \"text\" of at most {MaxTextLength} characters."
             );
         }
         var note = await store.CreateAsync(request.Text, cancellationToken);

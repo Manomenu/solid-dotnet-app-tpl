@@ -48,6 +48,8 @@ port pair (20000-29999), so checkouts that run the browser tests at the same tim
 the repository and the whole name, because worktrees of one repository share a long prefix and worktrees of two repositories
 can share a name). The main checkout and CI keep the plain names and ports
 (`myapp_test`, `myapp_e2e`, 6301/3301); a value already in the environment wins. A worktree's databases are left behind, not dropped.
+The .NET tests run by hand in a worktree refuse to start without `TEST_CONNECTION_STRING`, so they never recreate the main
+checkout's test database: run them after `eval "$(Myapp.Web/node_modules/.bin/suwgate dev checkout-env)"`.
 
 ## Claude Code hooks
 

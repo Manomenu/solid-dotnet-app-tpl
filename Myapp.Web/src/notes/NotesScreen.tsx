@@ -1,4 +1,4 @@
-import { Alert, Button, Field, Input, Page } from "@maniumek/suwfrontkit";
+import { Alert, Button, Field, Input, Page, Spinner } from "@maniumek/suwfrontkit";
 import { startTransition, Suspense, use, useActionState, useState } from "react";
 
 import { createNote, fetchNotes, type Note } from "./api";
@@ -45,7 +45,7 @@ export function NotesScreen() {
                 </Button>
                 {form.failure !== null && <Alert variant="destructive">{form.failure}</Alert>}
             </form>
-            <Suspense fallback={<p className="text-muted-foreground">Loading notes…</p>}>
+            <Suspense fallback={<Spinner label="Loading notes…" size="sm" />}>
                 <NoteList notes={notes} />
             </Suspense>
         </Page>

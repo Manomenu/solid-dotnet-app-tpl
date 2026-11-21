@@ -1,13 +1,16 @@
-import { request } from "../api/client";
+import { dataOf, refusalReader } from "@maniumek/suwfrontkit";
+
+import { api } from "../api/client";
 import type { components } from "../api/openapi";
 
 export type Note = components["schemas"]["Note"];
 
+export const { codeOf } = refusalReader<components["schemas"]["NoteRefusal"]>();
+
 export function fetchNotes(): Promise<Note[]> {
-    return request<Note[]>("/notes");
+    return dataOf(api.GET("/api/notes"));
 }
 
 export function createNote(text: string): Promise<Note> {
-    const body: components["schemas"]["NewNote"] = { text };
-    return request<Note>("/notes", { method: "POST", body: JSON.stringify(body) });
+    return dataOf(api.POST("/api/notes", { body: { text } }));
 }

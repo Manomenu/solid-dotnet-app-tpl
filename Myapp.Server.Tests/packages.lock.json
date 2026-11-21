@@ -15,9 +15,9 @@
       },
       "Suwbackkit.Testing": {
         "type": "Direct",
-        "requested": "[0.3.0, )",
-        "resolved": "0.3.0",
-        "contentHash": "/hH6qiLEpmGN2fgsJ80f9KW3vLiivse0PZCPbOsGtGVSGEewirvPNZxaqJMtOhi/PanaX4Jl5DNMxCcZG6fz/Q==",
+        "requested": "[0.4.0, )",
+        "resolved": "0.4.0",
+        "contentHash": "2/iU8k9nuNj+8EbhTatDUPlb/kzjedN6o23ulGPfRZ0oJrvTL7DNT0DYmZMHcrGC0XmGgDe4WClNlY2Yx+zcqg==",
         "dependencies": {
           "Npgsql": "10.0.3"
         }
@@ -573,8 +573,8 @@
         "type": "Project",
         "dependencies": {
           "Dapper": "[2.1.89, )",
-          "Suwbackkit.Postgres": "[0.3.0, )",
-          "Suwbackkit.Server": "[0.3.0, )"
+          "Suwbackkit.Postgres": "[0.4.0, )",
+          "Suwbackkit.Server": "[0.4.0, )"
         }
       },
       "Dapper": {
@@ -585,9 +585,9 @@
       },
       "Suwbackkit.Postgres": {
         "type": "CentralTransitive",
-        "requested": "[0.3.0, )",
-        "resolved": "0.3.0",
-        "contentHash": "+l9/IZgpSPvMxnSUdyRYRzggrFTQJ5Oti9FwNzzg3DulwAiIlvShNEYvCOBgwa/1UJxsn5CtGFmgKlS5S76zFA==",
+        "requested": "[0.4.0, )",
+        "resolved": "0.4.0",
+        "contentHash": "BvlZo1q1IlhOOlnNU1xzYzNlJjId6HXBdUqyR3nb6f5WfwVgw4SayB+hlnuXLHO9hIjTg8USKc4wpua6xrkzIw==",
         "dependencies": {
           "Npgsql": "10.0.3",
           "grate.postgresql": "2.1.6"
@@ -595,9 +595,9 @@
       },
       "Suwbackkit.Server": {
         "type": "CentralTransitive",
-        "requested": "[0.3.0, )",
-        "resolved": "0.3.0",
-        "contentHash": "mQgi+N3/zW0XfZJP987DS1NNkk9GxWw5zVxknkQ4mvG0ihc3jy7dXUK9m+1Ws/dHXufNZPIHIXrrbRw3DjCREw==",
+        "requested": "[0.4.0, )",
+        "resolved": "0.4.0",
+        "contentHash": "528AMHitY0YOxAQtwWWOjWivL1wQK11F6vzaSZRosWH5y83bSTyXKCU6PmUq+5fk5Vbj5eTYePmZOXL6BRSxSg==",
         "dependencies": {
           "Microsoft.AspNetCore.OpenApi": "10.0.12"
         }

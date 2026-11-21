@@ -11,6 +11,7 @@ this file is the one to edit. Setup: [docs/development.md](docs/development.md).
 - While working, `suwgate check --quick`, and `suwgate step <step> [-- <tool args>]` runs one step (`suwgate step` lists them),
   e.g. `suwgate step e2e -- --headed` after changing anything a user clicks; `suwgate check` before calling a change done, whose
   full gate also runs the browser tests, against a fresh database of their own.
+- Test last: finish every change of the task, then run the full gate once and push once, so CI runs once. After a red run, fix all it shows, rerun only the tests that failed, and the full gate once when they pass. Quick checks of the part you change (its unit tests, the type checker, `suwgate step <step>`) are fine while building.
 
 ## Git
 

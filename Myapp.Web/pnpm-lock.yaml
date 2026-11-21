@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@maniumek/suwfrontkit':
-        specifier: 0.4.0
-        version: 0.4.0(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(tailwindcss@4.3.3)
+        specifier: 0.9.0
+        version: 0.9.0(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(tailwindcss@4.3.3)
       '@tailwindcss/vite':
         specifier: ^4.3.3
         version: 4.3.3(vite@7.3.7(@types/node@26.6.5)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.1))
@@ -470,14 +470,17 @@ packages:
   '@keyv/serialize@1.1.1':
     resolution: {integrity: sha512-dXn3FZhPv0US+7dtJsIi2R+c7qWYiReoEh5zUntWCf4oSpMNib8FDhSoed6m3QyZdx5hK7iLFkYk3rNxwt8vTA==}
 
-  '@maniumek/suwfrontkit@0.4.0':
-    resolution: {integrity: sha512-3QTcu23szxsG3GUiZViZH1Vm65xfTpHymL7gr6i14BLBIdxZ16WezF9rlDUw9ZeuXSy+7CFh/huBzCWyWsV5mg==}
+  '@maniumek/suwfrontkit@0.9.0':
+    resolution: {integrity: sha512-t0DgCk5fys6IkMgRMnYzIemAD3sx4VU8uxCc8UWf7qH3iOje2mlWBR66C674Gr6rrssf/LwJ8ppsysBxzujDFg==}
     peerDependencies:
+      '@tanstack/react-query': ^5.0.0
       '@xyflow/react': ^13.0.2
       react: ^19.3.0
       react-dom: ^19.3.0
       tailwindcss: ^4.3.0
     peerDependenciesMeta:
+      '@tanstack/react-query':
+        optional: true
       '@xyflow/react':
         optional: true
 
@@ -2514,6 +2517,12 @@ packages:
     resolution: {integrity: sha512-5vvB5+W7ePv+p3uqxi+RcW1XAzLW0/hxt3/4X4Lc4qHudzOhmBiBwOY6DRob4WnanAEGvNcLjF+KNOufrUoEQw==}
     engines: {node: '>=12.20.0'}
 
+  openapi-fetch@0.17.0:
+    resolution: {integrity: sha512-PsbZR1wAPcG91eEthKhN+Zn92FMHxv+/faECIwjXdxfTODGSGegYv0sc1Olz+HYPvKOuoXfp+0pA2XVt2cI0Ig==}
+
+  openapi-typescript-helpers@0.1.0:
+    resolution: {integrity: sha512-OKTGPthhivLw/fHz6c3OPtg72vi86qaMlqbJuVJ23qOvQ+53uw1n7HdmkJFibloF7QEjDrDkzJiOJuockM/ljw==}
+
   openapi-typescript@7.13.0:
     resolution: {integrity: sha512-EFP392gcqXS7ntPvbhBzbF8TyBA+baIYEm791Hy5YkjDYKTnk/Tn5OQeKm5BIZvJihpp8Zzr4hzx0Irde1LNGQ==}
     hasBin: true
@@ -3375,12 +3384,13 @@ snapshots:
 
   '@keyv/serialize@1.1.1': {}
 
-  '@maniumek/suwfrontkit@0.4.0(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(tailwindcss@4.3.3)':
+  '@maniumek/suwfrontkit@0.9.0(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(tailwindcss@4.3.3)':
     dependencies:
       '@fontsource-variable/inter': 5.3.0
       class-variance-authority: 0.7.1
       clsx: 2.1.1
       diff: 9.0.0
+      openapi-fetch: 0.17.0
       radix-ui: 1.8.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       react: 19.3.1
       react-dom: 19.3.1(react@19.3.1)
@@ -5261,6 +5271,12 @@ snapshots:
   node-releases@2.0.60: {}
 
   obug@3.0.0: {}
+
+  openapi-fetch@0.17.0:
+    dependencies:
+      openapi-typescript-helpers: 0.1.0
+
+  openapi-typescript-helpers@0.1.0: {}
 
   openapi-typescript@7.13.0(typescript@5.9.3):
     dependencies:

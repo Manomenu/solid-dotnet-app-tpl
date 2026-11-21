@@ -69,6 +69,16 @@
                 }
               }
             }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefusalOfNoteRefusalAndMistakeOfNoteRefusal"
+                }
+              }
+            }
           }
         }
       }
@@ -84,6 +94,31 @@
         "properties": {
           "status": {
             "type": "string"
+          }
+        }
+      },
+      "MistakeOfNoteRefusal": {
+        "required": [
+          "code",
+          "message",
+          "fix"
+        ],
+        "type": "object",
+        "properties": {
+          "code": {
+            "$ref": "#/components/schemas/NoteRefusal"
+          },
+          "message": {
+            "type": "string"
+          },
+          "fix": {
+            "type": "string"
+          },
+          "at": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
@@ -119,6 +154,56 @@
           "createdAt": {
             "type": "string",
             "format": "date-time"
+          }
+        }
+      },
+      "NoteRefusal": {
+        "enum": [
+          "note.textInvalid"
+        ]
+      },
+      "RefusalOfNoteRefusalAndMistakeOfNoteRefusal": {
+        "required": [
+          "type",
+          "title",
+          "status",
+          "detail",
+          "traceId",
+          "code"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "status": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "traceId": {
+            "type": "string"
+          },
+          "code": {
+            "$ref": "#/components/schemas/NoteRefusal"
+          },
+          "mistakes": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/MistakeOfNoteRefusal"
+            }
           }
         }
       }

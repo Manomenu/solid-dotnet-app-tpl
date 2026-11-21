@@ -1,5 +1,6 @@
 using Npgsql;
 using Suwbackkit.Postgres;
+using Suwbackkit.Testing;
 
 [assembly: AssemblyFixture(typeof(Myapp.Server.Tests.TestDatabase))]
 
@@ -25,7 +26,7 @@ public sealed class TestDatabase : IAsyncLifetime
     {
         try
         {
-            await RecreateAsync();
+            await TestDatabases.RecreateAsync(ConnectionString);
         }
         catch (Exception error) when (error is NpgsqlException or TimeoutException && Environment.GetEnvironmentVariable("CI") is null)
         {
@@ -36,21 +37,4 @@ public sealed class TestDatabase : IAsyncLifetime
     }
 
     public ValueTask DisposeAsync() => ValueTask.CompletedTask;
-
-    private static async Task RecreateAsync()
-    {
-        var database = new NpgsqlConnectionStringBuilder(ConnectionString).Database;
-        var admin = new NpgsqlConnectionStringBuilder(ConnectionString)
-        {
-            Database = "postgres",
-            Timeout = 3,
-            Pooling = false,
-        };
-        await using var connection = new NpgsqlConnection(admin.ConnectionString);
-        await connection.OpenAsync();
-        await using var drop = new NpgsqlCommand($"DROP DATABASE IF EXISTS \"{database}\" WITH (FORCE)", connection);
-        await drop.ExecuteNonQueryAsync();
-        await using var create = new NpgsqlCommand($"CREATE DATABASE \"{database}\"", connection);
-        await create.ExecuteNonQueryAsync();
-    }
 }

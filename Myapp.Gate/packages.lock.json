@@ -555,8 +555,8 @@
         "type": "Project",
         "dependencies": {
           "Dapper": "[2.1.89, )",
-          "Suwbackkit.Postgres": "[0.1.0, )",
-          "Suwbackkit.Server": "[0.1.0, )"
+          "Suwbackkit.Postgres": "[0.3.0, )",
+          "Suwbackkit.Server": "[0.3.0, )"
         }
       },
       "Dapper": {
@@ -567,9 +567,9 @@
       },
       "Suwbackkit.Postgres": {
         "type": "CentralTransitive",
-        "requested": "[0.1.0, )",
-        "resolved": "0.1.0",
-        "contentHash": "Zk3dcLAUFF8Hl0Gf7tRji5sKpMlouTvXHYY/yVmWZyn0gvhFXd3tBGuY4HLemKj7I9p1JGFV/K/d1ltk3TyhRQ==",
+        "requested": "[0.3.0, )",
+        "resolved": "0.3.0",
+        "contentHash": "+l9/IZgpSPvMxnSUdyRYRzggrFTQJ5Oti9FwNzzg3DulwAiIlvShNEYvCOBgwa/1UJxsn5CtGFmgKlS5S76zFA==",
         "dependencies": {
           "Npgsql": "10.0.3",
           "grate.postgresql": "2.1.6"
@@ -577,9 +577,9 @@
       },
       "Suwbackkit.Server": {
         "type": "CentralTransitive",
-        "requested": "[0.1.0, )",
-        "resolved": "0.1.0",
-        "contentHash": "wJB2CYGd3mD+g+hDnEncvVgkVcs5CBAetHy7B1+ltvVG3yxirXB1XITcWAm3LCZ0ye/TuY6pLZM7vM7GcoRzbw==",
+        "requested": "[0.3.0, )",
+        "resolved": "0.3.0",
+        "contentHash": "mQgi+N3/zW0XfZJP987DS1NNkk9GxWw5zVxknkQ4mvG0ihc3jy7dXUK9m+1Ws/dHXufNZPIHIXrrbRw3DjCREw==",
         "dependencies": {
           "Microsoft.AspNetCore.OpenApi": "10.0.12"
         }

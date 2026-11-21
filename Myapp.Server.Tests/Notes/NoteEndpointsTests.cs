@@ -37,5 +37,6 @@ public sealed class NoteEndpointsTests(TestDatabase database, ClassServer server
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
         Assert.Contains("non-empty", body, StringComparison.Ordinal);
+        Assert.Contains("\"code\":\"note.textInvalid\"", body, StringComparison.Ordinal);
     }
 }

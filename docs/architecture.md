@@ -8,7 +8,7 @@ lines: a new top-level folder needs its line here, a deleted one loses it.
 - `Myapp.slnx` — the .NET solution: the server and its tests.
 - `Myapp.Server/` — the HTTP API (ASP.NET Core minimal APIs, Dapper with hand-written SQL) on NuGet `Suwbackkit.Server` and `Suwbackkit.Postgres`. One folder and namespace per feature: `Api/` wires the routes, `Notes/` is the example feature.
 - `Myapp.Server/Database/Migrations/up/` — numbered SQL migrations, applied at start-up by `Suwbackkit.Postgres` (grate) and never edited afterwards.
-- `Myapp.Server.Tests/` — xUnit v3 tests against a real PostgreSQL. Mirrors the server's folders; `Characterization/` holds behaviour recorded before changing legacy code.
+- `Myapp.Server.Tests/` — xUnit v3 tests against a real PostgreSQL, whose database NuGet `Suwbackkit.Testing` recreates (only one named with the word `test`). Mirrors the server's folders; `Characterization/` holds behaviour recorded before changing legacy code.
 - `Myapp.Gate/` — the xUnit project that calls the .NET guards of NuGet `Suwgate.Architecture` and `Suwgate.Database` (`GuardTests`), and the template's own `TemplateTests`; `suwgate check --quick` runs it.
 - `Myapp.Web/` — the web app (React 19, Tailwind 4, Vite, TypeScript strict, pnpm), styled by `@maniumek/suwfrontkit`. A folder per feature under `src/` (`notes/` is the example); `src/api/` the HTTP client and the generated `openapi.d.ts`. Its packages include the gate, `@maniumek/suwgate`.
 - `compose.yaml` — the whole stack on a laptop from the same Dockerfiles: db (profile `db`), server, web; everything configured from `.env` (`.env.example`) with ASP.NET names (`Section__Key`); only web publishes a port (8190).

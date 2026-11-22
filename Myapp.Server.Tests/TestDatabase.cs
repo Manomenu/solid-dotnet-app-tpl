@@ -8,8 +8,7 @@ namespace Myapp.Server.Tests;
 
 public sealed class TestDatabase : IAsyncLifetime
 {
-    public static readonly string ConnectionString =
-        Environment.GetEnvironmentVariable("TEST_CONNECTION_STRING")
+    public static readonly string ConnectionString = Environment.GetEnvironmentVariable("TEST_CONNECTION_STRING")
         ?? "Host=127.0.0.1;Port=5533;Database=myapp_test;Username=myapp;Password=myapp";
 
     private string? unavailable;

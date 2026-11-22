@@ -4,49 +4,49 @@
     "net10.0": {
       "Dapper": {
         "type": "Direct",
-        "requested": "[2.1.89, )",
-        "resolved": "2.1.89",
-        "contentHash": "1VjFE664wnxvuhlgP8kS4PeFFF4jqD3VkbIHW6Zlc52zuibgcz5ICnIHcQXlTp6pURpPNGLV0ZpNe5x9KePJnA=="
+        "requested": "[2.1.100, )",
+        "resolved": "2.1.100",
+        "contentHash": "zKwgGfxkDIVLGU2WIsl57DwTgj17+fa5v0u2eiVMxU92GXN2fRIn2M8QMGtyGFrPSbVOYKgGFxAxEFL6CB9tTw=="
       },
       "Microsoft.AspNetCore.OpenApi": {
         "type": "Direct",
-        "requested": "[10.0.12, )",
-        "resolved": "10.0.12",
-        "contentHash": "7RnQ/UKn+kK3JDLmTpW+vVqNErWthGPAVAy1aIiBzv4ucQ6g9NFvOJUuT0PHcpvcJxGVxctMxj6t+NESWMrgHQ==",
+        "requested": "[10.0.15, )",
+        "resolved": "10.0.15",
+        "contentHash": "pptFDPMWyPDDtt68s/HsvLYeHJ0WQtntjyve6ztp/5MrLOEzdZvafYIyWSeErtexIGaB8XGYCnnUK8T/Vn4MwQ==",
         "dependencies": {
-          "Microsoft.OpenApi": "[2.12.0, 3.0.0)"
+          "Microsoft.OpenApi": "[2.13.0, 3.0.0)"
         }
       },
       "Microsoft.Extensions.ApiDescription.Server": {
         "type": "Direct",
-        "requested": "[10.0.12, )",
-        "resolved": "10.0.12",
-        "contentHash": "Z/bU4AL/E4m0j5tduRjIuqZrVMK//wRAM+iq+UcQtjQuEMwBnMY8AQ+MvK4IQZAdKb5Zlk9PUglfsN53xOmU3A=="
+        "requested": "[10.0.15, )",
+        "resolved": "10.0.15",
+        "contentHash": "zmUfi9Knemv2OomGJQSoh05jjuM/3UICYL93lm4Ggf8x6GpWw2V968zLVwQQWOdA+yGCc2e2Q2gG+gZWrU1usQ=="
       },
       "Suwbackkit.Postgres": {
         "type": "Direct",
-        "requested": "[0.4.0, )",
-        "resolved": "0.4.0",
-        "contentHash": "BvlZo1q1IlhOOlnNU1xzYzNlJjId6HXBdUqyR3nb6f5WfwVgw4SayB+hlnuXLHO9hIjTg8USKc4wpua6xrkzIw==",
+        "requested": "[0.5.2, )",
+        "resolved": "0.5.2",
+        "contentHash": "qYT+NHlNM8lmpqKerPymuyfkvt/RQJ1vHTaH0E1SV8drBFs1o17QCoMTmI3EFUN1qdLzyDTR7xoq5hz2jhMbvA==",
         "dependencies": {
-          "Npgsql": "10.0.3",
-          "grate.postgresql": "2.1.6"
+          "Npgsql": "11.0.0",
+          "grate.postgresql": "2.3.0"
         }
       },
       "Suwbackkit.Server": {
         "type": "Direct",
-        "requested": "[0.4.0, )",
-        "resolved": "0.4.0",
-        "contentHash": "528AMHitY0YOxAQtwWWOjWivL1wQK11F6vzaSZRosWH5y83bSTyXKCU6PmUq+5fk5Vbj5eTYePmZOXL6BRSxSg==",
+        "requested": "[0.5.2, )",
+        "resolved": "0.5.2",
+        "contentHash": "DckPd6nrLc+ly8Xg9MN4MOVAVuRM74B5YmJCLQBbBLC7q3AWZoIeaOJz026aCg/5rCu6a/35p0KsfJU2PNxVBw==",
         "dependencies": {
-          "Microsoft.AspNetCore.OpenApi": "10.0.12"
+          "Microsoft.AspNetCore.OpenApi": "10.0.15"
         }
       },
       "Suwgate.Architecture": {
         "type": "Direct",
-        "requested": "[0.3.0, )",
-        "resolved": "0.3.0",
-        "contentHash": "B5Tq71LjudDSA0XiGnOIdEdWNebf3nfiCbrp81dhHUeeJxwGmraqxFq5cLfr2NLmhYOnozwiR4tIH/yhN9B1Iw==",
+        "requested": "[0.4.0, )",
+        "resolved": "0.4.0",
+        "contentHash": "nYUYByAfD0Qv9rE4BZdvCEeRHQGkDELzUmnSAYtispDpLkoD1zZ/DUztbgQqtbvpGJ8oI3A7HlWg6XqmK+H8lA==",
         "dependencies": {
           "Microsoft.CodeAnalysis.BannedApiAnalyzers": "4.14.0",
           "Microsoft.CodeAnalysis.CSharp": "5.0.0",
@@ -61,20 +61,20 @@
       },
       "grate.core": {
         "type": "Transitive",
-        "resolved": "2.1.6",
-        "contentHash": "cL4mXpJR4KgiOYJ/Vg2fD5GWHtjpwfb6Xp6HvkFrrcyTnJIe7x03ldufPXiYzFUelxwL2bmauk2zQfYMF9JNvQ==",
+        "resolved": "2.3.0",
+        "contentHash": "6IiV508j0ij7K/WZ/OitgtYmVd8Bbt37VfyuZ9ETiLcWFFYKXZUt+zpl8WMUQVrtq1iiHyniQOQLcg+3w4qefA==",
         "dependencies": {
-          "Dapper": "2.1.79"
+          "Dapper": "2.1.89"
         }
       },
       "grate.postgresql": {
         "type": "Transitive",
-        "resolved": "2.1.6",
-        "contentHash": "krNCVLocLaEKSWkeFVf6JA+MHhh0FnDwdVWQs2O9wvIU35wkyx8hNzUMfo/jJ3CCM6k0eP14e3E3QlADtXE4sg==",
+        "resolved": "2.3.0",
+        "contentHash": "92BYUjLTjYsynuusC6YrCxsWYvbdxu24qm4lgcx1KRm2gZtYLs5l7j1VzlHVMGPjcep/V0oRn5HfAvxOK/OUQQ==",
         "dependencies": {
-          "Dapper": "2.1.79",
+          "Dapper": "2.1.89",
           "Npgsql": "10.0.3",
-          "grate.core": "2.1.6"
+          "grate.core": "2.3.0"
         }
       },
       "JetBrains.Annotations": {
@@ -109,10 +109,24 @@
           "Microsoft.CodeAnalysis.Common": "[5.0.0]"
         }
       },
+      "Microsoft.Extensions.DependencyInjection.Abstractions": {
+        "type": "Transitive",
+        "resolved": "11.0.0",
+        "contentHash": "a2c4Kp55miXT6G+DSb75pczXQJHgNMzPyZEyMxrrKxuQrgvctcDWJWD9fVe/uGbQdu4Z0c3B7AVKp1DXmD64nQ=="
+      },
+      "Microsoft.Extensions.Logging.Abstractions": {
+        "type": "Transitive",
+        "resolved": "11.0.0",
+        "contentHash": "MTMO2V1eT9Dm5VIpJGLNwIjAjoBErUlfuB+DEaZ0tb8J+Nf/Xlj8he5AztK9p1iOJPIyuBeOrVy2u/CSdsfzPw==",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "11.0.0",
+          "System.Diagnostics.DiagnosticSource": "11.0.0"
+        }
+      },
       "Microsoft.OpenApi": {
         "type": "Transitive",
-        "resolved": "2.12.0",
-        "contentHash": "0xB/be+f6qYOhvQPUrVsLrau+fkowYv6gt9RIkajMhwT7sZnqtcA797yW3bS5kgSje+AQW4xZgyLnW641YFioQ=="
+        "resolved": "2.13.0",
+        "contentHash": "wavlgBYnn7uU/ZGhFHNl0UlDOlwz+6KRduKkqdCCbfxxANaQ1rmBpETVGdwXanAM6twQOxsvI3CBEGF4OScbeQ=="
       },
       "Mono.Cecil": {
         "type": "Transitive",
@@ -126,8 +140,17 @@
       },
       "Npgsql": {
         "type": "Transitive",
-        "resolved": "10.0.3",
-        "contentHash": "7nb5YzXuvWWJxB0J8DiyL3we+X4FOctZrt0fIBnucOIaIevFEEwGQVZKtiu9olXdlNAK1eNgqSral6r/jlhI4w=="
+        "resolved": "11.0.0",
+        "contentHash": "ozQ8GJcEAiW6XSKz2RUpdJDvM4l380BdHx/MRB7QJHL2cTH/0js7f/cisCaYMrZvVUj4/HIW80UjXxI+ikQQzQ==",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "11.0.0",
+          "Microsoft.Extensions.Logging.Abstractions": "11.0.0"
+        }
+      },
+      "System.Diagnostics.DiagnosticSource": {
+        "type": "Transitive",
+        "resolved": "11.0.0",
+        "contentHash": "+boRR9uSKiIPtFeRLGwO5xylhDF80xpwM+dmk5jgIqqeUKLbujGkGICMTKqQrBzKO6fIp8BU8DV6YZkQukqo3A=="
       },
       "System.ValueTuple": {
         "type": "Transitive",

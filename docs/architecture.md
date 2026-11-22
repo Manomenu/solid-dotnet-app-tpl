@@ -23,7 +23,7 @@ lines: a new top-level folder needs its line here, a deleted one loses it.
 - `scripts/.internal/init-project.proj` and `init-project.sh` — the template's post action (`just init` without `--allow-scripts yes`); they run once in a new project and delete themselves, their recipe and `just pack-template`.
 <!-- template:end -->
 - `docs/` — documentation for people working on the repo: this map, `development.md`, the specs in `visual/spec/` (their acceptance criteria live as guardrails, see AGENTS.md), decisions above one feature in `adr/`.
-- `scripts/` — `scripts/.internal/` holds the tools of this app that `just` runs: `api-types.sh`, `slow-tests.sh`; the local stack is `suwgate dev`. The gate refuses a script that nothing calls.
+- `scripts/` — `scripts/.internal/` holds the tools of this app that `just` runs; the local stack, the contract types (`api-types`) and the slow-test report (`slow-tests`) are `suwgate dev`. The gate refuses a script that nothing calls.
 - `.claude/` — the committed Claude Code settings: `suwgate hook stop` runs the quick gate when Claude stops, `suwgate hook guard-edit` protects migrations, generated files, and the gate with the lint configs (`ALLOW_GATE_EDIT=1 claude` lifts the last).
 - `.config/` — `dotnet-tools.json`: the pinned CSharpier.
 - `contract/` — the API contract (`openapi.json`) and its version (`package.json`), generated and committed for consumers.

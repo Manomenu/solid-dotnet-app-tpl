@@ -9,6 +9,7 @@
     <PackageReference Include="Suwbackkit.Postgres" />
     <PackageReference Include="Dapper" />
     <PackageReference Include="Microsoft.Extensions.ApiDescription.Server" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
   </ItemGroup>
 
   <ItemGroup>

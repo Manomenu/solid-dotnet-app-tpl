@@ -3,7 +3,7 @@ name: myapp
 services:
   db:
     profiles: ["db"]
-    image: docker.io/library/postgres:17.11
+    image: docker.io/library/postgres:19.0
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-myapp}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-myapp}

@@ -37,10 +37,10 @@ done_steps+=("formatted the C# files (the new name changes using order and line 
 if command -v pnpm >/dev/null 2>&1; then
     (cd "$web" && pnpm install --silent && pnpm exec prettier --write --log-level warn .)
     done_steps+=("regenerated the pnpm lockfile in ${web#./} and formatted its files")
-    bash scripts/.internal/api-types.sh >/dev/null
-    done_steps+=("regenerated the API contract (openapi.json), which carries the project's name, and the web types from it (api-types.sh)")
+    "$web/node_modules/.bin/suwgate" dev api-types >/dev/null
+    done_steps+=("regenerated the API contract (openapi.json), which carries the project's name, and the web types from it (suwgate dev api-types)")
 else
-    done_steps+=("SKIPPED pnpm install and api-types.sh in ${web#./}: pnpm is not installed (corepack enable); run both before the gate")
+    done_steps+=("SKIPPED pnpm install and suwgate dev api-types in ${web#./}: pnpm is not installed (corepack enable); run both before the gate")
 fi
 
 mkdir -p docs/visual/spec

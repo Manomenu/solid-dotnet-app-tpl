@@ -1,4 +1,4 @@
-FROM docker.io/library/node:24.16-alpine3.22 AS builder
+FROM docker.io/library/node:26.3-alpine3.22 AS builder
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 WORKDIR /app
 COPY Myapp.Web/package.json Myapp.Web/pnpm-lock.yaml Myapp.Web/pnpm-workspace.yaml ./
